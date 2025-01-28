@@ -27,14 +27,28 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Check, Trash2 } from "lucide-react";
+import { Check, LogOut, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import clsx from "clsx";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
+import { logout } from "@/app/(signin-setup)/logout/action";
 
 const Task = () => {
   const { userId } = useGlobalContext();
+  const route = useRouter();
   const [selectedSpace, setSelectedSpace] = useState<string>(""); // Space name
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(""); // Space ID
   const [isSpaceDrawerOpen, setIsSpaceDrawerOpen] = useState(false);
@@ -55,6 +69,10 @@ const Task = () => {
   const[userSpaceData,setUserSpaceData]=useState<any>([])
 
   const [activeTaskId, setActiveTaskId] = useState<number | null>(null); // Track which task's filter is being edited
+
+  const [selectOpen, setSelectOpen] = useState(false);
+  const [profileLoader, setProfileLoader] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
 
   const Filters = ["Completed", "In Progress", "Understand"];
 
@@ -186,6 +204,14 @@ const Task = () => {
 
     fetchTask();
   }, []);
+
+  const handleLogout = async (event: React.FormEvent) => {
+        event.preventDefault();
+        setIsLoggingOut(true); // Show loader when logging out
+        await logout();
+        setIsLoggingOut(false); // Hide loader after logout completes
+      };
+
   const handleSwipe = (id: number, direction: "left" | "right") => {
     setSwiped((prev) => ({
       ...prev,
@@ -356,14 +382,104 @@ const Task = () => {
           </h2>
         </div>
 
-        {/* Profile Image */}
-        <Image
-          src={userId?.profile_image || profile}
-          alt="Profile"
-          className="rounded-full"
-          width={40}
-          height={40}
-        />
+        <Select open={selectOpen} onOpenChange={setSelectOpen}>
+          <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
+            <div className="flex items-center">
+              <Image
+                src={userId?.profile_image || profile}
+                width={44}
+                height={44}
+                alt="User Image"
+                className="rounded"
+              />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="w-[150px] py-3">
+            {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
+              <p
+                onClick={() => {
+                  setProfileLoader(true);
+                  setTimeout(() => {
+                    route.push("/profile");
+                    setProfileLoader(false);
+                  }, 1000);
+                }}
+                className={`text-sm pb-3 mb-3 pl-3.5 border-b border-gray-300 font-medium cursor-pointer`}
+              >
+                {profileLoader ? (
+                  <svg
+                    className="animate-spin h-5 w-5 m-auto"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="#1A56DB"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-100"
+                      fill="#1A56DB"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Your Profile"
+                )}
+              </p>
+            {/* </div> */}
+            <form onSubmit={handleLogout} className="flex">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div
+                      typeof="submit"
+                      className="rounded bg-button_orange text-white cursor-pointer hover:bg-button_orange relative"
+                      style={isLoggingOut ? { pointerEvents: "none" } : {}}
+                    >
+                      {isLoggingOut ? (
+                        <div className="ml-20 flex items-center justify-center text-center">
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="#1A56DB"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="#1A56DB"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-[#F05252] px-3 flex items-center gap-2 cursor-pointer">
+                          <LogOut size={20} />
+                          Sign Out
+                        </p>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Logout</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </form>
+          </SelectContent>
+        </Select>
       </header>
 
       {/* Team Drawer */}

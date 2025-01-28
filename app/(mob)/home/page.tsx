@@ -10,6 +10,7 @@ import Spaces from "@/components/spaces";
 import Image from "next/image";
 import smile from "@/public/images/smile-img.png";
 import { useGlobalContext } from "@/context/store";
+import ReactMentions from "@/components/react-mentions";
 
 
 
@@ -76,6 +77,9 @@ const Home = () => {
         <TaskStatus />
         <OverDue/>
         <Spaces />
+
+<ReactMentions />
+
         <div className="flex justify-center items-center py-5 font-geist gap-1">
             <Image src={smile} alt="smile-img" width={300} height={300} className="w-[42px] h-[42px] grayscale" />
             <p className="text-[#A7A7AB] text-[12px]">That's all for today !!!!</p>

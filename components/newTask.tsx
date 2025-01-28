@@ -37,37 +37,6 @@ type PopupProps = {
   onSelect: (user: User) => void;
 };
 
-const Popup: React.FC<PopupProps> = ({ data, position, onSelect }) => (
-  <div
-    style={{
-      top: position.top,
-      left: position.left,
-    }}
-  >
-    {data.map((user) => (
-      <div key={user.id} onClick={() => onSelect(user)}>
-        {user.name}
-      </div>
-    ))}
-  </div>
-);
-
-const fetchEmployeeList = async () => {
-  try {
-    const response = await axios.get(
-      "https://portal.solution22.com.au/api/employees",
-      {
-        headers: {
-          Authorization: `Bearer Ng4J6u194xccX9kbZxrBOEpZHWjQI5g5Ao7LccMf`,
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching employee list:", error);
-    return null;
-  }
-};
 
 export function NewTask() {
   const styledInputRef = useRef<HTMLDivElement>(null);
@@ -81,17 +50,6 @@ export function NewTask() {
   const [taskErrorMessage, setTaskErrorMessage] = useState(false);
   const [date, setDate] = React.useState<Date>();
 
-  useEffect(() => {
-    const getEmployees = async () => {
-      const data = await fetchEmployeeList();
-      if (data) {
-        setEmployees(data);
-      }
-    };
-
-    getEmployees();
-  }, []);
-
   const Popup: React.FC<PopupProps> = ({ data, position, onSelect }) => {
     return (
       <div className="popup" style={{ top: position.top, left: position.left }}>
@@ -103,103 +61,7 @@ export function NewTask() {
       </div>
     );
   };
-  let PopupList: User[] = [];
 
-  const Space: User[] = [
-    { id: 1, name: "Big7Solution" },
-    { id: 2, name: "Solution22" },
-    { id: 3, name: "Graphity" },
-  ];
-
-  const Team: User[] = [
-    { id: 1, name: "DevelopmentTeam" },
-    { id: 2, name: "DesignTeam" },
-    { id: 3, name: "MangementTeam" },
-  ];
-
-  const Employee: User[] = [
-    { id: 1, name: "Dhanasekar" },
-    { id: 2, name: "Prashanth" },
-    { id: 3, name: "Pugal" },
-  ];
-
-  useEffect(() => {
-    const styledInput = styledInputRef.current;
-    if (!styledInput) return;
-
-    const handleInput = () => {
-      let text = styledInput.innerText || "";
-      const atCount = (text.match(/@/g) || []).length;
-
-      if (atCount === 1) {
-        PopupList = Space;
-      } else if (atCount === 2) {
-        PopupList = Team;
-      } else if (atCount === 3) {
-        PopupList = Employee;
-      }
-      const atIndex = text.lastIndexOf("@");
-      if (atIndex !== -1) {
-        const substring = text.substring(atIndex + 1);
-        const matches = PopupList.filter((user) =>
-          user.name.toLowerCase().startsWith(substring.toLowerCase())
-        );
-
-        console.log("Suggested matches:", matches);
-        if (matches.length > 0) {
-          setSuggestedUsers(matches);
-          const range = window.getSelection()?.getRangeAt(0);
-          if (range) {
-            const rect = range.getBoundingClientRect();
-            setPopupPosition({
-              top: rect.bottom + window.scrollY,
-              left: rect.left + window.scrollX,
-            });
-            setPopupVisible(true);
-          }
-        } else {
-          setPopupVisible(false);
-        }
-      } else {
-        setPopupVisible(false);
-      }
-
-      text = text.replace(/(@\w+)/g, "<span>$1</span>");
-      styledInput.innerHTML = text;
-
-      document.querySelectorAll("#styledInput span").forEach((span, index) => {
-        if (index === 0) {
-          (span as HTMLElement).style.color = "#df478e";
-        } else if (index === 1) {
-          (span as HTMLElement).style.color = "#8692ee";
-        } else if (index === 2) {
-          (span as HTMLElement).style.color = "#62e78a";
-        }
-      });
-
-      const range = document.createRange();
-      const selection = window.getSelection();
-      range.selectNodeContents(styledInput);
-      range.collapse(false);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    };
-
-    styledInput.addEventListener("input", handleInput);
-    return () => styledInput.removeEventListener("input", handleInput);
-  }, [PopupList]);
-
-  const handleUserSelect = (user: User) => {
-    const styledInput = styledInputRef.current;
-    if (styledInput) {
-      let text = styledInput.innerText || "";
-      const atIndex = text.lastIndexOf("@");
-      const newText = text.substring(0, atIndex) + `@${user.name}`;
-      styledInput.innerText = newText;
-      styledInput.dispatchEvent(new Event("input"));
-      setPopupVisible(false);
-    }
-  };
 
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
@@ -307,7 +169,7 @@ export function NewTask() {
                     )}
                   >
                     {/* <CalendarIcon /> */}
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    {date ? format(date, "PPP") : <span>{format(new Date(), "PPP")}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">

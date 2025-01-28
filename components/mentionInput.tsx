@@ -12,37 +12,26 @@ interface MentionableEntity {
   id: number;
   name: string;
   type: EntityType;
-  email: string;
+  email?: string;
 }
 
-type EntityType = "Employee" | "Team" | "Space";
+type EntityType = "Space" | "Team" | "Employee";
 
-// Define a color mapping for each entity type
 const entityTypeColors: Record<EntityType, string> = {
-  Employee: "#518A37",
-  Team: "#8692ee",
   Space: "#df478e",
+  Team: "#8692ee",
+  Employee: "#518A37",
 };
 
-const MentionInput: React.FC<Props> = ({
-  text,
-  setText,
-  setTaskErrorMessage,
-}) => {
+const MentionInput: React.FC<Props> = ({ text, setText, setTaskErrorMessage }) => {
   const [suggestions, setSuggestions] = useState<MentionableEntity[]>([]);
-  const [mentionStartIndex, setMentionStartIndex] = useState<number | null>(
-    null
-  );
-  const [mentionableEntities, setMentionableEntities] = useState<
-    MentionableEntity[]
-  >([]);
+  const [mentionStartIndex, setMentionStartIndex] = useState<number | null>(null);
+  const [mentionableEntities, setMentionableEntities] = useState<MentionableEntity[]>([]);
+  const [mentionCount, setMentionCount] = useState<number>(0);
   const editableRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch mentionable entities from the database
   const getMentions = async () => {
-    const { data, error } = await supabase
-      .from("employee_entities")
-      .select("*");
+    const { data, error } = await supabase.from("employee_entities").select("*");
     if (error) {
       console.error("Database Error:", error);
       return;
@@ -54,62 +43,60 @@ const MentionInput: React.FC<Props> = ({
     getMentions();
   }, []);
 
-  // Handle user input to detect mentions and update text
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-    console.log(text, "typed Text");
-    const mentions = text.match(/@\w+/g) || []; // Find all mentions
-    const content = text.replace(/@\w+/g, "").trim();
-    if (content.length < 0 && mentions.length < 0) {
-      setTaskErrorMessage(true);
-    } else {
-      setTaskErrorMessage(false);
-      if (editableRef.current) {
-        const plainText = editableRef.current.innerText || "";
-        setText(plainText);
-        const selection = window.getSelection();
-        let cursorPosition = 0;
-        const childNodes = Array.from(editableRef.current.childNodes);
+    const mentions = text.match(/@/g) || []; // Count mentions in text
+    setMentionCount(mentions.length);
 
-        for (const node of childNodes) {
-          if (node === selection?.focusNode) {
-            cursorPosition += selection.focusOffset;
-            break;
-          } else if (node.nodeType === Node.TEXT_NODE) {
-            cursorPosition += node.textContent?.length ?? 0;
-          } else if (node.nodeType === Node.ELEMENT_NODE) {
-            cursorPosition += node.textContent?.length ?? 0;
-          }
+    if (editableRef.current) {
+      const plainText = editableRef.current.innerText || "";
+      setText(plainText);
+      const selection = window.getSelection();
+      let cursorPosition = 0;
+
+      const childNodes = Array.from(editableRef.current.childNodes);
+      for (const node of childNodes) {
+        if (node === selection?.focusNode) {
+          cursorPosition += selection.focusOffset;
+          break;
+        } else if (node.nodeType === Node.TEXT_NODE) {
+          cursorPosition += node.textContent?.length ?? 0;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          cursorPosition += node.textContent?.length ?? 0;
+        }
+      }
+
+      if (mentionStartIndex !== null && cursorPosition > mentionStartIndex) {
+        const mentionQuery = plainText.slice(mentionStartIndex + 1, cursorPosition);
+        let filteredSuggestions: MentionableEntity[] = [];
+
+        if (mentionCount === 1) {
+          filteredSuggestions = mentionableEntities.filter(
+            (entity) => entity.type === "Space" && entity.name.toLowerCase().startsWith(mentionQuery.toLowerCase().trim())
+          );
+        } else if (mentionCount === 2) {
+          filteredSuggestions = mentionableEntities.filter(
+            (entity) => entity.type === "Team" && entity.name.toLowerCase().startsWith(mentionQuery.toLowerCase().trim())
+          );
+        } else if (mentionCount >= 3) {
+          filteredSuggestions = mentionableEntities.filter(
+            (entity) => entity.type === "Employee" && entity.name.toLowerCase().startsWith(mentionQuery.toLowerCase().trim())
+          );
         }
 
-        // Check if user is typing a mention
-        if (mentionStartIndex !== null && cursorPosition > mentionStartIndex) {
-          const mentionQuery = plainText.slice(
-            mentionStartIndex + 1,
-            cursorPosition
-          );
-          const filteredSuggestions = mentionableEntities.filter((entity) =>
-            entity.name
-              .toLowerCase()
-              .startsWith(mentionQuery.toLowerCase().trim())
-          );
-          setSuggestions(filteredSuggestions);
-        } else {
-          setSuggestions([]);
-          setMentionStartIndex(null);
-        }
+        setSuggestions(filteredSuggestions);
+      } else {
+        setSuggestions([]);
+        setMentionStartIndex(null);
       }
     }
   };
 
-  // Insert mention as plain text instead of HTML
   const selectMention = (entity: MentionableEntity) => {
     if (mentionStartIndex !== null && editableRef.current) {
       const plainText = editableRef.current.innerText || "";
       const mentionText = `@${entity.name} `;
       const beforeMention = plainText.slice(0, mentionStartIndex);
-      const afterMention = plainText.slice(
-        mentionStartIndex + mentionText.length - 1
-      );
+      const afterMention = plainText.slice(mentionStartIndex + mentionText.length - 1);
 
       const newContent = `${beforeMention}${mentionText}${afterMention}`;
       editableRef.current.innerText = newContent;
@@ -118,7 +105,6 @@ const MentionInput: React.FC<Props> = ({
       setSuggestions([]);
       setMentionStartIndex(null);
 
-      // Move cursor to end of inserted mention
       const range = document.createRange();
       const sel = window.getSelection();
       range.setStart(editableRef.current.childNodes[0], newContent.length);
@@ -128,7 +114,6 @@ const MentionInput: React.FC<Props> = ({
     }
   };
 
-  // Track '@' character to start mention mode
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const selection = window.getSelection();
     if (e.key === "@") {
@@ -149,7 +134,6 @@ const MentionInput: React.FC<Props> = ({
     }
   };
 
-  // Group suggestions by entity type
   const groupedSuggestions = suggestions.reduce((acc, entity) => {
     (acc[entity.type] = acc[entity.type] || []).push(entity);
     return acc;
@@ -179,10 +163,7 @@ const MentionInput: React.FC<Props> = ({
           }}
         >
           {(
-            Object.entries(groupedSuggestions) as [
-              EntityType,
-              MentionableEntity[]
-            ][]
+            Object.entries(groupedSuggestions) as [EntityType, MentionableEntity[]][]
           ).map(([type, entities]) => (
             <div key={type} style={{ marginBottom: "5px" }}>
               <div
@@ -214,8 +195,6 @@ const MentionInput: React.FC<Props> = ({
         ref={editableRef}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
-        // className='text-red-500'
-        // className={`${mentionColor} ? 'text-red-500' : 'text-black'`}
         style={{
           width: "100%",
           padding: "10px",

@@ -25,6 +25,14 @@ import { format } from "date-fns";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { logout } from "@/app/(signin-setup)/logout/action";
+import { LogOut } from "lucide-react";
 
 const OverdueTaskPage = () => {
   const { userId } = useGlobalContext();
@@ -35,6 +43,17 @@ const OverdueTaskPage = () => {
   const [date, setDate] = useState<Date>();
   const [openTaskId, setOpenTaskId] = useState<number | null>(null);
   const [taskStatus, setTaskStatus] = useState<string>("");
+
+  const [selectOpen, setSelectOpen] = useState(false);
+  const [profileLoader, setProfileLoader] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+
+  const handleLogout = async (event: React.FormEvent) => {
+          event.preventDefault();
+          setIsLoggingOut(true); // Show loader when logging out
+          await logout();
+          setIsLoggingOut(false); // Hide loader after logout completes
+        };
 
   const fetchTaskData = async () => {
     try {
@@ -253,15 +272,106 @@ const OverdueTaskPage = () => {
   return (
     <main className="p-[18px] pb-0">
       <Toaster />
-      <div className="w-full flex justify-between items-center mb-6">
+      <div className="w-full flex justify-between items-center mb-5">
         <h1 className="text-lg font-semibold">Overdue Task</h1>
-        <Image
-          src={userId?.profile_image || profile}
-          width={44}
-          height={44}
-          alt="User Image"
-          className="rounded-full border border-[#D6D6D6]"
-        />
+        <Select open={selectOpen} onOpenChange={setSelectOpen}>
+          <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
+            <div className="flex items-center">
+              <Image
+                src={userId?.profile_image || profile}
+                width={44}
+                height={44}
+                alt="User Image"
+                className="rounded"
+              />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="w-[150px] py-3">
+            {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
+              <p
+                onClick={() => {
+                  setProfileLoader(true);
+                  setTimeout(() => {
+                    route.push("/profile");
+                    setProfileLoader(false);
+                  }, 1000);
+                }}
+                className={`text-sm pb-3 mb-3 pl-3.5 border-b border-gray-300 font-medium cursor-pointer`}
+              >
+                {profileLoader ? (
+                  <svg
+                    className="animate-spin h-5 w-5 m-auto"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="#1A56DB"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-100"
+                      fill="#1A56DB"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Your Profile"
+                )}
+              </p>
+            {/* </div> */}
+            <form onSubmit={handleLogout} className="flex">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div
+                      typeof="submit"
+                      className="rounded bg-button_orange text-white cursor-pointer hover:bg-button_orange relative"
+                      style={isLoggingOut ? { pointerEvents: "none" } : {}}
+                    >
+                      {isLoggingOut ? (
+                        <div className="ml-20 flex items-center justify-center text-center">
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="#1A56DB"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="#1A56DB"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-[#F05252] px-3 flex items-center gap-2 cursor-pointer">
+                          <LogOut size={20} />
+                          Sign Out
+                        </p>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Logout</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </form>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="w-full h-[calc(100vh-170px)] overflow-y-scroll playlist-scroll">
@@ -285,10 +395,10 @@ const OverdueTaskPage = () => {
                     <div className="flex justify-between items-center">
                       <div className="flex gap-2">
                         <p className="text-[#737373] bg-[#F4F4F8] text-sm font-semibold px-2 py-0.5 rounded-full">
-                          {task.team_name}
+                          {task.team_name.length > 12 ? task.team_name.slice(0, 12) + "..." : task.team_name}
                         </p>
                         <p className="text-[#737373] bg-[#F4F4F8] text-sm font-semibold px-2 py-0.5 rounded-full">
-                          {task.space_name}
+                          {task.space_name.length > 12 ? task.space_name.slice(0, 12) + "..." : task.space_name}
                         </p>
                       </div>
                       <p className="text-[12px] text-[#A6A6A7] font-medium">

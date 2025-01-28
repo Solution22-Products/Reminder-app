@@ -1,0 +1,5 @@
+.glow-effect {
+    text-shadow: 0 0 8px #1a56db, 0 0 15px #1a56db !important;
+    transition: text-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
+  }
+  

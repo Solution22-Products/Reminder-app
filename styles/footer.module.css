@@ -1,0 +1,38 @@
+.footer {
+  background-color: #182B29;
+  padding: 9px 18px 30px;
+  height: 75px;
+  display: flex;
+  justify-content: center;
+  gap:31px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+.footer-link {
+  color: white;
+  transition: color 0.3s ease, filter 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #14B8A6;
+  filter: brightness(1.2) drop-shadow(0px 0px 6px #14B8A6);
+}
+
+/* This class will apply the glow effect for the active link */
+.footer-link-active {
+  color: #14B8A6;
+  filter: brightness(1.5) drop-shadow(0px 0px 8px #14B8A6);
+  height: 22px;
+  width: 22px;
+}
+
+.footer-link-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.footer-link-text {
+  font-size: 0.75rem; /* Equivalent to text-xs */
+}

@@ -1,0 +1,13 @@
+@media(min-width: 1024px) and (max-width: 1204px) {
+    .lottie_hide{
+        position: absolute;
+        right: 0px;
+        bottom: 57px;
+    }
+    .lottie_img{
+        width: 70% !important;
+    }
+    .lg_start_width{
+        padding: 40px;
+    }
+}

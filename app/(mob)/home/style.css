@@ -195,5 +195,17 @@
       clip-path: inset(0 0 0 100%);
     }
   }
+
+.mentions-input__control textarea:focus-visible{
+    border: 1px solid #CECECE !important;
+    padding: 5px;
+  }
+  .mentions-input{
+    min-height: 50px !important;
+    height: 50px !important;
+    max-height: fit-content !important;
+    padding: 50px !important;
+    border: 1px solid #CECECE;
+  }
    
   

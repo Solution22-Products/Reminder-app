@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { MentionsInput, Mention } from "react-mentions";
 import { useGlobalContext } from "@/context/store";
-import { getLoggedInUserData } from "@/app/(signin-setup)/sign-in/action";
 
 interface MentionData {
   id: number;
@@ -24,6 +23,8 @@ const ReactMentions = () => {
   const [mentionLevel, setMentionLevel] = useState<number>(1);
   const [overdueTasks, setOverdueTasks] = useState<any[]>([]);
   const [adminOverdueTasks, setAdminOverdueTasks] = useState<any[]>([]);
+  const [ids, setIds] = useState<string[]>([]);
+  const [memberData, setMemberData] = useState<string[]>([]);
 
   const fetchTaskData = async () => {
     try {
@@ -98,8 +99,10 @@ const ReactMentions = () => {
           return false;
         });
       };
-      
-      const getUniqueMentions = (data: typeof adminOverdue | typeof filteredTasks) => {
+
+      const getUniqueMentions = (
+        data: typeof adminOverdue | typeof filteredTasks
+      ) => {
         const seenMentions = new Set<string>();
         return data.flatMap((emp) =>
           Array.isArray(emp.mentions)
@@ -118,26 +121,31 @@ const ReactMentions = () => {
             : []
         );
       };
-      
-      const sourceData = userId?.role === "owner" ? adminOverdueTasks : filteredTasks;
-      
+
+      const sourceData =
+        userId?.role === "owner" ? adminOverdueTasks : filteredTasks;
+
       setSpaces(
         getUniqueItems(
-          sourceData.map((space) => ({ id: space.id, display: space.space_name })),
+          sourceData.map((space) =>
+            userId?.role === "User"
+              ? { id: space.space_id, display: space.space_name }
+              : { id: space.id, display: space.space_name }
+          ),
           "display"
         )
       );
-      
-      // setTeams(
-      //   getUniqueItems(
-      //     sourceData.map((team) => ({ id: team.id, display: team.team_name })),
-      //     "display"
-      //   )
-      // );
-      
-      // setEmployees(getUniqueMentions(sourceData.filter((emp) => emp.mentions)));
-      
 
+      setTeams(
+        getUniqueItems(
+          sourceData.map((team) =>
+            userId?.role === "User"
+              ? { id: team.team_id, display: team.team_name }
+              : { id: team.id, display: team.team_name }
+          ),
+          "display"
+        )
+      );
     } catch (err) {
       console.error("Error fetching task data:", err);
       setTaskLoading(false);
@@ -153,9 +161,72 @@ const ReactMentions = () => {
     setMentionedItems(matches);
   };
 
+  const fetchTeamsAndTasks = async (teamId?: string) => {
+    try {
+      const { data: teamData, error: teamError } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("space_id", teamId)
+        .eq("is_deleted", false);
+
+      if (teamError) throw teamError;
+      {
+        userId?.role === "owner" &&
+          setTeams(
+            teamData.map((team) => ({ id: team.id, display: team.team_name }))
+          );
+        console.log(
+          teamData.map((team) => ({ id: team.id, display: team.team_name }))
+        );
+      }
+
+      const { data: teamMember, error: teamMemberError } = await supabase
+        .from("teams")
+        .select("members")
+        .eq("id", ids[1])
+        .eq("is_deleted", false);
+
+      if (teamMemberError) throw teamMemberError;
+
+      // Ensure data exists and map correctly
+      if (teamMember && teamMember.length > 0) {
+        const members = teamMember.flatMap((team) => team.members);
+
+        setMemberData(members);
+        setEmployees(
+          members.map((member) => ({ id: member.id, display: member.name }))
+        );
+        console.log(
+          members.map((member) => ({ id: member.id, name: member.name }))
+        );
+      } else {
+        console.log("No members found.");
+      }
+
+      console.log(ids[1]);
+    } catch (err) {
+      console.error("Error fetching task data:", err);
+      setTaskLoading(false);
+    }
+  };
+
   const handleChange = (event: { target: { value: string } }) => {
     setInputValue(event.target.value);
     extractMentions(event.target.value);
+    console.log(event.target.value);
+
+    // Extract all IDs from mentions
+    const mentionIds = Array.from(
+      event.target.value.matchAll(/\(([^)]+)\)/g),
+      (match) => match[1]
+    );
+
+    console.log("Extracted IDs:", mentionIds);
+    setIds(mentionIds);
+
+    // Fetch data for all extracted IDs
+    mentionIds.forEach((id) => fetchTeamsAndTasks(id));
+
     if (event.target.value === "") {
       setMentionedItems([]);
       setMentionLevel(1);
@@ -168,44 +239,40 @@ const ReactMentions = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-xl font-bold mb-4">React Mentions Input</h1>
-      {taskLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <MentionsInput
-          value={inputValue}
-          onChange={handleChange}
-          placeholder="Type @ to mention spaces, teams, or employees"
-          className="mentions-input border p-2 rounded-md w-full"
-        >
-          <Mention
-            trigger="@"
-            data={
-              mentionLevel === 1
-                ? spaces
-                : mentionLevel === 2
-                ? teams
-                : mentionLevel >= 3
-                ? employees
-                : []
-            }
-            displayTransform={(id, display) => `@${display}`}
-            onAdd={() => setMentionLevel((prev) => prev + 1)}
-          />
-        </MentionsInput>
-      )}
-      {mentionedItems.length > 0 && (
-        <div className="mt-4">
-          <h2 className="font-semibold">Mentioned Items:</h2>
-          <ul className="list-disc list-inside">
-            {mentionedItems.map((item, index) => (
-              <li key={index}>
-                {item.name} (ID: {item.id})
-              </li>
-            ))}
-          </ul>
+      <MentionsInput
+        value={inputValue}
+        onChange={handleChange}
+        placeholder="Type @ to mention spaces, teams, or employees"
+        className="mentions-input border p-2 rounded-md w-full"
+      >
+        <Mention
+          trigger="@"
+          data={
+            mentionLevel === 1
+              ? spaces
+              : mentionLevel === 2
+              ? teams
+              : mentionLevel >= 3
+              ? employees
+              : []
+          }
+          displayTransform={(id, display) => `@${display}`}
+          onAdd={() => setMentionLevel((prev) => prev + 1)}
+          className="p-5"
+        />
+      </MentionsInput>
+      {ids.map((id, index) => (
+        <div key={index}>
+          <p>{id}</p>
         </div>
-      )}
+      ))}
+      {/* {
+        memberData.map((member, index) => (
+          <div key={index}>
+            <p>{member}</p>
+          </div>
+        ))
+      } */}
     </div>
   );
 };

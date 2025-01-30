@@ -25,6 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import ReactMentions from "./react-mentions";
 
 type User = {
   id: number;
@@ -150,11 +151,12 @@ export function NewTask() {
             </Select>
           </DrawerHeader>
           <div className="px-4 border-black rounded-[10px] text-center">
-            <MentionInput
+            {/* <MentionInput
               text={text}
               setText={setText}
               setTaskErrorMessage={setTaskErrorMessage}
-            />
+            /> */}
+            <ReactMentions/>
             <p className="text-red-500 text-left my-1 text-sm">
               {taskErrorMessage && "Please fill the message with mentions"}
             </p>

@@ -196,7 +196,7 @@
     }
   }
 
-.mentions-input__control textarea:focus-visible{
+/* .mentions-input__control textarea:focus-visible{
     border: 1px solid #CECECE !important;
     padding: 5px;
   }
@@ -206,6 +206,6 @@
     max-height: fit-content !important;
     padding: 50px !important;
     border: 1px solid #CECECE;
-  }
+  } */
    
   

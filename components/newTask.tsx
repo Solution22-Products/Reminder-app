@@ -151,45 +151,7 @@ export function NewTask() {
             </Select>
           </DrawerHeader>
           <div className="px-4 border-black rounded-[10px] text-center">
-            {/* <MentionInput
-              text={text}
-              setText={setText}
-              setTaskErrorMessage={setTaskErrorMessage}
-            /> */}
-            <ReactMentions/>
-            <p className="text-red-500 text-left my-1 text-sm">
-              {taskErrorMessage && "Please fill the message with mentions"}
-            </p>
-            <div className="w-full flex items-center gap-3 mt-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-1/2 justify-center text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    {/* <CalendarIcon /> */}
-                    {date ? format(date, "PPP") : <span>{format(new Date(), "PPP")}</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <Button
-                className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
-                onClick={handleCreateTask}
-              >
-                Create
-              </Button>
-            </div>
+            <ReactMentions />
           </div>
         </DrawerContent>
       </Drawer>

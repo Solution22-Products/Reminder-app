@@ -1,6 +1,5 @@
 "use client";
 import NavBar from "@/components/navBar";
-import { NewTask } from "@/components/newTask";
 import OverDue from "@/components/overDue";
 import TaskStatus from "@/components/taskStatus";
 import { useRouter } from "next/navigation";
@@ -69,7 +68,7 @@ const Home = () => {
                 ((userId?.access?.task !== true &&
                   userId?.access?.all === true) ||
                   userId?.access?.task === true))) && (
-                  <NewTask />
+                  <ReactMentions />
             )
           )
         }
@@ -78,7 +77,7 @@ const Home = () => {
         <OverDue/>
         <Spaces />
 
-<ReactMentions />
+{/* <ReactMentions /> */}
 
         <div className="flex justify-center items-center py-5 font-geist gap-1">
             <Image src={smile} alt="smile-img" width={300} height={300} className="w-[42px] h-[42px] grayscale" />

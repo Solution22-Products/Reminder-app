@@ -249,7 +249,7 @@ export function NewTask() {
   };
 
   return (
-    <div className="px-[18px]">
+    <div className="">
       <Drawer>
         <DrawerTrigger className="w-full bg-[#1A56DB] flex items-center justify-center text-white py-2 rounded-lg">
           <Image

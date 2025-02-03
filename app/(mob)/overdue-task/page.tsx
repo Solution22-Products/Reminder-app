@@ -112,7 +112,9 @@ const OverdueTaskPage = () => {
           .filter((task) => task && new Date(task.due_date).getTime() < now);
 
         setOverdueTasks(overdue);
+        console.log("overdue", filteredTasks);
         setAdminOverdueTasks(adminOverdue);
+        console.log("adminOverdue", adminOverdue);
         setTaskLoading(false);
       }
     } catch (err) {

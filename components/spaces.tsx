@@ -30,7 +30,7 @@ export default function Spaces() {
           console.error(taskError);
           return;
         }
-
+          console.log("taskdata",taskData);
         if (taskData) {
           const { data: teamData, error: teamError } = await supabase
             .from("spaces")
@@ -43,6 +43,7 @@ export default function Spaces() {
           }
 
           setAdminOverdueSpace(teamData);
+          console.log(teamData,"teamData")
 
           const filteredTasks = taskData
             .map((task) => {
@@ -72,7 +73,6 @@ export default function Spaces() {
 
     fetchSpace();
   }, [userId]);
-
   return (
     <main className="w-full px-[18px] py-[18px]">
       <div className="flex justify-between items-center">

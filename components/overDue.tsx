@@ -11,7 +11,11 @@ import { supabase } from "@/utils/supabase/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function OverDue() {
+interface Task {
+  taskTrigger : any;
+}
+
+const OverDue : React.FC<Task> = ({ taskTrigger }) => {
   const { userId } = useGlobalContext();
   const route = useRouter();
 
@@ -82,7 +86,7 @@ export default function OverDue() {
         setTaskLoading(false);
       }, 1000);
     }
-  }, [userId]);
+  }, [userId, taskTrigger]);
 
   return (
     <div className="px-[18px] font-geist">
@@ -169,3 +173,5 @@ export default function OverDue() {
   </div>
   );
 }
+
+export default OverDue;

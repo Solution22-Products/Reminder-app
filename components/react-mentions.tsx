@@ -32,11 +32,11 @@ interface MentionData {
   display: string;
 }
 
-// interface ReactProps {
-//   taskStatus: string;
-// }
+interface ReactProps {
+  setTaskTrigger : any;
+}
 
-const ReactMentions = () => {
+const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger }) => {
   const { userId } = useGlobalContext();
   const [spaces, setSpaces] = useState<MentionData[]>([]);
   const [teams, setTeams] = useState<MentionData[]>([]);
@@ -181,9 +181,9 @@ const ReactMentions = () => {
           setTeams(
             teamData.map((team) => ({ id: team.id, display: team.team_name }))
           );
-        console.log(
-          teamData.map((team) => ({ id: team.id, display: team.team_name }))
-        );
+        // console.log(
+        //   teamData.map((team) => ({ id: team.id, display: team.team_name }))
+        // );
       }
 
       const { data: teamMember, error: teamMemberError } = await supabase
@@ -299,9 +299,9 @@ const ReactMentions = () => {
           variant: "default",
           duration: 3000,
         });
+        setTaskTrigger(true);
         setDrawerOpen(false);
         setInputValue("");
-        console.log("Task created successfully:", taskData);
       } catch (err) {
         console.error("Error creating task:", err);
       }

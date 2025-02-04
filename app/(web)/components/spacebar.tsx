@@ -552,7 +552,6 @@ const fetchTeamsForTab = async (tabId : number) => {
   const getUserData = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue= e.target.value;
     setEmailInput(inputValue);
-    console.log("Input Value:", inputValue);
 
     try {
       // Fetch all users from the database
@@ -565,7 +564,7 @@ const fetchTeamsForTab = async (tabId : number) => {
 
       // Filter users whose email includes the input value
       const matchingUsers =
-        data?.filter((user) => user.email.includes(emailInput)) || [];
+      data?.filter((user) => user.role === "User" && user.email.includes(emailInput)) || [];
 
       if (matchingUsers.length > 0 || emailInput === "") {
         setMatchingUsers(matchingUsers);

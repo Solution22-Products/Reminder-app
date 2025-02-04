@@ -12,11 +12,11 @@ import { useGlobalContext } from "@/context/store";
 import ReactMentions from "@/components/react-mentions";
 
 
-
 const Home = () => {
   const route = useRouter();
   const { userId } = useGlobalContext();
   const [loading, setLoading] = useState(true);
+  const [taskTrigger, setTaskTrigger] = useState(false);
 
   useEffect(() => {
     const redirectToTask = () => {
@@ -68,13 +68,13 @@ const Home = () => {
                 ((userId?.access?.task !== true &&
                   userId?.access?.all === true) ||
                   userId?.access?.task === true))) && (
-                  <ReactMentions />
+                  <ReactMentions setTaskTrigger={setTaskTrigger} />
             )
           )
         }
         
         <TaskStatus />
-        <OverDue/>
+        <OverDue taskTrigger={taskTrigger} />
         <Spaces />
 
 {/* <ReactMentions /> */}

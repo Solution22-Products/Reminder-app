@@ -266,7 +266,7 @@ const OverdueTaskPage = () => {
         />
       </div>
 
-      <div className="w-full h-[calc(100vh-170px)] overflow-y-scroll playlist-scroll">
+      <div className="w-full h-[calc(100vh-170px)] top-0 block overflow-y-scroll playlist-scroll">
         {taskLoading ? (
           <OverdueListSkeleton />
         ) : adminOverdueTasks.length === 0 || overdueTasks.length === 0 ? (

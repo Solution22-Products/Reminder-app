@@ -137,7 +137,9 @@ const OverdueTaskPage = () => {
           .filter((task) => task && new Date(task.due_date).getTime() < now);
 
         setOverdueTasks(overdue);
+        console.log("overdue", filteredTasks);
         setAdminOverdueTasks(adminOverdue);
+        console.log("adminOverdue", adminOverdue);
         setTaskLoading(false);
       }
     } catch (err) {
@@ -387,7 +389,7 @@ const OverdueTaskPage = () => {
         </Select>
       </div>
 
-      <div className="w-full h-[calc(100vh-170px)] overflow-y-scroll playlist-scroll">
+      <div className="w-full h-[calc(100vh-170px)] top-0 block overflow-y-scroll playlist-scroll">
         {taskLoading ? (
           <OverdueListSkeleton />
         ) : adminOverdueTasks.length === 0 || overdueTasks.length === 0 ? (

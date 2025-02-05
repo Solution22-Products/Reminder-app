@@ -14,7 +14,7 @@ import { supabase } from "@/utils/supabase/supabaseClient";
 import { useGlobalContext } from "@/context/store";
 import { Check } from "lucide-react";
 import { Command, CommandList } from "@/components/ui/command";
-import { FiSearch } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { OverdueListSkeleton } from "@/app/(web)/components/skeleton-ui";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format,subDays,addDays } from "date-fns";
 import { Calendar, Calendar as CustomCalendar } from "@/components/ui/calendar";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -39,7 +39,7 @@ import { FaEllipsisH } from "react-icons/fa";
 import { NewTask } from "@/components/newTask";
 import smile from "@/public/images/smile-img.png";
 import { useSwipeable } from "react-swipeable";
-import { Trash2, CheckCircle } from "lucide-react";
+import { Trash2, CheckCircle, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 
@@ -101,8 +101,10 @@ const Task = () => {
   );
   const [swipedTaskId, setSwipedTaskId] = useState<number | null>(null);
   const [searchTasks, setSearchTasks] = useState("");
-  const[filteredTasksBySearch,setFilteredTasksBySearch]=useState<any[]>([]);
-  const[taskLoadingSearch,setTaskLoadingSearch]=useState(false)
+  const [filteredTasksBySearch, setFilteredTasksBySearch] = useState<any[]>([]);
+  const [taskLoadingSearch, setTaskLoadingSearch] = useState(false);
+  const [filterDate, setFilterDate] = useState<Date | null>(new Date());
+  const [hasUserSelectedDate, setHasUserSelectedDate] = useState(false);
 
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
@@ -134,7 +136,7 @@ const Task = () => {
       if (tasks) setAllTasks(tasks);
     };
     fetchData();
-    setTaskLoading(false)
+    setTaskLoading(false);
   }, []);
 
   useEffect(() => {
@@ -155,7 +157,7 @@ const Task = () => {
         matchedSpaceIds.has(space.id)
       );
       setUserSpace(matchedSpaces);
-      setTaskLoading(false)
+      setTaskLoading(false);
     }
   }, [allSpace, allTeams, allTasks, userId]);
 
@@ -190,30 +192,30 @@ const Task = () => {
     setSelectedTeam(filteredTeams[0]);
   }, [selectedSpace]);
 
-  useEffect(() => {
-    console.log("Selected Team:", selectedTeam);
+  // useEffect(() => {
+  //   console.log("Selected Team:", selectedTeam);
 
-    var filteredTasks = null;
-    if (userId?.role == "owner") {
-      filteredTasks = allTasks.filter(
-        (task: any) => task.team_id === selectedTeam?.id
-      );
+  //   var filteredTasks = null;
+  //   if (userId?.role == "owner") {
+  //     filteredTasks = allTasks.filter(
+  //       (task: any) => task.team_id === selectedTeam?.id
+  //     );
 
-      setUserTasks(filteredTasks);
-    } else {
-      filteredTasks = allTasks.filter(
-        (task: any) =>
-          selectedTeam?.id === task.team_id &&
-          task.mentions.some(
-            (mention: string) =>
-              mention === "@everyone" || mention === `@${userId?.entity_name}`
-          )
-      );
-      setUserTasks(filteredTasks);
-    }
-      setTaskLoading(false)
-    console.log("Filtered Tasks:", filteredTasks);
-  }, [selectedTeam, allTasks]);
+  //     setUserTasks(filteredTasks);
+  //   } else {
+  //     filteredTasks = allTasks.filter(
+  //       (task: any) =>
+  //         selectedTeam?.id === task.team_id &&
+  //         task.mentions.some(
+  //           (mention: string) =>
+  //             mention === "@everyone" || mention === `@${userId?.entity_name}`
+  //         )
+  //     );
+  //     setUserTasks(filteredTasks);
+  //   }
+  //   setTaskLoading(false);
+  //   console.log("Filtered Tasks:", filteredTasks);
+  // }, [selectedTeam, allTasks]);
   const handleUpdateTask = async (id: number) => {
     try {
       // Fetch the task data
@@ -256,7 +258,7 @@ const Task = () => {
       if (error) throw new Error("Failed to update the task");
 
       // Refresh task data and reset state
-    
+
       setOpenTaskId(null);
       setDate(undefined);
 
@@ -291,30 +293,106 @@ const Task = () => {
   const filteredTasks = selectedTaskStatus
     ? userTasks.filter((task) => task.task_status === selectedTaskStatus)
     : userTasks; // Show all if no filter is selected
-   
-    const handlers = useSwipeable({
-      onSwipedLeft: () => setSwipedTaskId(task.id),
-      onSwipedRight: () => setSwipedTaskId(null),
-      preventScrollOnSwipe: true,
-      trackMouse: true,
-    });
-    
-    const handleDeleteTask = async (taskId:string) =>{
-        console.log("task deleted");
-        const{data,error}=await supabase.from("tasks").update({is_deleted:true}).eq("id",taskId);
-    }
-    const handleCompleteTask=(taskId:string) =>
-    {
 
+  // const handlers = useSwipeable({
+  //   onSwipedLeft: () => setSwipedTaskId(taskId),
+  //   onSwipedRight: () => setSwipedTaskId(null),
+  //   preventScrollOnSwipe: true,
+  //   trackMouse: true,
+  // });
+
+  const handleDeleteTask = async (taskId: string) => {
+    console.log("task deleted");
+    const { data, error } = await supabase
+      .from("tasks")
+      .update({ is_deleted: true })
+      .eq("id", taskId);
+  };
+  const handleCompleteTask = (taskId: string) => {};
+  const handleSearchByTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.toLowerCase();
+    setSearchTasks(value);
+
+    if (!value.trim()) {
+      // If input is empty, don't show tasks
+      setFilteredTasksBySearch([]);
+      return;
     }
-    const handleSearchByTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value.toLowerCase();
-      setSearchTasks(value);
-      // const filtered = userTasks.filter((task) =>
-      //   task.mentions.toLowerCase().includes(value)
-      // );
-      setFilteredTasksBySearch(filteredTasks);
-    };
+
+    // Filter tasks based on role
+    const filtered = allTasks.filter((task: any) => {
+      const isTeamMatch = selectedTeam?.id === task.team_id;
+      const hasMentionMatch = task.mentions.some((mention: string) =>
+        mention.toLowerCase().includes(value)
+      );
+
+      if (userId?.role === "owner") {
+        return isTeamMatch && hasMentionMatch; // Owner: all tasks in the team with matching mentions
+      } else {
+        const isUserMentioned = task.mentions.includes(
+          `@${userId?.entity_name}`
+        );
+        return isTeamMatch && isUserMentioned && hasMentionMatch; // User: Only their own tasks
+      }
+    });
+
+    setFilteredTasksBySearch(filtered);
+  };
+  // Function to move date backward
+const handlePrevDate = () => {
+  setFilterDate((prevDate) => {
+    const newDate = prevDate ? subDays(prevDate, 1) : new Date();
+    setHasUserSelectedDate(true); // User interaction
+    return newDate;
+  });
+};
+
+// Function to move date forward
+const handleNextDate = () => {
+  setFilterDate((prevDate) => {
+    const newDate = prevDate ? addDays(prevDate, 1) : new Date();
+    setHasUserSelectedDate(true); // User interaction
+    return newDate;
+  });
+};
+useEffect(() => {
+  console.log("Selected Team:", selectedTeam);
+  console.log("Selected Date:", filterDate);
+  console.log("Has user selected a date?", hasUserSelectedDate);
+
+  if (!selectedTeam || !filterDate || !hasUserSelectedDate) {
+    setUserTasks([]); // Reset tasks if no team selected or user hasn't selected a date
+    return;
+  }
+
+  const formattedDate = format(filterDate, "yyyy-MM-dd"); // Format selected date
+
+  let filteredTasks = null;
+
+  if (userId?.role === "owner") {
+    // Owners see all tasks from the selected team for the selected created date
+    filteredTasks = allTasks.filter(
+      (task: any) =>
+        task.team_id === selectedTeam.id &&
+        format(new Date(task.created_date), "yyyy-MM-dd") === formattedDate
+    );
+  } else {
+    // Regular users see tasks assigned to them or "@everyone" for the selected created date
+    filteredTasks = allTasks.filter(
+      (task: any) =>
+        task.team_id === selectedTeam.id &&
+        format(new Date(task.created_date), "yyyy-MM-dd") === formattedDate &&
+        task.mentions.some(
+          (mention: string) =>
+            mention === "@everyone" || mention === `@${userId?.entity_name}`
+        )
+    );
+  }
+
+  setUserTasks(filteredTasks);
+  setTaskLoading(false);
+  console.log("Filtered Tasks:", filteredTasks);
+}, [selectedTeam, allTasks, filterDate, hasUserSelectedDate]); // Runs when team, tasks, or date changes
 
   return (
     <div className="flex flex-col bg-navbg px-[18px] space-y-[18px] pb-8">
@@ -408,53 +486,93 @@ const Task = () => {
           </DrawerContent>
         </Drawer>
         <div className="flex gap-2">
-        <div className="w-10 h-10">
-          <Sheet>
-            <SheetTrigger>
-            <FiSearch className="absolute mt-3 ml-[12px] text-zinc-500" />
-            <input
-              type="text"
-              className="w-10 h-10 justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white"
-           
-            />
-            </SheetTrigger>
-            <SheetContent className="w-full bg-mobbg p-4">
-          {/* Search Input */}
-          <div className="relative">
-            <FiSearch className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
-            <Input
-              placeholder="Search tasks..."
-              value={searchTasks}
-              onChange={handleSearchByTasks}
-              className="rounded-[10px] bg-white h-10 pl-10 w-full"
-            />
-          </div>
-
-          {/* Filtered Tasks List */}
-          <div className="mt-4">
-            {taskLoadingSearch ? (
-              <OverdueListSkeleton />
-            ) : filteredTasksBySearch.length === 0 ? (
-              <div className="w-full h-full flex justify-center items-center">
-                <p className="text-[#A6A6A7] text-lg font-medium">
-                  No Task Found
-                </p>
-              </div>
-            ) : (
-              filteredTasksBySearch.map((task: any, index: number) => (
-                <div
-                  key={index}
-                  className="p-3 bg-white border border-zinc-300 rounded-lg mb-2"
-                >
-                  <p className="text-sm font-semibold">{task.task_content}</p>
-                  <span className="text-xs text-gray-500">{task.mentions}</span>
+          <div className="w-10 h-10">
+            <Sheet>
+              <SheetTrigger>
+                <FiSearch className="absolute mt-3 ml-[12px] text-zinc-500" />
+                <input
+                  type="text"
+                  className="w-10 h-10 justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white"
+                />
+              </SheetTrigger>
+              <SheetContent className="w-full bg-mobbg p-4">
+                {/* Search Input */}
+                <div className="relative w-[90%]">
+                  <FiSearch className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
+                  <Input
+                    placeholder="Search ..."
+                    value={searchTasks}
+                    onChange={handleSearchByTasks}
+                    className="rounded-[10px] bg-white h-10 pl-10 w-full border-[#D4D4D8]"
+                  />
+                  <X
+                    size={14}
+                    className="absolute right-3 top-3 cursor-pointer w-4 h-5 text-zinc-500"
+                    onClick={() => setSearchTasks("")}
+                  />
                 </div>
-              ))
-            )}
-          </div>
-        </SheetContent>
+
+                {/* Filtered Tasks List */}
+                <div className="mt-4">
+                  {taskLoadingSearch ? (
+                    <OverdueListSkeleton />
+                  ) : filteredTasksBySearch.length === 0 ? (
+                    <div className="w-full h-full flex justify-center items-center">
+                      <p className="text-[#A6A6A7] text-lg font-medium">
+                        No Task Found
+                      </p>
+                    </div>
+                  ) : (
+                    filteredTasksBySearch.map((task: any, index: number) => (
+                      <div
+                        key={index}
+                        className="p-3 bg-white border border-zinc-300 rounded-lg mb-2"
+                      >
+                        <div className="w-full">
+                          <div className="flex justify-between items-center">
+                            <p className="text-[12px] text-[#A6A6A7] font-medium">
+                              {task.time}
+                            </p>
+                          </div>
+                          <p className="text-black mt-2 text-sm">
+                            <span className="font-semibold inline-block">
+                              {task.mentions}
+                            </span>{" "}
+                            {task.task_content}
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-center mt-3">
+                          <span className="text-red-500 font-bold text-[12px]">
+                            {new Date(task.due_date).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )}
+                          </span>
+                          <span
+                            className={`rounded-3xl text-sm font-semibold py-1.5 px-2 ${
+                              task.task_status === "todo"
+                                ? "text-reddish bg-[#F8DADA]"
+                                : task.task_status === "In progress"
+                                ? "text-[#EEA15A] bg-[#F8F0DA]"
+                                : task.task_status === "feedback"
+                                ? "text-[#142D57] bg-[#DEE9FC]"
+                                : "text-[#3FAD51] bg-[#E5F8DA]"
+                            }`}
+                          >
+                            {task.task_status}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </SheetContent>
             </Sheet>
-          </div>      
+          </div>
           <Drawer
             open={isFilterDrawerOpen}
             onOpenChange={setIsFilterDrawerOpen}
@@ -512,8 +630,45 @@ const Task = () => {
           </Drawer>
         </div>
       </div>
+      <div className="flex justify-between items-center">
+        {/* Title */}
+        <h4 className="font-semibold font-geist text-[18px] text-black  w-full">
+          All Task
+        </h4>
 
-  
+        {/* Controls Section */}
+        <div className="flex space-x-2">
+          {/* Left Arrow Button */}
+          <button className="flex w-10 h-10 justify-center items-center rounded-[10px] border border-zinc-300 bg-white" onClick={handlePrevDate}>
+            <FiChevronLeft className="w-6 h-6" />
+          </button>
+
+          {/* Date Picker */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex w-[110px] h-10 px-4 font-geist justify-center items-center rounded-[10px] border border-zinc-300 bg-white text-[#09090B]">
+            
+              {filterDate ? format(filterDate, "dd MMM yy") : "Select Date"}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar mode="single" 
+               selected={filterDate || undefined}
+               onSelect={(date) => {
+                 if (date) setFilterDate(date);
+                 setHasUserSelectedDate(true); // Mark user selection
+               }}
+              initialFocus />
+            </PopoverContent>
+          </Popover>
+
+          {/* Right Arrow Button */}
+          <button className="flex w-10 h-10 justify-center items-center rounded-[10px] border border-zinc-300 bg-white" onClick={handleNextDate}>
+            <FiChevronRight className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
+
       <div className="w-full h-[calc(100vh-170px)] overflow-y-scroll playlist-scroll">
         {taskLoading ? (
           <OverdueListSkeleton />
@@ -529,7 +684,7 @@ const Task = () => {
                 className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
                   swipedTaskId === task.id ? "-translate-x-20" : "translate-x-0"
                 }`}
->
+              >
                 <div className="w-full">
                   <div className="flex justify-between items-center">
                     <p className="text-[12px] text-[#A6A6A7] font-medium">
@@ -566,26 +721,27 @@ const Task = () => {
                   </span>
                 </div>
                 {/* Swipe Actions - Only visible when swiped */}
-            {swipedTaskId === task.id && (
-              <div className="absolute right-0 top-0 h-full flex gap-2">
-                {userId?.role === "owner" && (
-                  <button
-                    className="bg-red-500 text-white p-2 rounded-l-lg flex items-center justify-center w-12"
-                    onClick={() => handleDeleteTask(task.id)}
-                  >
-                    <Trash2 size={20} />
-                  </button>
+                {swipedTaskId === task.id && (
+                  <div className="absolute right-0 top-0 h-full flex gap-2">
+                    {userId?.role === "owner" && (
+                      <button
+                        className="bg-red-500 text-white p-2 rounded-l-lg flex items-center justify-center w-12"
+                        onClick={() => handleDeleteTask(task.id)}
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    )}
+                    {userId?.role === "owner" &&
+                      task.task_status !== "Completed" && (
+                        <button
+                          className="bg-green-500 text-white p-2 rounded-r-lg flex items-center justify-center w-12"
+                          onClick={() => handleCompleteTask(task.id)}
+                        >
+                          <CheckCircle size={20} />
+                        </button>
+                      )}
+                  </div>
                 )}
-                {userId?.role === "owner" && task.task_status !== "Completed" && (
-                  <button
-                    className="bg-green-500 text-white p-2 rounded-r-lg flex items-center justify-center w-12"
-                    onClick={() => handleCompleteTask(task.id)}
-                  >
-                    <CheckCircle size={20} />
-                  </button>
-                )}
-              </div>
-            )}
               </div>
 
               {openTaskId === task.id && (
@@ -686,12 +842,20 @@ const Task = () => {
             </div>
           ))
         )}
-         <div className="flex justify-center items-center py-5 font-geist gap-1">
-            <Image src={smile} alt="smile-img" width={300} height={300} className="w-[42px] h-[42px] grayscale" />
-            <p className="text-[#A7A7AB] text-[12px]">That's all for today !!!!</p>
+        <div className="flex justify-center items-center py-5 font-geist gap-1">
+          <Image
+            src={smile}
+            alt="smile-img"
+            width={300}
+            height={300}
+            className="w-[42px] h-[42px] grayscale"
+          />
+          <p className="text-[#A7A7AB] text-[12px]">
+            That's all for today !!!!
+          </p>
         </div>
       </div>
-     {/* <div className="fixed top-[300px ] z-50">
+      {/* <div className="fixed top-[300px ] z-50">
         <NewTask/>
         </div> */}
     </div>
@@ -699,8 +863,4 @@ const Task = () => {
   );
 };
 
-export default Task;   
-
-
-
-
+export default Task;

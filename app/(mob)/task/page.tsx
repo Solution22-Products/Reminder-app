@@ -42,6 +42,8 @@ import { useSwipeable } from "react-swipeable";
 import { Trash2, CheckCircle, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { MentionsInput } from "react-mentions";
+import ReactMentions from "@/components/react-mentions";
 
 const UsertaskStatusOptions = [
   {
@@ -103,9 +105,10 @@ const Task = () => {
   const [searchTasks, setSearchTasks] = useState("");
   const [filteredTasksBySearch, setFilteredTasksBySearch] = useState<any[]>([]);
   const [taskLoadingSearch, setTaskLoadingSearch] = useState(false);
-  const [filterDate, setFilterDate] = useState<Date | null>(new Date());
+  const [filterDate, setFilterDate] = useState<Date | null>(null);
+  const [popoverOpen, setPopoverOpen] = useState(false); // Controls calendar visibility
   const [hasUserSelectedDate, setHasUserSelectedDate] = useState(false);
-
+  const today =new Date();
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
@@ -190,7 +193,7 @@ const Task = () => {
     }
     setUserTeams(filteredTeams);
     setSelectedTeam(filteredTeams[0]);
-  }, [selectedSpace]);
+  }, [selectedSpace ]);
 
   // useEffect(() => {
   //   console.log("Selected Team:", selectedTeam);
@@ -290,10 +293,7 @@ const Task = () => {
     }
   };
   // Filter tasks based on selectedTaskStatus
-  const filteredTasks = selectedTaskStatus
-    ? userTasks.filter((task) => task.task_status === selectedTaskStatus)
-    : userTasks; // Show all if no filter is selected
-
+  const filteredTasks = userTasks.filter((task) => (selectedTaskStatus ? task.task_status === selectedTaskStatus : true));
   // const handlers = useSwipeable({
   //   onSwipedLeft: () => setSwipedTaskId(taskId),
   //   onSwipedRight: () => setSwipedTaskId(null),
@@ -339,63 +339,74 @@ const Task = () => {
     setFilteredTasksBySearch(filtered);
   };
   // Function to move date backward
-const handlePrevDate = () => {
-  setFilterDate((prevDate) => {
-    const newDate = prevDate ? subDays(prevDate, 1) : new Date();
-    setHasUserSelectedDate(true); // User interaction
-    return newDate;
-  });
-};
+  useEffect(() => {
+    if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
 
-// Function to move date forward
-const handleNextDate = () => {
-  setFilterDate((prevDate) => {
-    const newDate = prevDate ? addDays(prevDate, 1) : new Date();
-    setHasUserSelectedDate(true); // User interaction
-    return newDate;
-  });
-};
-useEffect(() => {
-  console.log("Selected Team:", selectedTeam);
-  console.log("Selected Date:", filterDate);
-  console.log("Has user selected a date?", hasUserSelectedDate);
+    setTaskLoading(true);
+    const selectedDate = format(filterDate, "yyyy-MM-dd");
+    let filteredTasks = [];
 
-  if (!selectedTeam || !filterDate || !hasUserSelectedDate) {
-    setUserTasks([]); // Reset tasks if no team selected or user hasn't selected a date
-    return;
-  }
+    if (userId?.role === "owner") {
+      filteredTasks = allTasks.filter(
+        (task) =>
+          task.team_id === selectedTeam.id &&
+          format(new Date(task.time), "yyyy-MM-dd") === selectedDate
+      );
+    } else {
+      filteredTasks = allTasks.filter(
+        (task) =>
+          task.team_id === selectedTeam.id &&
+          format(new Date(task.time), "yyyy-MM-dd") === selectedDate &&
+          task.mentions.some((mention:any) => mention === "@everyone" || mention === `@${userId?.entity_name}`)
+      );
+    }
 
-  const formattedDate = format(filterDate, "yyyy-MM-dd"); // Format selected date
+    setUserTasks(filteredTasks);
+    setTaskLoading(false);
+  }, [filterDate, hasUserSelectedDate]); // Only fetch tasks on date change
 
-  let filteredTasks = null;
+  // Fetch tasks immediately when team changes
+  useEffect(() => {
+    if (!selectedTeam) return;
 
-  if (userId?.role === "owner") {
-    // Owners see all tasks from the selected team for the selected created date
-    filteredTasks = allTasks.filter(
-      (task: any) =>
-        task.team_id === selectedTeam.id &&
-        format(new Date(task.created_date), "yyyy-MM-dd") === formattedDate
-    );
-  } else {
-    // Regular users see tasks assigned to them or "@everyone" for the selected created date
-    filteredTasks = allTasks.filter(
-      (task: any) =>
-        task.team_id === selectedTeam.id &&
-        format(new Date(task.created_date), "yyyy-MM-dd") === formattedDate &&
-        task.mentions.some(
-          (mention: string) =>
-            mention === "@everyone" || mention === `@${userId?.entity_name}`
-        )
-    );
-  }
+    setTaskLoading(true);
+    let filteredTasks = [];
 
-  setUserTasks(filteredTasks);
-  setTaskLoading(false);
-  console.log("Filtered Tasks:", filteredTasks);
-}, [selectedTeam, allTasks, filterDate, hasUserSelectedDate]); // Runs when team, tasks, or date changes
+    if (userId?.role === "owner") {
+      filteredTasks = allTasks.filter((task) => task.team_id === selectedTeam.id);
+    } else {
+      filteredTasks = allTasks.filter(
+        (task) =>
+          task.team_id === selectedTeam.id &&
+          task.mentions.some((mention:any) => mention === "@everyone" || mention === `@${userId?.entity_name}`)
+      );
+    }
+
+    setUserTasks(filteredTasks);
+    setTaskLoading(false);
+  }, [selectedTeam]); // Fetch only on team change
+
+  // Reset date to today but do not fetch tasks when space/team changes
+  useEffect(() => {
+    setFilterDate(today);
+    setHasUserSelectedDate(false);
+  }, [selectedTeam, selectedSpace]);
+
+  // Date selection functions
+  const handlePrevDate = () => {
+    setFilterDate((prev) => subDays(prev || today, 1));
+    setHasUserSelectedDate(true);
+  };
+
+  const handleNextDate = () => {
+    setFilterDate((prev) => addDays(prev || today, 1));
+    setHasUserSelectedDate(true);
+  };
 
   return (
-    <div className="flex flex-col bg-navbg px-[18px] space-y-[18px] pb-8">
+    <>
+   
+      <div className="flex flex-col bg-navbg px-[18px] h-[463px] space-y-[18px] ">
       <header className="flex justify-between items-center bg-navbg pt-[18px]">
         <Drawer open={isSpaceDrawerOpen} onOpenChange={setIsSpaceDrawerOpen}>
           <DrawerTrigger onClick={() => setIsSpaceDrawerOpen(true)}>
@@ -648,16 +659,17 @@ useEffect(() => {
             <PopoverTrigger asChild>
               <button className="flex w-[110px] h-10 px-4 font-geist justify-center items-center rounded-[10px] border border-zinc-300 bg-white text-[#09090B]">
             
-              {filterDate ? format(filterDate, "dd MMM yy") : "Select Date"}
+              {filterDate ? format(filterDate, "dd MMM yy") : format(new Date(), "dd MMM yy")}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
               <Calendar mode="single" 
-               selected={filterDate || undefined}
+               selected={filterDate ?? new Date()}
                onSelect={(date) => {
-                 if (date) setFilterDate(date);
-                 setHasUserSelectedDate(true); // Mark user selection
-               }}
+                setFilterDate(date || today);
+                setHasUserSelectedDate(true);
+                setPopoverOpen(false); // Close calendar
+              }}
               initialFocus />
             </PopoverContent>
           </Popover>
@@ -669,10 +681,10 @@ useEffect(() => {
         </div>
       </div>
 
-      <div className="w-full h-[calc(100vh-170px)] overflow-y-scroll playlist-scroll">
+      <div className="w-full  overflow-y-scroll playlist-scroll">
         {taskLoading ? (
           <OverdueListSkeleton />
-        ) : filteredTasks.length == 0 ? (
+        ) : filteredTasks .length == 0 ? (
           <div className="w-full h-full flex justify-center items-center">
             <p className="text-[#A6A6A7] text-lg font-medium">No Task Found</p>
           </div>
@@ -860,8 +872,27 @@ useEffect(() => {
       {/* <div className="fixed top-[300px ] z-50">
         <NewTask/>
         </div> */}
+       
+         
     </div>
-    // </div>
+    <div className="fixed "> {
+      (
+        (userId?.role === "owner" ||
+          (userId?.role === "User" &&
+            ((userId?.access?.task !== true &&
+              userId?.access?.all === true) ||
+              userId?.access?.task === true))) && (
+              <ReactMentions  setTaskTrigger={""}  />
+        )
+      )
+    } 
+    </div> 
+    </>
+
+   
+         
+   
+    
   );
 };
 

@@ -17,6 +17,11 @@ export default function Spaces() {
   const [overdueSpace, setOverdueSpace] = useState<any[]>([]);
   const [adminOverdueSpace, setAdminOverdueSpace] = useState<any[]>([]);
   const [selectedSpace, setSelectedSpace] = useState(null);
+
+  const [allSpace, setAllSpace] = useState<any[]>([]);
+  const [allTeams, setAllTeams] = useState<any[]>([]);
+  const [allTasks, setAllTasks] = useState<any[]>([]);
+  const [userSpace, setUserSpace] = useState<any[]>([]);
   
   useEffect(() => {
     const fetchSpace = async () => {
@@ -73,7 +78,52 @@ export default function Spaces() {
 
     fetchSpace();
   }, [userId]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: spaces } = await supabase
+        .from("spaces")
+        .select("*")
+        .eq("is_deleted", false);
+      const { data: teams } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("is_deleted", false);
+      const { data: tasks } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("is_deleted", false);
+
+      if (spaces) setAllSpace(spaces);
+      if (teams) setAllTeams(teams);
+      if (tasks) setAllTasks(tasks);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (userId?.role === "owner") {
+      setUserSpace([...allSpace]);
+    } else {
+      const matchedTeams = allTeams.filter((team) =>
+        team.members.some(
+          (member: any) =>
+            member.entity_name === (userId?.entity_name)
+        )
+      );
+      const matchedSpaceIds = new Set(
+        matchedTeams.map((team) => team.space_id)
+      );
+
+      const matchedSpaces = allSpace.filter((space) =>
+        matchedSpaceIds.has(space.id)
+      );
+      setUserSpace(matchedSpaces);
+    }
+  }, [allSpace, allTeams, userId]);
+
   return (
+    <>
     <main className="w-full px-[18px] py-[18px]">
       <div className="flex justify-between items-center">
         <h4 className="text-lg font-semibold font-geist text-black">Spaces</h4>
@@ -90,7 +140,7 @@ export default function Spaces() {
           </DrawerHeader>
           <div className="pb-7">
             <ul>
-              {(userId?.role === "owner" ? adminOverdueSpace : overdueSpace).map((spaceName, index) => (
+              {userSpace.map((spaceName, index) => (
                 <li
                 key={index}
                 className={`flex items-center justify-between text-black py-2 px-4 border-b border-[#D4D4D8] ${
@@ -113,8 +163,8 @@ export default function Spaces() {
       </div>
 
       <div className="flex flex-wrap justify-start items-center gap-2 mt-3">
-        {(overdueSpace.length > 0 || adminOverdueSpace.length > 0) ? (
-          (userId?.role === "owner" ? adminOverdueSpace : overdueSpace).map((spaceName, index) => (
+        {userSpace.length > 0 ? (
+          userSpace.map((spaceName, index) => (
             <p
               key={index}
               className="bg-[#294480] text-white py-2 px-4 rounded-lg"
@@ -127,5 +177,6 @@ export default function Spaces() {
         )}
       </div>
     </main>
+    </>
   );
 }

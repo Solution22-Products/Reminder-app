@@ -34,9 +34,10 @@ interface MentionData {
 
 interface ReactProps {
   setTaskTrigger : any;
+  setNotifyMobTrigger: any
 }
 
-const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger }) => {
+const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrigger }) => {
   const { userId } = useGlobalContext();
   const [spaces, setSpaces] = useState<MentionData[]>([]);
   const [teams, setTeams] = useState<MentionData[]>([]);
@@ -301,6 +302,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger }) => {
         });
         setTaskTrigger(true);
         setDrawerOpen(false);
+        setNotifyMobTrigger(true);
         setInputValue("");
       } catch (err) {
         console.error("Error creating task:", err);

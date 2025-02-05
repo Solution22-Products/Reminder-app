@@ -42,6 +42,7 @@ import { useSwipeable } from "react-swipeable";
 import { Trash2, CheckCircle, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import Footer from "../footer/page";
 
 const UsertaskStatusOptions = [
   {
@@ -146,7 +147,7 @@ const Task = () => {
       const matchedTeams = allTeams.filter((team) =>
         team.members.some(
           (member: any) =>
-            member.name === (userId?.username || userId?.entity_name)
+            member.entity_name === (userId?.entity_name)
         )
       );
       const matchedSpaceIds = new Set(
@@ -395,6 +396,7 @@ useEffect(() => {
 }, [selectedTeam, allTasks, filterDate, hasUserSelectedDate]); // Runs when team, tasks, or date changes
 
   return (
+    <>
     <div className="flex flex-col bg-navbg px-[18px] space-y-[18px] pb-8">
       <header className="flex justify-between items-center bg-navbg pt-[18px]">
         <Drawer open={isSpaceDrawerOpen} onOpenChange={setIsSpaceDrawerOpen}>
@@ -861,6 +863,8 @@ useEffect(() => {
         <NewTask/>
         </div> */}
     </div>
+    <Footer notifyMobTrigger={''}/>
+    </>
     // </div>
   );
 };

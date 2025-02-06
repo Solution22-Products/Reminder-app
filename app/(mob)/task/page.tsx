@@ -393,7 +393,7 @@ useEffect(() => {
   setUserTasks(filteredTasks);
   setTaskLoading(false);
   console.log("Filtered Tasks:", filteredTasks);
-}, [selectedTeam, allTasks, filterDate, hasUserSelectedDate]); // Runs when team, tasks, or date changes
+}, [selectedTeam, allTasks, filterDate, hasUserSelectedDate]);
 
   return (
     <>
@@ -863,7 +863,7 @@ useEffect(() => {
         <NewTask/>
         </div> */}
     </div>
-    <Footer notifyMobTrigger={''}/>
+    <Footer notifyMobTrigger = {''} setNotifyMobTrigger = {''} test = {''} setTest = {''}/>
     </>
     // </div>
   );

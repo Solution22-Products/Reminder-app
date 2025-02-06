@@ -31,7 +31,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format,subDays,addDays } from "date-fns";
+import { format, subDays, addDays } from "date-fns";
 import { Calendar, Calendar as CustomCalendar } from "@/components/ui/calendar";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -51,8 +51,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Skeleton } from "@/components/ui/skeleton";
 
+import Footer from "../footer/page";
 
 const UsertaskStatusOptions = [
   {
@@ -120,7 +120,7 @@ const Task = () => {
   const [selectOpen, setSelectOpen] = useState(false);
   const [profileLoader, setProfileLoader] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
-  const today =new Date();
+  const today = new Date();
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
@@ -160,8 +160,7 @@ const Task = () => {
     } else {
       const matchedTeams = allTeams.filter((team) =>
         team.members.some(
-          (member: any) =>
-            member.name === (userId?.username || userId?.entity_name)
+          (member: any) => member.entity_name === userId?.entity_name
         )
       );
       const matchedSpaceIds = new Set(
@@ -205,7 +204,7 @@ const Task = () => {
     }
     setUserTeams(filteredTeams);
     setSelectedTeam(filteredTeams[0]);
-  }, [selectedSpace ]);
+  }, [selectedSpace]);
 
   // useEffect(() => {
   //   console.log("Selected Team:", selectedTeam);
@@ -305,7 +304,9 @@ const Task = () => {
     }
   };
   // Filter tasks based on selectedTaskStatus
-  const filteredTasks = userTasks.filter((task) => (selectedTaskStatus ? task.task_status === selectedTaskStatus : true));
+  const filteredTasks = userTasks.filter((task) =>
+    selectedTaskStatus ? task.task_status === selectedTaskStatus : true
+  );
   // const handlers = useSwipeable({
   //   onSwipedLeft: () => setSwipedTaskId(taskId),
   //   onSwipedRight: () => setSwipedTaskId(null),
@@ -369,7 +370,10 @@ const Task = () => {
         (task) =>
           task.team_id === selectedTeam.id &&
           format(new Date(task.time), "yyyy-MM-dd") === selectedDate &&
-          task.mentions.some((mention:any) => mention === "@everyone" || mention === `@${userId?.entity_name}`)
+          task.mentions.some(
+            (mention: any) =>
+              mention === "@everyone" || mention === `@${userId?.entity_name}`
+          )
       );
     }
 
@@ -385,12 +389,17 @@ const Task = () => {
     let filteredTasks = [];
 
     if (userId?.role === "owner") {
-      filteredTasks = allTasks.filter((task) => task.team_id === selectedTeam.id);
+      filteredTasks = allTasks.filter(
+        (task) => task.team_id === selectedTeam.id
+      );
     } else {
       filteredTasks = allTasks.filter(
         (task) =>
           task.team_id === selectedTeam.id &&
-          task.mentions.some((mention:any) => mention === "@everyone" || mention === `@${userId?.entity_name}`)
+          task.mentions.some(
+            (mention: any) =>
+              mention === "@everyone" || mention === `@${userId?.entity_name}`
+          )
       );
     }
 
@@ -420,7 +429,6 @@ const Task = () => {
     await logout();
     setIsLoggingOut(false); // Hide loader after logout completes
   };
-
 
   return (
     <>
@@ -466,15 +474,10 @@ const Task = () => {
             </DrawerContent>
           </Drawer>
           <div className="w-[180px] h-6 text-center">
-            {selectedSpace ? (
-              <h2 className="text-lg font-bold font-gesit text-blackish text-center">
-                {selectedSpace.space_name}
-              </h2>
-            ) : (
-              <Skeleton className="w-[180px] h-6" />
-            )}
+            <h2 className="text-lg font-bold font-gesit text-blackish text-center">
+              {selectedSpace.space_name}
+            </h2>
           </div>
-          
           <Select open={selectOpen} onOpenChange={setSelectOpen}>
             <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
               <Image
@@ -1004,15 +1007,12 @@ const Task = () => {
         <NewTask/>
         </div> */}
       </div>
-      <div className="fixed ">
-        {" "}
-        {(userId?.role === "owner" ||
-          (userId?.role === "User" &&
-            ((userId?.access?.task !== true && userId?.access?.all === true) ||
-              userId?.access?.task === true))) && (
-          <ReactMentions setTaskTrigger={""} />
-        )}
-      </div>
+      <Footer
+        notifyMobTrigger={""}
+        setNotifyMobTrigger={""}
+        test={""}
+        setTest={""}
+      />
     </>
   );
 };

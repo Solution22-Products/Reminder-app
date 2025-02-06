@@ -51,6 +51,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const UsertaskStatusOptions = [
@@ -423,63 +424,69 @@ const Task = () => {
 
   return (
     <>
-   
       <div className="flex flex-col bg-navbg px-[18px] h-[463px] space-y-[18px] ">
-      <header className="flex justify-between items-center bg-navbg pt-[18px]">
-        <Drawer open={isSpaceDrawerOpen} onOpenChange={setIsSpaceDrawerOpen}>
-          <DrawerTrigger onClick={() => setIsSpaceDrawerOpen(true)}>
-            <div className="flex w-10 h-10 justify-center items-center rounded-[10px] border border-zinc-300 bg-bgwhite">
-              <RiBarChartHorizontalLine className="text-black h-6 w-6" />
-            </div>
-          </DrawerTrigger>
-          <DrawerContent>
-            <div className="mx-auto w-full max-w-sm">
-              <DrawerHeader className="text-left">
-                <DrawerTitle>Spaces</DrawerTitle>
-              </DrawerHeader>
-              <div className="pb-7">
-                <ul>
-                  {userSpace.map((space: any, index: number) => (
-                    <li
-                      key={index}
-                      role="button"
-                      tabIndex={0}
-                      className={`flex items-center justify-between text-black py-2 px-4 border-b border-[#D4D4D8] ${
-                        selectedSpace === space.space_name ? "bg-gray-100" : ""
-                      }`}
-                      onClick={() => {
-                        setSelectedSpace(space);
-                        setIsSpaceDrawerOpen(false);
-                      }}
-                    >
-                      <span>{space.space_name}</span>
-                      {selectedSpace?.space_name === space.space_name && (
-                        <Check className="text-black" size={18} />
-                      )}
-                    </li>
-                  ))}
-                </ul>
+        <header className="flex justify-between items-center bg-navbg pt-[18px]">
+          <Drawer open={isSpaceDrawerOpen} onOpenChange={setIsSpaceDrawerOpen}>
+            <DrawerTrigger onClick={() => setIsSpaceDrawerOpen(true)}>
+              <div className="flex w-10 h-10 justify-center items-center rounded-[10px] border border-zinc-300 bg-bgwhite">
+                <RiBarChartHorizontalLine className="text-black h-6 w-6" />
               </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
-        <div className="w-[180px] h-6 text-center">
-          <h2 className="text-lg font-bold font-gesit text-blackish text-center">
-            {selectedSpace.space_name}
-          </h2>
-        </div>
-        <Select open={selectOpen} onOpenChange={setSelectOpen}>
-        <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
-        <Image
-          src={userId?.profile_image || profile}
-          alt="Profile"
-          className="rounded-full"
-          width={40}
-          height={40}
-        />
-        </SelectTrigger>
-        <SelectContent className="w-[150px] py-3">
-            {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
+            </DrawerTrigger>
+            <DrawerContent>
+              <div className="mx-auto w-full max-w-sm">
+                <DrawerHeader className="text-left">
+                  <DrawerTitle>Spaces</DrawerTitle>
+                </DrawerHeader>
+                <div className="pb-7">
+                  <ul>
+                    {userSpace.map((space: any, index: number) => (
+                      <li
+                        key={index}
+                        role="button"
+                        tabIndex={0}
+                        className={`flex items-center justify-between text-black py-2 px-4 border-b border-[#D4D4D8] ${
+                          selectedSpace === space.space_name
+                            ? "bg-gray-100"
+                            : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedSpace(space);
+                          setIsSpaceDrawerOpen(false);
+                        }}
+                      >
+                        <span>{space.space_name}</span>
+                        {selectedSpace?.space_name === space.space_name && (
+                          <Check className="text-black" size={18} />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
+          <div className="w-[180px] h-6 text-center">
+            {selectedSpace ? (
+              <h2 className="text-lg font-bold font-gesit text-blackish text-center">
+                {selectedSpace.space_name}
+              </h2>
+            ) : (
+              <Skeleton className="w-[180px] h-6" />
+            )}
+          </div>
+          
+          <Select open={selectOpen} onOpenChange={setSelectOpen}>
+            <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
+              <Image
+                src={userId?.profile_image || profile}
+                alt="Profile"
+                className="rounded-full"
+                width={40}
+                height={40}
+              />
+            </SelectTrigger>
+            <SelectContent className="w-[150px] py-3">
+              {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
               <p
                 onClick={() => {
                   setProfileLoader(true);
@@ -515,492 +522,498 @@ const Task = () => {
                   "Your Profile"
                 )}
               </p>
-            {/* </div> */}
-            <form onSubmit={handleLogout} className="flex">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div
-                      typeof="submit"
-                      className="rounded bg-button_orange text-white cursor-pointer hover:bg-button_orange relative"
-                      style={isLoggingOut ? { pointerEvents: "none" } : {}}
-                    >
-                      {isLoggingOut ? (
-                        <div className="ml-20 flex items-center justify-center text-center">
-                          <svg
-                            className="animate-spin h-5 w-5"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="#1A56DB"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="#1A56DB"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-[#F05252] px-3 flex items-center gap-2 cursor-pointer">
-                          <LogOut size={20} />
-                          Sign Out
-                        </p>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Logout</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </form>
-          </SelectContent>
-
-        </Select>
-      </header>
-
-      <div className="flex justify-between">
-        <Drawer open={isTeamDrawerOpen} onOpenChange={setIsTeamDrawerOpen}>
-          <DrawerTrigger>
-            <div className="bg-white py-3 rounded-xl border h-[40px] w-full border-gray-300 px-[18px] flex items-center">
-              <p>{selectedTeam?.team_name}</p>
-              <RiArrowDropDownLine className="w-[18px] h-[18px] text-black ml-auto" />
-            </div>
-          </DrawerTrigger>
-          <DrawerContent className="h-[70%]">
-            <DrawerTitle className="pt-[18px] px-5">Teams</DrawerTitle>
-            <Command>
-              <CommandList>
-                <ul className="mt-4 space-y-3 py-5 px-5 pt-3">
-                  {userTeams.map((team: any, index: number) => (
-                    <li
-                      key={index}
-                      role="button"
-                      tabIndex={0}
-                      className={`flex items-center justify-between text-black py-2 px-4 border-b border-[#D4D4D8] ${
-                        selectedTeam === team.team_name ? "bg-gray-100" : ""
-                      }`}
-                      onClick={() => {
-                        setSelectedTeam(team);
-                        setIsTeamDrawerOpen(false);
-                      }}
-                    >
-                      <span>{team.team_name}</span>
-                      {selectedTeam?.team_name === team.team_name && (
-                        <Check className="text-black" size={18} />
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </CommandList>
-            </Command>
-          </DrawerContent>
-        </Drawer>
-        <div className="flex gap-2">
-          <div className="w-10 h-10">
-            <Sheet>
-              <SheetTrigger>
-                <FiSearch className="absolute mt-3 ml-[12px] text-zinc-500" />
-                <input
-                  type="text"
-                  className="w-10 h-10 justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white"
-                />
-              </SheetTrigger>
-              <SheetContent className="w-full bg-mobbg p-4">
-                {/* Search Input */}
-                <div className="relative w-[90%]">
-                  <FiSearch className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
-                  <Input
-                    placeholder="Search ..."
-                    value={searchTasks}
-                    onChange={handleSearchByTasks}
-                    className="rounded-[10px] bg-white h-10 pl-10 w-full border-[#D4D4D8]"
-                  />
-                  <X
-                    size={14}
-                    className="absolute right-3 top-3 cursor-pointer w-4 h-5 text-zinc-500"
-                    onClick={() => setSearchTasks("")}
-                  />
-                </div>
-
-                {/* Filtered Tasks List */}
-                <div className="mt-4">
-                  {taskLoadingSearch ? (
-                    <OverdueListSkeleton />
-                  ) : filteredTasksBySearch.length === 0 ? (
-                    <div className="w-full  flex justify-center items-center">
-                      <p className="text-[#A6A6A7] text-lg font-medium">
-                        No Task Found
-                      </p>
-                    </div>
-                  ) : (
-                    filteredTasksBySearch.map((task: any, index: number) => (
+              {/* </div> */}
+              <form onSubmit={handleLogout} className="flex">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
                       <div
-                        key={index}
-                        className="p-3 bg-white border border-zinc-300 rounded-lg mb-2"
+                        typeof="submit"
+                        className="rounded bg-button_orange text-white cursor-pointer hover:bg-button_orange relative"
+                        style={isLoggingOut ? { pointerEvents: "none" } : {}}
                       >
-                        <div className="w-full">
-                          <div className="flex justify-between items-center">
-                            <p className="text-[12px] text-[#A6A6A7] font-medium">
-                              {task.time}
-                            </p>
+                        {isLoggingOut ? (
+                          <div className="ml-20 flex items-center justify-center text-center">
+                            <svg
+                              className="animate-spin h-5 w-5"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="#1A56DB"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="#1A56DB"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
                           </div>
-                          <p className="text-black mt-2 text-sm">
-                            <span className="font-semibold inline-block">
-                              {task.mentions}
-                            </span>{" "}
-                            {task.task_content}
+                        ) : (
+                          <p className="text-sm text-[#F05252] px-3 flex items-center gap-2 cursor-pointer">
+                            <LogOut size={20} />
+                            Sign Out
                           </p>
-                        </div>
-                        <div className="flex justify-between items-center mt-3">
-                          <span className="text-red-500 font-bold text-[12px]">
-                            {new Date(task.due_date).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              }
-                            )}
-                          </span>
-                          <span
-                            className={`rounded-3xl text-sm font-semibold py-1.5 px-2 ${
-                              task.task_status === "todo"
-                                ? "text-reddish bg-[#F8DADA]"
-                                : task.task_status === "In progress"
-                                ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                : task.task_status === "feedback"
-                                ? "text-[#142D57] bg-[#DEE9FC]"
-                                : "text-[#3FAD51] bg-[#E5F8DA]"
-                            }`}
-                          >
-                            {task.task_status}
-                          </span>
-                        </div>
+                        )}
                       </div>
-                    ))
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-          <Drawer
-            open={isFilterDrawerOpen}
-            onOpenChange={setIsFilterDrawerOpen}
-          >
-            <DrawerTrigger onClick={() => setIsFilterDrawerOpen(true)}>
-              <div className="flex w-10 h-10  p-[8px_12px] justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white">
-                <FaEllipsisH className="h-4 w-6" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Logout</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </form>
+            </SelectContent>
+          </Select>
+        </header>
+
+        <div className="flex justify-between">
+          <Drawer open={isTeamDrawerOpen} onOpenChange={setIsTeamDrawerOpen}>
+            <DrawerTrigger>
+              <div className="bg-white py-3 rounded-xl border h-[40px] w-full border-gray-300 px-[18px] flex items-center">
+                <p>{selectedTeam?.team_name}</p>
+                <RiArrowDropDownLine className="w-[18px] h-[18px] text-black ml-auto" />
               </div>
             </DrawerTrigger>
             <DrawerContent className="h-[70%]">
-              <DrawerTitle className="pt-[18px] px-5">Filter</DrawerTitle>
+              <DrawerTitle className="pt-[18px] px-5">Teams</DrawerTitle>
               <Command>
                 <CommandList>
-                  <p> {userId?.role}</p>
-                  <ul className="mt-4 space-y-5 px-5 pt-3">
-                    {userId?.role === "owner"
-                      ? adminTaskStatusOptions.map((status) => (
-                          <li
-                            key={status.value}
-                            onClick={() => {
-                              setSelectedTaskStatus(status.value);
-                              setIsFilterDrawerOpen(false); // Close the drawer on selection
-                            }}
-                            className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
-                              selectedTaskStatus === status.value
-                                ? "text-zinc-950 font-semibold"
-                                : "text-blackish"
-                            }`}
-                          >
-                            {status.label}
-                          </li>
-                        ))
-                      : UsertaskStatusOptions.filter(
-                          (status) => status.value !== "Completed"
-                        ).map((status) => (
-                          <li
-                            key={status.value}
-                            onClick={() => {
-                              setSelectedTaskStatus(status.value);
-                              setIsFilterDrawerOpen(false); // Close the drawer on selection
-                            }}
-                            className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
-                              selectedTaskStatus === status.value
-                                ? "text-zinc-950 font-semibold"
-                                : "text-blackish"
-                            }`}
-                          >
-                            {status.label}
-                          </li>
-                        ))}
+                  <ul className="mt-4 space-y-3 py-5 px-5 pt-3">
+                    {userTeams.map((team: any, index: number) => (
+                      <li
+                        key={index}
+                        role="button"
+                        tabIndex={0}
+                        className={`flex items-center justify-between text-black py-2 px-4 border-b border-[#D4D4D8] ${
+                          selectedTeam === team.team_name ? "bg-gray-100" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedTeam(team);
+                          setIsTeamDrawerOpen(false);
+                        }}
+                      >
+                        <span>{team.team_name}</span>
+                        {selectedTeam?.team_name === team.team_name && (
+                          <Check className="text-black" size={18} />
+                        )}
+                      </li>
+                    ))}
                   </ul>
                 </CommandList>
               </Command>
             </DrawerContent>
           </Drawer>
-        </div>
-      </div>
-      <div className="flex justify-between items-center">
-        {/* Title */}
-        <h4 className="font-semibold font-geist text-[18px] text-black  w-full">
-          All Task
-        </h4>
-
-        {/* Controls Section */}
-        <div className="flex space-x-2">
-          {/* Left Arrow Button */}
-          <button className="flex w-10 h-10 justify-center items-center rounded-[10px] border border-zinc-300 bg-white" onClick={handlePrevDate}>
-            <FiChevronLeft className="w-6 h-6" />
-          </button>
-
-          {/* Date Picker */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="flex w-[110px] h-10 px-4 font-geist justify-center items-center rounded-[10px] border border-zinc-300 bg-white text-[#09090B]">
-            
-              {filterDate ? format(filterDate, "dd MMM yy") : format(new Date(), "dd MMM yy")}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar mode="single" 
-               selected={filterDate ?? new Date()}
-               onSelect={(date) => {
-                setFilterDate(date || today);
-                setHasUserSelectedDate(true);
-                setPopoverOpen(false); // Close calendar
-              }}
-              initialFocus />
-            </PopoverContent>
-          </Popover>
-
-          {/* Right Arrow Button */}
-          <button className="flex w-10 h-10 justify-center items-center rounded-[10px] border border-zinc-300 bg-white" onClick={handleNextDate}>
-            <FiChevronRight className="w-6 h-6" />
-          </button>
-        </div>
-      </div>
-
-      <div className="w-full  overflow-y-scroll playlist-scroll">
-        {taskLoading ? (
-          <OverdueListSkeleton />
-        ) : filteredTasks .length == 0 ? (
-          <div className="w-full h-full flex justify-center items-center">
-            <p className="text-[#A6A6A7] text-lg font-medium">No Task Found</p>
-          </div>
-        ) : (
-          filteredTasks.map((task: any, index: number) => (
-            <div key={index} 
-            // {...handlers} 
-            className="relative">
-              <div
-                onClick={() => setOpenTaskId(task.id)}
-                className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
-                  swipedTaskId === task.id ? "-translate-x-20" : "translate-x-0"
-                }`}
-              >
-                <div className="w-full">
-                  <div className="flex justify-between items-center">
-                    <p className="text-[12px] text-[#A6A6A7] font-medium">
-                      {task.time}
-                    </p>
+          <div className="flex gap-2">
+            <div className="w-10 h-10">
+              <Sheet>
+                <SheetTrigger>
+                  <FiSearch className="absolute mt-3 ml-[12px] text-zinc-500" />
+                  <input
+                    type="text"
+                    className="w-10 h-10 justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white"
+                  />
+                </SheetTrigger>
+                <SheetContent className="w-full bg-mobbg p-4">
+                  {/* Search Input */}
+                  <div className="relative w-[90%]">
+                    <FiSearch className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
+                    <Input
+                      placeholder="Search ..."
+                      value={searchTasks}
+                      onChange={handleSearchByTasks}
+                      className="rounded-[10px] bg-white h-10 pl-10 w-full border-[#D4D4D8]"
+                    />
+                    <X
+                      size={14}
+                      className="absolute right-3 top-3 cursor-pointer w-4 h-5 text-zinc-500"
+                      onClick={() => setSearchTasks("")}
+                    />
                   </div>
-                  <p className="text-black mt-2 text-sm">
-                    <span className="font-semibold inline-block">
-                      {task.mentions}
-                    </span>{" "}
-                    {task.task_content}
-                  </p>
-                </div>
-                <div className="flex justify-between items-center mt-3">
-                  <span className="text-red-500 font-bold text-[12px]">
-                    {new Date(task.due_date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </span>
-                  <span
-                    className={`rounded-3xl text-sm font-semibold py-1.5 px-2 ${
-                      task.task_status === "todo"
-                        ? "text-reddish bg-[#F8DADA]"
-                        : task.task_status === "In progress"
-                        ? "text-[#EEA15A] bg-[#F8F0DA]"
-                        : task.task_status === "feedback"
-                        ? "text-[#142D57] bg-[#DEE9FC]"
-                        : "text-[#3FAD51] bg-[#E5F8DA]"
-                    }`}
-                  >
-                    {task.task_status}
-                  </span>
-                </div>
-                {/* Swipe Actions - Only visible when swiped */}
-                {swipedTaskId === task.id && (
-                  <div className="absolute right-0 top-0 h-full flex gap-2">
-                    {userId?.role === "owner" && (
-                      <button
-                        className="bg-red-500 text-white p-2 rounded-l-lg flex items-center justify-center w-12"
-                        onClick={() => handleDeleteTask(task.id)}
-                      >
-                        <Trash2 size={20} />
-                      </button>
+
+                  {/* Filtered Tasks List */}
+                  <div className="mt-4">
+                    {taskLoadingSearch ? (
+                      <OverdueListSkeleton />
+                    ) : filteredTasksBySearch.length === 0 ? (
+                      <div className="w-full  flex justify-center items-center">
+                        <p className="text-[#A6A6A7] text-lg font-medium">
+                          No Task Found
+                        </p>
+                      </div>
+                    ) : (
+                      filteredTasksBySearch.map((task: any, index: number) => (
+                        <div
+                          key={index}
+                          className="p-3 bg-white border border-zinc-300 rounded-lg mb-2"
+                        >
+                          <div className="w-full">
+                            <div className="flex justify-between items-center">
+                              <p className="text-[12px] text-[#A6A6A7] font-medium">
+                                {task.time}
+                              </p>
+                            </div>
+                            <p className="text-black mt-2 text-sm">
+                              <span className="font-semibold inline-block">
+                                {task.mentions}
+                              </span>{" "}
+                              {task.task_content}
+                            </p>
+                          </div>
+                          <div className="flex justify-between items-center mt-3">
+                            <span className="text-red-500 font-bold text-[12px]">
+                              {new Date(task.due_date).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                }
+                              )}
+                            </span>
+                            <span
+                              className={`rounded-3xl text-sm font-semibold py-1.5 px-2 ${
+                                task.task_status === "todo"
+                                  ? "text-reddish bg-[#F8DADA]"
+                                  : task.task_status === "In progress"
+                                  ? "text-[#EEA15A] bg-[#F8F0DA]"
+                                  : task.task_status === "feedback"
+                                  ? "text-[#142D57] bg-[#DEE9FC]"
+                                  : "text-[#3FAD51] bg-[#E5F8DA]"
+                              }`}
+                            >
+                              {task.task_status}
+                            </span>
+                          </div>
+                        </div>
+                      ))
                     )}
-                    {userId?.role === "owner" &&
-                      task.task_status !== "Completed" && (
-                        <button
-                          className="bg-green-500 text-white p-2 rounded-r-lg flex items-center justify-center w-12"
-                          onClick={() => handleCompleteTask(task.id)}
-                        >
-                          <CheckCircle size={20} />
-                        </button>
-                      )}
                   </div>
-                )}
-              </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+            <Drawer
+              open={isFilterDrawerOpen}
+              onOpenChange={setIsFilterDrawerOpen}
+            >
+              <DrawerTrigger onClick={() => setIsFilterDrawerOpen(true)}>
+                <div className="flex w-10 h-10  p-[8px_12px] justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white">
+                  <FaEllipsisH className="h-4 w-6" />
+                </div>
+              </DrawerTrigger>
+              <DrawerContent className="h-[70%]">
+                <DrawerTitle className="pt-[18px] px-5">Filter</DrawerTitle>
+                <Command>
+                  <CommandList>
+                    <p> {userId?.role}</p>
+                    <ul className="mt-4 space-y-5 px-5 pt-3">
+                      {userId?.role === "owner"
+                        ? adminTaskStatusOptions.map((status) => (
+                            <li
+                              key={status.value}
+                              onClick={() => {
+                                setSelectedTaskStatus(status.value);
+                                setIsFilterDrawerOpen(false); // Close the drawer on selection
+                              }}
+                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
+                                selectedTaskStatus === status.value
+                                  ? "text-zinc-950 font-semibold"
+                                  : "text-blackish"
+                              }`}
+                            >
+                              {status.label}
+                            </li>
+                          ))
+                        : UsertaskStatusOptions.filter(
+                            (status) => status.value !== "Completed"
+                          ).map((status) => (
+                            <li
+                              key={status.value}
+                              onClick={() => {
+                                setSelectedTaskStatus(status.value);
+                                setIsFilterDrawerOpen(false); // Close the drawer on selection
+                              }}
+                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
+                                selectedTaskStatus === status.value
+                                  ? "text-zinc-950 font-semibold"
+                                  : "text-blackish"
+                              }`}
+                            >
+                              {status.label}
+                            </li>
+                          ))}
+                    </ul>
+                  </CommandList>
+                </Command>
+              </DrawerContent>
+            </Drawer>
+          </div>
+        </div>
+        <div className="flex justify-between items-center">
+          {/* Title */}
+          <h4 className="font-semibold font-geist text-[18px] text-black  w-full">
+            All Task
+          </h4>
 
-              {openTaskId === task.id && (
-                <Drawer
-                  open={openTaskId === null ? false : true}
-                  onOpenChange={() => setOpenTaskId(null)}
+          {/* Controls Section */}
+          <div className="flex space-x-2">
+            {/* Left Arrow Button */}
+            <button
+              className="flex w-10 h-10 justify-center items-center rounded-[10px] border border-zinc-300 bg-white"
+              onClick={handlePrevDate}
+            >
+              <FiChevronLeft className="w-6 h-6" />
+            </button>
+
+            {/* Date Picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="flex w-[110px] h-10 px-4 font-geist justify-center items-center rounded-[10px] border border-zinc-300 bg-white text-[#09090B]">
+                  {filterDate
+                    ? format(filterDate, "dd MMM yy")
+                    : format(new Date(), "dd MMM yy")}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={filterDate ?? new Date()}
+                  onSelect={(date) => {
+                    setFilterDate(date || today);
+                    setHasUserSelectedDate(true);
+                    setPopoverOpen(false); // Close calendar
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+
+            {/* Right Arrow Button */}
+            <button
+              className="flex w-10 h-10 justify-center items-center rounded-[10px] border border-zinc-300 bg-white"
+              onClick={handleNextDate}
+            >
+              <FiChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        <div className="w-full  overflow-y-scroll playlist-scroll">
+          {taskLoading ? (
+            <OverdueListSkeleton />
+          ) : filteredTasks.length == 0 ? (
+            <div className="w-full h-full flex justify-center items-center">
+              <p className="text-[#A6A6A7] text-lg font-medium">
+                No Task Found
+              </p>
+            </div>
+          ) : (
+            filteredTasks.map((task: any, index: number) => (
+              <div
+                key={index}
+                // {...handlers}
+                className="relative"
+              >
+                <div
+                  onClick={() => setOpenTaskId(task.id)}
+                  className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
+                    swipedTaskId === task.id
+                      ? "-translate-x-20"
+                      : "translate-x-0"
+                  }`}
                 >
-                  <DrawerContent className="px-4">
-                    <DrawerHeader className="flex justify-between items-center px-0">
-                      <DrawerTitle>Edit Task</DrawerTitle>
-                      {userId?.role === "User" &&
-                      task.task_status === "Completed" ? (
-                        <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
-                          Completed
-                        </Button>
-                      ) : (
-                        <Select
-                          defaultValue={task.task_status || "todo"}
-                          onValueChange={(value) => setTaskStatus(value)}
-                        >
-                          <SelectTrigger
-                            className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
-                              task.task_status === "todo"
-                                ? "text-reddish bg-[#F8DADA]"
-                                : task.task_status === "In progress"
-                                ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                : task.task_status === "feedback"
-                                ? "text-[#142D57] bg-[#DEE9FC]"
-                                : "text-[#3FAD51] bg-[#E5F8DA]"
-                            }`}
-                          >
-                            <SelectValue placeholder="status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="todo">To Do</SelectItem>
-                            <SelectItem value="In progress">
-                              In Progress
-                            </SelectItem>
-                            <SelectItem value="feedback">Feedback</SelectItem>
-                            {userId?.role === "owner" && (
-                              <SelectItem value="Completed">
-                                Completed
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </DrawerHeader>
-                    <div className="p-4 border border-[#CECECE] rounded-[10px]">
-                      <p>
-                        <span className="text-[#BA6A6A]">
-                          @{selectedSpace?.space_name}
-                        </span>{" "}
-                        <span className="text-[#5898C6]">
-                          @{selectedTeam?.team_name}
-                        </span>{" "}
-                        <span className="text-[#518A37]">{task.mentions}</span>{" "}
-                        {task.task_content}
+                  <div className="w-full">
+                    <div className="flex justify-between items-center">
+                      <p className="text-[12px] text-[#A6A6A7] font-medium">
+                        {task.time}
                       </p>
                     </div>
-                    <div className="w-full flex items-center gap-3 mt-5 mb-8">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-1/2 justify-center text-left font-normal",
-                              !date && "text-muted-foreground"
-                            )}
+                    <p className="text-black mt-2 text-sm">
+                      <span className="font-semibold inline-block">
+                        {task.mentions}
+                      </span>{" "}
+                      {task.task_content}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center mt-3">
+                    <span className="text-red-500 font-bold text-[12px]">
+                      {new Date(task.due_date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                    <span
+                      className={`rounded-3xl text-sm font-semibold py-1.5 px-2 ${
+                        task.task_status === "todo"
+                          ? "text-reddish bg-[#F8DADA]"
+                          : task.task_status === "In progress"
+                          ? "text-[#EEA15A] bg-[#F8F0DA]"
+                          : task.task_status === "feedback"
+                          ? "text-[#142D57] bg-[#DEE9FC]"
+                          : "text-[#3FAD51] bg-[#E5F8DA]"
+                      }`}
+                    >
+                      {task.task_status}
+                    </span>
+                  </div>
+                  {/* Swipe Actions - Only visible when swiped */}
+                  {swipedTaskId === task.id && (
+                    <div className="absolute right-0 top-0 h-full flex gap-2">
+                      {userId?.role === "owner" && (
+                        <button
+                          className="bg-red-500 text-white p-2 rounded-l-lg flex items-center justify-center w-12"
+                          onClick={() => handleDeleteTask(task.id)}
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      )}
+                      {userId?.role === "owner" &&
+                        task.task_status !== "Completed" && (
+                          <button
+                            className="bg-green-500 text-white p-2 rounded-r-lg flex items-center justify-center w-12"
+                            onClick={() => handleCompleteTask(task.id)}
                           >
-                            {/* <CalendarIcon /> */}
-                            {date ? (
-                              format(date, "PPP")
-                            ) : (
-                              <span>{task.due_date}</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={date}
-                            onSelect={setDate}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <Button
-                        className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
-                        onClick={() => handleUpdateTask(task.id)}
-                      >
-                        Update
-                      </Button>
+                            <CheckCircle size={20} />
+                          </button>
+                        )}
                     </div>
-                  </DrawerContent>
-                </Drawer>
-              )}
-            </div>
-          ))
-        )}
-        <div className="flex justify-center items-center py-5 font-geist gap-1">
-          <Image
-            src={smile}
-            alt="smile-img"
-            width={300}
-            height={300}
-            className="w-[42px] h-[42px] grayscale"
-          />
-          <p className="text-[#A7A7AB] text-[12px]">
-            That's all for today !!!!
-          </p>
+                  )}
+                </div>
+
+                {openTaskId === task.id && (
+                  <Drawer
+                    open={openTaskId === null ? false : true}
+                    onOpenChange={() => setOpenTaskId(null)}
+                  >
+                    <DrawerContent className="px-4">
+                      <DrawerHeader className="flex justify-between items-center px-0">
+                        <DrawerTitle>Edit Task</DrawerTitle>
+                        {userId?.role === "User" &&
+                        task.task_status === "Completed" ? (
+                          <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                            Completed
+                          </Button>
+                        ) : (
+                          <Select
+                            defaultValue={task.task_status || "todo"}
+                            onValueChange={(value) => setTaskStatus(value)}
+                          >
+                            <SelectTrigger
+                              className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                task.task_status === "todo"
+                                  ? "text-reddish bg-[#F8DADA]"
+                                  : task.task_status === "In progress"
+                                  ? "text-[#EEA15A] bg-[#F8F0DA]"
+                                  : task.task_status === "feedback"
+                                  ? "text-[#142D57] bg-[#DEE9FC]"
+                                  : "text-[#3FAD51] bg-[#E5F8DA]"
+                              }`}
+                            >
+                              <SelectValue placeholder="status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="todo">To Do</SelectItem>
+                              <SelectItem value="In progress">
+                                In Progress
+                              </SelectItem>
+                              <SelectItem value="feedback">Feedback</SelectItem>
+                              {userId?.role === "owner" && (
+                                <SelectItem value="Completed">
+                                  Completed
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </DrawerHeader>
+                      <div className="p-4 border border-[#CECECE] rounded-[10px]">
+                        <p>
+                          <span className="text-[#BA6A6A]">
+                            @{selectedSpace?.space_name}
+                          </span>{" "}
+                          <span className="text-[#5898C6]">
+                            @{selectedTeam?.team_name}
+                          </span>{" "}
+                          <span className="text-[#518A37]">
+                            {task.mentions}
+                          </span>{" "}
+                          {task.task_content}
+                        </p>
+                      </div>
+                      <div className="w-full flex items-center gap-3 mt-5 mb-8">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-1/2 justify-center text-left font-normal",
+                                !date && "text-muted-foreground"
+                              )}
+                            >
+                              {/* <CalendarIcon /> */}
+                              {date ? (
+                                format(date, "PPP")
+                              ) : (
+                                <span>{task.due_date}</span>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={date}
+                              onSelect={setDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <Button
+                          className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
+                          onClick={() => handleUpdateTask(task.id)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
+                )}
+              </div>
+            ))
+          )}
+          <div className="flex justify-center items-center py-5 font-geist gap-1">
+            <Image
+              src={smile}
+              alt="smile-img"
+              width={300}
+              height={300}
+              className="w-[42px] h-[42px] grayscale"
+            />
+            <p className="text-[#A7A7AB] text-[12px]">
+              That's all for today !!!!
+            </p>
+          </div>
         </div>
-      </div>
-      {/* <div className="fixed top-[300px ] z-50">
+        {/* <div className="fixed top-[300px ] z-50">
         <NewTask/>
         </div> */}
-       
-         
-    </div>
-    <div className="fixed "> {
-      (
-        (userId?.role === "owner" ||
+      </div>
+      <div className="fixed ">
+        {" "}
+        {(userId?.role === "owner" ||
           (userId?.role === "User" &&
-            ((userId?.access?.task !== true &&
-              userId?.access?.all === true) ||
+            ((userId?.access?.task !== true && userId?.access?.all === true) ||
               userId?.access?.task === true))) && (
-              <ReactMentions  setTaskTrigger={""}  />
-        )
-      )
-    } 
-    </div> 
+          <ReactMentions setTaskTrigger={""} />
+        )}
+      </div>
     </>
-
-   
-         
-   
-    
   );
 };
 

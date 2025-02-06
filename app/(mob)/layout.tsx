@@ -14,7 +14,7 @@ export default function MobileLayout({
         <Toaster />
         <div className="w-full flex">
           <div className="w-full">
-            <Footer/>
+            {/* <Footer/> */}
             <GlobalContextProvider>{children}</GlobalContextProvider>
           </div>
         </div>

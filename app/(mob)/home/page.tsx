@@ -10,6 +10,7 @@ import Image from "next/image";
 import smile from "@/public/images/smile-img.png";
 import { useGlobalContext } from "@/context/store";
 import ReactMentions from "@/components/react-mentions";
+import Footer from "../footer/page";
 
 
 const Home = () => {
@@ -17,6 +18,7 @@ const Home = () => {
   const { userId } = useGlobalContext();
   const [loading, setLoading] = useState(true);
   const [taskTrigger, setTaskTrigger] = useState(false);
+  const [notifyMobTrigger, setNotifyMobTrigger] = useState(false);
 
   useEffect(() => {
     const redirectToTask = () => {
@@ -68,7 +70,7 @@ const Home = () => {
                 ((userId?.access?.task !== true &&
                   userId?.access?.all === true) ||
                   userId?.access?.task === true))) && (
-                  <ReactMentions setTaskTrigger={setTaskTrigger} />
+                  <ReactMentions setTaskTrigger={setTaskTrigger} setNotifyMobTrigger={setNotifyMobTrigger} />
             )
           )
         }
@@ -83,6 +85,8 @@ const Home = () => {
             <Image src={smile} alt="smile-img" width={300} height={300} className="w-[42px] h-[42px] grayscale" />
             <p className="text-[#A7A7AB] text-[12px]">That's all for today !!!!</p>
         </div>
+
+        <Footer notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}/>
         </>
      );
 }

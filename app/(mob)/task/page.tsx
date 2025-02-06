@@ -52,6 +52,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import Footer from "../footer/page";
 
 const UsertaskStatusOptions = [
   {
@@ -160,7 +161,7 @@ const Task = () => {
       const matchedTeams = allTeams.filter((team) =>
         team.members.some(
           (member: any) =>
-            member.name === (userId?.username || userId?.entity_name)
+            member.entity_name === (userId?.entity_name)
         )
       );
       const matchedSpaceIds = new Set(
@@ -422,6 +423,8 @@ const Task = () => {
 
 
   return (
+    <>
+    <div className="flex flex-col bg-navbg px-[18px] space-y-[18px] pb-8">
     <>
    
       <div className="flex flex-col bg-navbg px-[18px] h-[463px] space-y-[18px] ">
@@ -983,7 +986,10 @@ const Task = () => {
        
          
     </div>
-    <div className="fixed "> {
+    <Footer notifyMobTrigger = {''} setNotifyMobTrigger = {''} test = {''} setTest = {''}/>
+    </>
+    // </div>
+    {/* <div className="fixed "> {
       (
         (userId?.role === "owner" ||
           (userId?.role === "User" &&
@@ -994,7 +1000,7 @@ const Task = () => {
         )
       )
     } 
-    </div> 
+    </div>  */}
     </>
 
    

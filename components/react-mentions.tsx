@@ -55,6 +55,59 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [taskStatus, setTaskStatus] = useState<string>("todo");
 
+  const [allSpace, setAllSpace] = useState<any[]>([]);
+  const [allTeams, setAllTeams] = useState<any[]>([]);
+  const [allTasks, setAllTasks] = useState<any[]>([]);
+  const [userSpace, setUserSpace] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: spaces } = await supabase
+        .from("spaces")
+        .select("*")
+        .eq("is_deleted", false);
+      const { data: teams } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("is_deleted", false);
+      const { data: tasks } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("is_deleted", false);
+
+      if (spaces) setAllSpace(spaces);
+      if (teams) setAllTeams(teams);
+      if (tasks) setAllTasks(tasks);
+
+      setAdminOverdueTasks(spaces as any);
+      console.log(spaces, " spaces");
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (userId?.role === "owner") {
+      setUserSpace([...allSpace]);
+    } else {
+      const matchedTeams = allTeams.filter((team) =>
+        team.members.some(
+          (member: any) =>
+            member.entity_name === (userId?.entity_name)
+        )
+      );
+      console.log(matchedTeams, " matchedTeams");
+      const matchedSpaceIds = new Set(
+        matchedTeams.map((team) => team.space_id)
+      );
+
+      const matchedSpaces = allSpace.filter((space) =>
+        matchedSpaceIds.has(space.id)
+      );
+      setUserSpace(matchedSpaces);
+      console.log(matchedSpaces, " matchedSpaces");
+    }
+  }, [allSpace, allTeams, userId]);
+
   const fetchTaskData = async () => {
     try {
       const { data: taskData, error: taskError } = await supabase
@@ -78,7 +131,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
 
       if (spaceError) throw spaceError;
 
-      setAdminOverdueTasks(spaceData);
+      // setAdminOverdueTasks(spaceData);
       const filteredTasks = taskData
         .map((task) => {
           const team = teamData.find((team) => team.id === task.team_id);

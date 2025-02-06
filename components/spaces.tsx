@@ -11,8 +11,10 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Check } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Spaces() {
+  const route = useRouter();
   const { userId } = useGlobalContext();
   const [overdueSpace, setOverdueSpace] = useState<any[]>([]);
   const [adminOverdueSpace, setAdminOverdueSpace] = useState<any[]>([]);
@@ -101,6 +103,10 @@ export default function Spaces() {
     fetchData();
   }, []);
 
+  const handleSpaceClick = (spaceId: any) => {
+    route.push(`/test-task/${spaceId}`);
+  };
+
   useEffect(() => {
     if (userId?.role === "owner") {
       setUserSpace([...allSpace]);
@@ -168,6 +174,7 @@ export default function Spaces() {
             <p
               key={index}
               className="bg-[#294480] text-white py-2 px-4 rounded-lg"
+              onClick={() => handleSpaceClick(spaceName.id)}
             >
               {spaceName.space_name}
             </p>

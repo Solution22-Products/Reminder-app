@@ -86,7 +86,9 @@ const Home = () => {
             <p className="text-[#A7A7AB] text-[12px]">That's all for today !!!!</p>
         </div>
 
-        <Footer notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}/>
+        <Footer
+        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+         />
         </>
      );
 }

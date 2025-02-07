@@ -1020,11 +1020,8 @@ const Task = (props: Props) => {
       </div>
       <AddTaskMentions selectedTeam={selectedTeam} selectedSpace={selectedSpace} />
       <Footer
-        notifyMobTrigger={""}
-        setNotifyMobTrigger={""}
-        test={""}
-        setTest={""}
-      />
+        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+         />
     </>
   );
 };

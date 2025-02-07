@@ -20,12 +20,12 @@ import { logout } from "@/app/(signin-setup)/logout/action";
 import { OverdueListSkeleton } from "@/app/(web)/components/skeleton-ui";
 import Footer from "../footer/page";
 
-interface NotificationProps {
-  notifyMobTrigger : any
-  setNotifyMobTrigger : any
-}
+// interface NotificationProps {
+//   notifyMobTrigger : any
+//   setNotifyMobTrigger : any
+// }
 
-const Notification : React.FC<NotificationProps> = ({notifyMobTrigger, setNotifyMobTrigger}) => {
+const Notification = () => {
   const { userId} = useGlobalContext();
   const route = useRouter();
   const [unNotifiedTask, setUnNotifiedTask] = useState<any[]>([]);
@@ -142,7 +142,7 @@ const Notification : React.FC<NotificationProps> = ({notifyMobTrigger, setNotify
 
   useEffect(() => {
     getUnnotifiedTasks();
-  }, [userId, notifyMobTrigger, test]);
+  }, [userId, test]);
 
   useEffect(() => {
     const redirectToTask = () => {
@@ -376,7 +376,9 @@ const Notification : React.FC<NotificationProps> = ({notifyMobTrigger, setNotify
 
       
     </div>
-    <Footer notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {test} setTest = {setTest}/>
+    <Footer
+        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+         />
     </>
   );
 };

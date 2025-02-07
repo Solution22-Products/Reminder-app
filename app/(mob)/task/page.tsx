@@ -1007,12 +1007,15 @@ const Task = () => {
         <NewTask/>
         </div> */}
       </div>
-      <Footer
+      {/* <Footer
         notifyMobTrigger={""}
         setNotifyMobTrigger={""}
         test={""}
         setTest={""}
-      />
+      /> */}
+      <Footer
+        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+         />
     </>
   );
 };

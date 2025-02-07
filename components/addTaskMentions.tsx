@@ -151,7 +151,7 @@ const AddTaskMentions: React.FC<ReactProps> = ({
 
   useEffect(() => {
     // fetchTaskData();
-  }, [userId]);
+  }, [userId, selectedTeam, selectedSpace]);
 
   return (
     <div className="container mx-auto p-4">

@@ -1,0 +1,22 @@
+.mentions-input{
+    /* min-height: 50px !important; */
+    height: 50px !important;
+    /* max-height: fit-content !important; */
+    padding: 50px !important;
+    border: 1px solid #CECECE;
+    cursor: pointer !important;
+  }
+  .mentions-input__input{
+    padding: 5px;
+  }
+  .mentions-input__suggestions{
+    padding: 10px;
+    max-height: 100px !important;
+    overflow-y: scroll !important;
+    position: absolute !important;
+    left: 20px !important;
+    top: 15px !important;
+    text-align: left !important;
+    border: 1px solid #CECECE;
+    border-radius: 6px;
+  }

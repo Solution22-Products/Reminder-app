@@ -33,7 +33,6 @@ import {
 import { cn } from "@/lib/utils";
 import { format, subDays, addDays } from "date-fns";
 import { Calendar, Calendar as CustomCalendar } from "@/components/ui/calendar";
-import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 import { FaEllipsisH } from "react-icons/fa";
 // import { NewTask } from "@/components/newTask";
@@ -52,6 +51,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Footer from "../../footer/page";
+import AddTaskMentions from "@/components/addTaskMentions";
+import './style.css';
 
 const UsertaskStatusOptions = [
   {
@@ -612,6 +613,7 @@ const Task = (props: Props) => {
                         onClick={() => {
                           setSelectedTeam(team);
                           setIsTeamDrawerOpen(false);
+                          console.log(team.id);
                         }}
                       >
                         <span>{team.team_name}</span>
@@ -1016,7 +1018,7 @@ const Task = (props: Props) => {
           </div>
         </div>
       </div>
-      <ReactMentions setTaskTrigger={""} setNotifyMobTrigger={""} />
+      <AddTaskMentions selectedTeam={selectedTeam} selectedSpace={selectedSpace} />
       <Footer
         notifyMobTrigger={""}
         setNotifyMobTrigger={""}

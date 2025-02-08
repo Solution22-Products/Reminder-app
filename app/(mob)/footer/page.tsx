@@ -103,7 +103,7 @@ const Footer : React.FC<props> = ({notifyMobTrigger, setNotifyMobTrigger, test, 
     },[userId, notifyMobTrigger, test]);
 
   return (
-    <footer className="fixed  z-[1] bottom-0 w-full h-[83px] pt-[12px] pb-[30px] px-[18px] border border-gray-300 bg-white flex justify-around items-center">
+    <footer className="fixed  z-[1] bottom-0 w-full h-[83px] pt-[12px] pb-[30px]  border border-gray-300 bg-white flex justify-around items-center">
       {/* Home Link */}
 
       <div

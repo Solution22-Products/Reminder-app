@@ -35,18 +35,22 @@ interface MentionData {
 interface ReactProps {
   selectedTeam: any;
   selectedSpace: any;
+  inputValue : any;
+  setInputValue : any
 }
 
 const AddTaskMentions: React.FC<ReactProps> = ({
   selectedTeam,
   selectedSpace,
+  inputValue,
+  setInputValue
 }) => {
   const { userId } = useGlobalContext();
   const [employees, setEmployees] = useState<MentionData[]>([]);
-  const [inputValue, setInputValue] = useState("");
-  const [mentionedItems, setMentionedItems] = useState<
-    { id: number; name: string }[]
-  >([]);
+  
+  // const [mentionedItems, setMentionedItems] = useState<
+  //   { id: number; name: string }[]
+  // >([]);
   const [memberData, setMemberData] = useState<string[]>([]);
   const [date, setDate] = React.useState<Date>();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -79,9 +83,9 @@ const AddTaskMentions: React.FC<ReactProps> = ({
     console.log(event.target.value);
     fetchTeamsAndTasks();
 
-    if (event.target.value === "") {
-      setMentionedItems([]);
-    }
+    // if (event.target.value === "") {
+    //   setMentionedItems([]);
+    // }
   };
 
   const formatDate = (date: Date): string => {
@@ -101,7 +105,7 @@ const AddTaskMentions: React.FC<ReactProps> = ({
   const handleCreateTask = async () => {
     const mentions = inputValue.match(/@\[([^\]]+)\]/g) || [];
     const formattedMentions = mentions.map(
-      (m) => `@${m.replace(/[@\[\]]/g, "")}`
+      (m : string) => `@${m.replace(/[@\[\]]/g, "")}`
     );
 
     const plainText = inputValue.replace(/@\[[^\]]*\]|\([^\)]*\)/g, "").trim();
@@ -151,7 +155,7 @@ const AddTaskMentions: React.FC<ReactProps> = ({
 
   useEffect(() => {
     // fetchTaskData();
-  }, [userId, selectedTeam, selectedSpace]);
+  }, [userId, selectedTeam, selectedSpace, inputValue]);
 
   return (
     <div className="container mx-auto p-4">
@@ -162,7 +166,7 @@ const AddTaskMentions: React.FC<ReactProps> = ({
             alt="Add Icon"
             width={20}
             height={20}
-            className="mr-2 text-bgwhite "
+            className="mr-2 text-bgwhite"
           />
           <p className="text-bgwhite font-geist text-[16px] font-semibold">
             {" "}

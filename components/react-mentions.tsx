@@ -62,28 +62,57 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: spaces } = await supabase
-        .from("spaces")
-        .select("*")
-        .eq("is_deleted", false);
-      const { data: teams } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("is_deleted", false);
-      const { data: tasks } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("is_deleted", false);
-
-      if (spaces) setAllSpace(spaces);
-      if (teams) setAllTeams(teams);
-      if (tasks) setAllTasks(tasks);
-
-      setAdminOverdueTasks(spaces as any);
-      console.log(spaces, " spaces");
+      try {
+        const [{ data: spaces }, { data: teams }, { data: tasks }] = await Promise.all([
+          supabase.from("spaces").select("*").eq("is_deleted", false),
+          supabase.from("teams").select("*").eq("is_deleted", false),
+          supabase.from("tasks").select("*").eq("is_deleted", false),
+        ]);
+  
+        if (spaces) setAllSpace(spaces);
+        if (teams) setAllTeams(teams);
+        if (tasks) setAllTasks(tasks);
+        setAdminOverdueTasks(spaces ?? []);
+  
+        if (!userId) return;
+  
+        const matchedTeams = teams?.filter((team) =>
+          team.members.some((member : any) => member.entity_name === userId.entity_name)
+        ) || [];
+  
+        const matchedSpaceIds = new Set(matchedTeams.map((team) => team.space_id));
+        const matchedSpaces = spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
+        setUserSpace(matchedSpaces);
+  
+        const getUniqueItems = (array : any, key : any) => {
+          const seen = new Set();
+          return array.filter((item : any) => {
+            const value = item[key];
+            if (!seen.has(value)) {
+              seen.add(value);
+              return true;
+            }
+            return false;
+          });
+        };
+  
+        const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
+        if (sourceData) {
+          setSpaces(
+            getUniqueItems(
+              sourceData.map((space) => ({ id: space.id, display: space.space_name })),
+              "display"
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
+  
     fetchData();
-  }, []);
+  }, [userId]);
+  
 
   useEffect(() => {
     if (userId?.role === "owner") {
@@ -108,109 +137,109 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
     }
   }, [allSpace, allTeams, userId]);
 
-  const fetchTaskData = async () => {
-    try {
-      const { data: taskData, error: taskError } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("is_deleted", false);
+  // const fetchTaskData = async () => {
+  //   try {
+  //     const { data: taskData, error: taskError } = await supabase
+  //       .from("tasks")
+  //       .select("*")
+  //       .eq("is_deleted", false);
 
-      if (taskError) throw taskError;
+  //     if (taskError) throw taskError;
 
-      const { data: teamData, error: teamError } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("is_deleted", false);
+  //     const { data: teamData, error: teamError } = await supabase
+  //       .from("teams")
+  //       .select("*")
+  //       .eq("is_deleted", false);
 
-      if (teamError) throw teamError;
+  //     if (teamError) throw teamError;
 
-      const { data: spaceData, error: spaceError } = await supabase
-        .from("spaces")
-        .select("*")
-        .eq("is_deleted", false);
+  //     const { data: spaceData, error: spaceError } = await supabase
+  //       .from("spaces")
+  //       .select("*")
+  //       .eq("is_deleted", false);
 
-      if (spaceError) throw spaceError;
+  //     if (spaceError) throw spaceError;
 
-      // setAdminOverdueTasks(spaceData);
-      const filteredTasks = taskData
-        .map((task) => {
-          const team = teamData.find((team) => team.id === task.team_id);
-          const space = spaceData.find((space) => space.id === task.space_id);
-          if (
-            team &&
-            space &&
-            task.mentions?.includes(`@${userId?.entity_name}`)
-          ) {
-            return {
-              ...task,
-              team_name: team.team_name,
-              space_name: space.space_name,
-            };
-          }
-          return null;
-        })
-        .filter(Boolean);
+  //     // setAdminOverdueTasks(spaceData);
+  //     const filteredTasks = taskData
+  //       .map((task) => {
+  //         const team = teamData.find((team) => team.id === task.team_id);
+  //         const space = spaceData.find((space) => space.id === task.space_id);
+  //         if (
+  //           team &&
+  //           space &&
+  //           task.mentions?.includes(`@${userId?.entity_name}`)
+  //         ) {
+  //           return {
+  //             ...task,
+  //             team_name: team.team_name,
+  //             space_name: space.space_name,
+  //           };
+  //         }
+  //         return null;
+  //       })
+  //       .filter(Boolean);
 
-      // const overdue = filteredTasks.filter((task) =>
-      //   new Date(task.due_date).getTime()
-      // );
-      const adminOverdue = taskData.map((task) => {
-        const team = teamData.find((team) => team.id === task.team_id);
-        const space = spaceData.find((space) => space.id === task.space_id);
-        return team && space
-          ? {
-              ...task,
-              team_name: team.team_name,
-              space_name: space.space_name,
-            }
-          : null;
-      });
+  //     // const overdue = filteredTasks.filter((task) =>
+  //     //   new Date(task.due_date).getTime()
+  //     // );
+  //     const adminOverdue = taskData.map((task) => {
+  //       const team = teamData.find((team) => team.id === task.team_id);
+  //       const space = spaceData.find((space) => space.id === task.space_id);
+  //       return team && space
+  //         ? {
+  //             ...task,
+  //             team_name: team.team_name,
+  //             space_name: space.space_name,
+  //           }
+  //         : null;
+  //     });
 
-      // setOverdueTasks(filteredTasks);
-      // setAdminOverdueTasks(adminOverdue);
-      setTaskLoading(false);
+  //     // setOverdueTasks(filteredTasks);
+  //     // setAdminOverdueTasks(adminOverdue);
+  //     setTaskLoading(false);
 
-      const getUniqueItems = <T, K extends keyof T>(array: T[], key: K) => {
-        const seen = new Set();
-        return array.filter((item) => {
-          const value = item[key];
-          if (!seen.has(value)) {
-            seen.add(value);
-            return true;
-          }
-          return false;
-        });
-      };
+  //     const getUniqueItems = <T, K extends keyof T>(array: T[], key: K) => {
+  //       const seen = new Set();
+  //       return array.filter((item) => {
+  //         const value = item[key];
+  //         if (!seen.has(value)) {
+  //           seen.add(value);
+  //           return true;
+  //         }
+  //         return false;
+  //       });
+  //     };
 
-      const sourceData =
-        userId?.role === "owner" ? adminOverdueTasks : filteredTasks;
+  //     const sourceData =
+  //       userId?.role === "owner" ? adminOverdueTasks : filteredTasks;
 
-      setSpaces(
-        getUniqueItems(
-          sourceData.map((space) =>
-            userId?.role === "User"
-              ? { id: space.space_id, display: space.space_name }
-              : { id: space.id, display: space.space_name }
-          ),
-          "display"
-        )
-      );
+  //     setSpaces(
+  //       getUniqueItems(
+  //         sourceData.map((space) =>
+  //           userId?.role === "User"
+  //             ? { id: space.space_id, display: space.space_name }
+  //             : { id: space.id, display: space.space_name }
+  //         ),
+  //         "display"
+  //       )
+  //     );
 
-      setTeams(
-        getUniqueItems(
-          sourceData.map((team) =>
-            userId?.role === "User"
-              ? { id: team.team_id, display: team.team_name }
-              : { id: team.id, display: team.team_name }
-          ),
-          "display"
-        )
-      );
-    } catch (err) {
-      console.error("Error fetching task data:", err);
-      setTaskLoading(false);
-    }
-  };
+  //     setTeams(
+  //       getUniqueItems(
+  //         sourceData.map((team) =>
+  //           userId?.role === "User"
+  //             ? { id: team.team_id, display: team.team_name }
+  //             : { id: team.id, display: team.team_name }
+  //         ),
+  //         "display"
+  //       )
+  //     );
+  //   } catch (err) {
+  //     console.error("Error fetching task data:", err);
+  //     setTaskLoading(false);
+  //   }
+  // };
 
   const extractMentions = (value: string) => {
     const mentionRegex = /@\[(.*?)\]\((\d+)\)/g;
@@ -231,7 +260,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
 
       if (teamError) throw teamError;
       {
-        userId?.role === "owner" &&
+        // userId?.role === "owner" &&
           setTeams(
             teamData.map((team) => ({ id: team.id, display: team.team_name }))
           );
@@ -363,7 +392,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
   };
 
   useEffect(() => {
-    fetchTaskData();
+    // fetchTaskData();
   }, [userId]);
 
   return (

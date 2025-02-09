@@ -41,7 +41,7 @@ import { useSwipeable } from "react-swipeable";
 import { Trash2, CheckCircle, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import { MentionsInput } from "react-mentions";
+import { Mention, MentionsInput } from "react-mentions";
 import ReactMentions from "@/components/react-mentions";
 import { logout } from "@/app/(signin-setup)/logout/action";
 import {
@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/tooltip";
 import Footer from "../../footer/page";
 import AddTaskMentions from "@/components/addTaskMentions";
-import './style.css';
+import "./style.css";
 
 const UsertaskStatusOptions = [
   {
@@ -93,6 +93,10 @@ interface Props {
     id: string;
   };
 }
+interface MentionData {
+  id: number;
+  display: string;
+}
 
 const Task = (props: Props) => {
   const { id } = props.params;
@@ -128,6 +132,104 @@ const Task = (props: Props) => {
   const [profileLoader, setProfileLoader] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const today = new Date();
+  const [inputValue, setInputValue] = useState("");
+  const [mentionedItems, setMentionedItems] = useState<
+    { id: number; name: string }[]
+  >([]);
+  const [adminOverdueTasks, setAdminOverdueTasks] = useState<any[]>([]);
+  const [spaces, setSpaces] = useState<MentionData[]>([]);
+  const [teams, setTeams] = useState<MentionData[]>([]);
+  const [ids, setIds] = useState<string[]>([]);
+  const [mentionLevel, setMentionLevel] = useState<number>(1);
+  const [memberData, setMemberData] = useState<string[]>([]);
+  const [employees, setEmployees] = useState<MentionData[]>([]);
+  const [editTaskInputValue, setEditTaskInputValue] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [{ data: spaces }, { data: teams }, { data: tasks }] =
+          await Promise.all([
+            supabase.from("spaces").select("*").eq("is_deleted", false),
+            supabase.from("teams").select("*").eq("is_deleted", false),
+            supabase.from("tasks").select("*").eq("is_deleted", false),
+          ]);
+
+        if (spaces) setAllSpace(spaces);
+        if (teams) setAllTeams(teams);
+        if (tasks) setAllTasks(tasks);
+        setAdminOverdueTasks(spaces ?? []);
+
+        if (!userId) return;
+
+        const matchedTeams =
+          teams?.filter((team) =>
+            team.members.some(
+              (member: any) => member.entity_name === userId.entity_name
+            )
+          ) || [];
+
+        const matchedSpaceIds = new Set(
+          matchedTeams.map((team) => team.space_id)
+        );
+        const matchedSpaces =
+          spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
+        setUserSpace(matchedSpaces);
+
+        const getUniqueItems = (array: any, key: any) => {
+          const seen = new Set();
+          return array.filter((item: any) => {
+            const value = item[key];
+            if (!seen.has(value)) {
+              seen.add(value);
+              return true;
+            }
+            return false;
+          });
+        };
+
+        const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
+        if (sourceData) {
+          setSpaces(
+            getUniqueItems(
+              sourceData.map((space) => ({
+                id: space.id,
+                display: space.space_name,
+              })),
+              "display"
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId?.role === "owner") {
+      setUserSpace([...allSpace]);
+    } else {
+      const matchedTeams = allTeams.filter((team) =>
+        team.members.some(
+          (member: any) => member.entity_name === userId?.entity_name
+        )
+      );
+      console.log(matchedTeams, " matchedTeams");
+      const matchedSpaceIds = new Set(
+        matchedTeams.map((team) => team.space_id)
+      );
+
+      const matchedSpaces = allSpace.filter((space) =>
+        matchedSpaceIds.has(space.id)
+      );
+      setUserSpace(matchedSpaces);
+      console.log(matchedSpaces, " matchedSpaces");
+    }
+  }, [allSpace, allTeams, userId]);
+
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
@@ -253,6 +355,7 @@ const Task = (props: Props) => {
   //   setTaskLoading(false);
   //   console.log("Filtered Tasks:", filteredTasks);
   // }, [selectedTeam, allTasks]);
+
   const handleUpdateTask = async (id: number) => {
     try {
       // Fetch the task data
@@ -442,6 +545,109 @@ const Task = (props: Props) => {
     setIsLoggingOut(false); // Hide loader after logout completes
   };
 
+  useEffect(() => {
+    const redirectToTask = () => {
+      router.push("/test-task/" + id);
+    };
+
+    if (window.innerWidth <= 992) {
+      redirectToTask();
+      // setLoading(false);
+      return;
+    } else {
+      router.push("/dashboard");
+      // setLoading(false);
+    }
+  }, [router]);
+
+  const extractMentions = (value: string) => {
+    const mentionRegex = /@\[(.*?)\]\((\d+)\)/g;
+    const matches = Array.from(value.matchAll(mentionRegex)).map((match) => ({
+      name: match[1],
+      id: parseInt(match[2], 10),
+    }));
+    setMentionedItems(matches);
+  };
+
+  const fetchTeamsAndTasks = async (teamId?: string) => {
+    try {
+      const { data: teamData, error: teamError } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("space_id", teamId)
+        .eq("is_deleted", false);
+
+      if (teamError) throw teamError;
+      {
+        // userId?.role === "owner" &&
+        setTeams(
+          teamData.map((team) => ({ id: team.id, display: team.team_name }))
+        );
+        // console.log(
+        //   teamData.map((team) => ({ id: team.id, display: team.team_name }))
+        // );
+      }
+
+      const { data: teamMember, error: teamMemberError } = await supabase
+        .from("teams")
+        .select("members")
+        .eq("id", ids[1])
+        .eq("is_deleted", false);
+
+      if (teamMemberError) throw teamMemberError;
+
+      // Ensure data exists and map correctly
+      if (teamMember && teamMember.length > 0) {
+        const members = teamMember.flatMap((team) => team.members);
+
+        setMemberData(members);
+        setEmployees(
+          members.map((member) => ({ id: member.id, display: member.name }))
+        );
+        console.log(
+          members.map((member) => ({ id: member.id, name: member.name }))
+        );
+      } else {
+        console.log("No members found.");
+      }
+
+      console.log(ids[1]);
+    } catch (err) {
+      console.error("Error fetching task data:", err);
+      setTaskLoading(false);
+    }
+  };
+
+  const handleChange = (event: { target: { value: string } }) => {
+    const newValue = event.target.value;
+    setEditTaskInputValue(newValue);
+    extractMentions(newValue);
+    console.log(newValue);
+
+    // Extract mention IDs
+    const mentionIds = Array.from(
+      newValue.matchAll(/\(([^)]+)\)/g),
+      (match) => match[1]
+    );
+
+    setIds(mentionIds);
+    mentionIds.forEach((id) => fetchTeamsAndTasks(id));
+
+    if (newValue === "") {
+      setMentionedItems([]);
+      setMentionLevel(1);
+    }
+  };
+
+  useEffect(() => {
+    if (openTaskId) {
+      const task = filteredTasks.find((task) => task.id === openTaskId);
+      if (task) {
+        setEditTaskInputValue(task.mentions + " " + task.task_content);
+      }
+    }
+  }, [openTaskId, filteredTasks]);
+
   return (
     <>
       <div className="flex flex-col bg-navbg px-[18px] h-[470px] space-y-[18px] ">
@@ -472,6 +678,7 @@ const Task = (props: Props) => {
                         onClick={() => {
                           setSelectedSpace(space);
                           setIsSpaceDrawerOpen(false);
+                          setInputValue("");
                           console.log(space);
                         }}
                       >
@@ -613,6 +820,7 @@ const Task = (props: Props) => {
                         onClick={() => {
                           setSelectedTeam(team);
                           setIsTeamDrawerOpen(false);
+                          setInputValue("");
                           console.log(team.id);
                         }}
                       >
@@ -859,7 +1067,13 @@ const Task = (props: Props) => {
                     </p>
                   </div>
                   <div className="flex justify-between items-center mt-3">
-                    <span className="text-red-500 font-bold text-[12px]">
+                    <span
+                      className={`font-bold text-[12px] ${
+                        new Date(task.due_date) >= new Date()
+                          ? "text-[#14B8A6]"
+                          : "text-red-500"
+                      }`}
+                    >
                       {new Date(task.due_date).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "short",
@@ -906,8 +1120,11 @@ const Task = (props: Props) => {
 
                 {openTaskId === task.id && (
                   <Drawer
-                    open={openTaskId === null ? false : true}
-                    onOpenChange={() => setOpenTaskId(null)}
+                    open={openTaskId !== null}
+                    onOpenChange={() => {
+                      setOpenTaskId(null);
+                      // setEditTaskInputValue(task.mentions + task.task_content);
+                    }}
                   >
                     <DrawerContent className="px-4">
                       <DrawerHeader className="flex justify-between items-center px-0">
@@ -950,53 +1167,63 @@ const Task = (props: Props) => {
                           </Select>
                         )}
                       </DrawerHeader>
-                      <div className="p-4 border border-[#CECECE] rounded-[10px]">
-                        <p>
-                          <span className="text-[#BA6A6A]">
-                            @{selectedSpace?.space_name}
-                          </span>{" "}
-                          <span className="text-[#5898C6]">
-                            @{selectedTeam?.team_name}
-                          </span>{" "}
-                          <span className="text-[#518A37]">
-                            {task.mentions}
-                          </span>{" "}
-                          {task.task_content}
-                        </p>
-                      </div>
-                      <div className="w-full flex items-center gap-3 mt-5 mb-8">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-1/2 justify-center text-left font-normal",
-                                !date && "text-muted-foreground"
-                              )}
-                            >
-                              {/* <CalendarIcon /> */}
-                              {date ? (
-                                format(date, "PPP")
-                              ) : (
-                                <span>{task.due_date}</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={date}
-                              onSelect={setDate}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <Button
-                          className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
-                          onClick={() => handleUpdateTask(task.id)}
+                      <div className=" border-black rounded-[10px] text-center">
+                        <MentionsInput
+                          value={editTaskInputValue}
+                          onChange={(e) => {handleChange(e)}}
+                          placeholder="Type @ to mention spaces, teams, or employees"
+                          className="mentions-input border p-2 rounded-md w-full"
                         >
-                          Update
-                        </Button>
+                          <Mention
+                            trigger="@"
+                            data={
+                              mentionLevel === 1
+                                ? spaces
+                                : mentionLevel === 2
+                                ? teams
+                                : employees
+                            }
+                            displayTransform={(id, display) => `@${display} `}
+                            onAdd={() => setMentionLevel((prev) => prev + 1)}
+                          />
+                        </MentionsInput>
+
+                        <div className="w-full flex items-center gap-3 my-4">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-1/2 justify-center text-left font-normal",
+                                  !date && "text-muted-foreground"
+                                )}
+                              >
+                                {date ? (
+                                  format(date, "PPP")
+                                ) : (
+                                  <span>{task.due_date}</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={date || new Date()}
+                                onSelect={setDate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <Button
+                            className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
+                            onClick={() => handleUpdateTask(task.id)}
+                          >
+                            Update
+                          </Button>
+                        </div>
                       </div>
                     </DrawerContent>
                   </Drawer>
@@ -1018,10 +1245,15 @@ const Task = (props: Props) => {
           </div>
         </div>
       </div>
-      <AddTaskMentions selectedTeam={selectedTeam} selectedSpace={selectedSpace} />
+      <AddTaskMentions
+        selectedTeam={selectedTeam}
+        selectedSpace={selectedSpace}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+      />
       <Footer
-        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
-         />
+      //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+      />
     </>
   );
 };

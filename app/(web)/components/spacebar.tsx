@@ -1,9 +1,6 @@
 "use client";
 import { supabase } from "@/utils/supabase/supabaseClient";
-import {
-  EllipsisVertical,
-  Trash2,
-} from "lucide-react";
+import { EllipsisVertical, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,7 +60,7 @@ interface Team {
 
 const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
   const route = useRouter();
-  const [teams,setTeams] = useState<Team[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTab, setActiveTab] = useState<number | null>(null);
   const [userTab, setUserTab] = useState<Tab[]>([]);
@@ -85,7 +82,7 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
   const [spaceDetails, setSpaceDetails] = useState<any[]>([]);
   const [spaceName, setSpaceName] = useState<string>("");
   const [deletedSpace, setDeletedSpace] = useState<any[]>([]);
-  const [searchValue, setSearchValue] = useState<string >("");
+  const [searchValue, setSearchValue] = useState<string>("");
   const [teamFilterValue, setTeamFilterValue] = useState<string | null>("");
   const [taskStatusFilterValue, setTaskStatusFilterValue] = useState<
     string | null
@@ -98,9 +95,9 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
   const [spaceLength, setSpaceLength] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [activeTabName, setActiveTabName] = useState();
-  const [activeTabNameUser, setActiveTabNameUser] = useState('');
+  const [activeTabNameUser, setActiveTabNameUser] = useState("");
 
-  const {setSelectedActiveTab} = useGlobalContext();
+  const { setSelectedActiveTab } = useGlobalContext();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [adminSpaceLength, setAdminSpaceLength] = useState<number>(0);
   const [notificationTrigger, setNotificationTrigger] = useState(false);
@@ -162,12 +159,12 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
       const newTabs1 = userTab.filter((tab) => tab.id !== id);
       setTabs(newTabs);
       setUserTab(newTabs1);
-      console.log(newTabs1,"new Tabs ");
+      console.log(newTabs1, "new Tabs ");
       if (newTabs.length > 0 || newTabs1.length > 0) {
         setActiveTab(newTabs[0].id);
         setUserActiveTab(newTabs1[0].id);
-         // Set first tab as active if any left
-         fetchTeams();
+        // Set first tab as active if any left
+        fetchTeams();
       } else {
         setActiveTab(null);
         setUserActiveTab(null);
@@ -201,8 +198,8 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
     const { data, error } = await supabase
       .from("spaces")
       .select("*")
-      .eq("is_deleted", false)
-      // .order("created_at", { ascending: true });
+      .eq("is_deleted", false);
+    // .order("created_at", { ascending: true });
     if (error) {
       console.error("Error fetching spaces:", error);
       return;
@@ -212,7 +209,7 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
       setTabs(data);
       setUserTab(data);
       if (data.length > 0) {
-        setAdminSpaceLength(data.length)
+        setAdminSpaceLength(data.length);
         setActiveTab(data[0].id); // Set the first tab as active initially
         setUserActiveTab(data[0].id);
         setActiveTabName(data[0].space_name);
@@ -262,103 +259,103 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
     fetchTeams(); // Fetch teams for the selected space
     setActiveTabName(data?.space_name);
     setActiveTabNameUser(data?.space_name);
-    setSelectedActiveTab(id)
-    // fetchTeams(); 
+    setSelectedActiveTab(id);
+    setSpaceId(id);
+    // fetchTeams();
     // fetchTeamData()
   };
 
   // Add a new tab in database and UI
   const addNewTab = async () => {
     try {
-        // Insert a new space and retrieve the data
-        const { data, error } = await supabase
-            .from("spaces")
-            .insert({ space_name: "New Space", is_deleted: false })
-            .select();
-
-        // Handle errors from the insertion
-        if (error) {
-            console.error("Error adding new space:", error);
-            return;
-        }
-
-        // Proceed if data is successfully returned
-        if (data && data[0]) {
-            const newTab = data[0];
-
-            // Update tabs and set the last added tab as the active tab
-            setTabs((prevTabs) => {
-                const updatedTabs = [...prevTabs, newTab];
-                setActiveTab(newTab.id); // Activate the newly added tab
-                setSelectedActiveTab(newTab.id)
-                console.log(newTab.id, " newTab.id");
-                return updatedTabs;
-            });
-
-            // Update user tabs and set the last added user tab as active
-            setUserTab((prevUserTabs) => {
-                const updatedUserTabs = [...prevUserTabs, newTab];
-                setUserActiveTab(newTab.id); // Activate the newly added user tab
-                setSelectedActiveTab(newTab.id)
-                console.log(newTab.id, " user newTab.id");
-                return updatedUserTabs;
-            });
-            handleTabClick(newTab.id);
-
-            const { data: spaceId, error: spaceError } = await supabase
-                .from("teams")
-                .select("*")
-                .eq("is_deleted", false)
-                .eq("space_id", newTab.id);
-
-            if (spaceError) {
-                console.error("Error fetching space:", spaceError);
-                return;
-            }
-
-            if (spaceId) {
-                // setSpaceDetails(spaceId);
-                console.log(spaceId, " spaceId");
-            }
-        }
-    } catch (err) {
-        console.error("Unexpected error while adding a new tab:", err);
-    }
-};
-
-const fetchTeamsForTab = async (tabId : number) => {
-  console.log(tabId, " tabId");
-  try {
+      // Insert a new space and retrieve the data
       const { data, error } = await supabase
+        .from("spaces")
+        .insert({ space_name: "New Space", is_deleted: false })
+        .select();
+
+      // Handle errors from the insertion
+      if (error) {
+        console.error("Error adding new space:", error);
+        return;
+      }
+
+      // Proceed if data is successfully returned
+      if (data && data[0]) {
+        const newTab = data[0];
+
+        // Update tabs and set the last added tab as the active tab
+        setTabs((prevTabs) => {
+          const updatedTabs = [...prevTabs, newTab];
+          setActiveTab(newTab.id); // Activate the newly added tab
+          setSelectedActiveTab(newTab.id);
+          setSpaceId(newTab.id);
+          console.log(newTab.id, " newTab.id");
+          return updatedTabs;
+        });
+
+        // Update user tabs and set the last added user tab as active
+        setUserTab((prevUserTabs) => {
+          const updatedUserTabs = [...prevUserTabs, newTab];
+          setUserActiveTab(newTab.id); // Activate the newly added user tab
+          setSelectedActiveTab(newTab.id);
+          console.log(newTab.id, " user newTab.id");
+          return updatedUserTabs;
+        });
+        handleTabClick(newTab.id);
+
+        const { data: spaceId, error: spaceError } = await supabase
           .from("teams")
-          .select("*") // Fetch all columns
+          .select("*")
           .eq("is_deleted", false)
-          .eq("space_id", tabId)
-          .single(); // Filter by space_id matching the tabId
+          .eq("space_id", newTab.id);
+
+        if (spaceError) {
+          console.error("Error fetching space:", spaceError);
+          return;
+        }
+
+        if (spaceId) {
+          // setSpaceDetails(spaceId);
+          console.log(spaceId, " spaceId");
+        }
+      }
+    } catch (err) {
+      console.error("Unexpected error while adding a new tab:", err);
+    }
+  };
+
+  const fetchTeamsForTab = async (tabId: number) => {
+    console.log(tabId, " tabId");
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .select("*") // Fetch all columns
+        .eq("is_deleted", false)
+        .eq("space_id", tabId)
+        .single(); // Filter by space_id matching the tabId
 
       if (error) {
-          console.error("Error fetching teams for tab:", error);
-          return;
+        console.error("Error fetching teams for tab:", error);
+        return;
       }
 
       // Handle case where no rows are returned
       if (!data || data.length === 0) {
         setSpaceName(data.space_name);
-          console.log(`No teams found for tab with ID: ${tabId}`);
-          // setTeams([]); // Clear teams if no data
-          fetchTeams();
-          return;
+        console.log(`No teams found for tab with ID: ${tabId}`);
+        // setTeams([]); // Clear teams if no data
+        fetchTeams();
+        return;
       }
 
       // Update the state with fetched teams
       console.log(`Teams for tab ${tabId}:`, data); // Debugging
       // setTeams(data); // Update state with the fetched data
-  } catch (err) {
+    } catch (err) {
       console.error("Unexpected error while fetching teams:", err);
-  }
-};
-
-
+    }
+  };
 
   // Delete a tab from database and UI
   const deleteTab = async (id: number) => {
@@ -451,11 +448,10 @@ const fetchTeamsForTab = async (tabId : number) => {
     setUserTab(newTabs1);
     if (newTabs.length > 0 || newTabs1.length > 0) {
       setActiveTab(newTabs[0].id);
-      setUserActiveTab(newTabs1[0].id);// Set first tab as active if any left
+      setUserActiveTab(newTabs1[0].id); // Set first tab as active if any left
       //  fetchSpaces();
       //  fetchTeams();
       //  fetchTeamData();
-        
     } else {
       setActiveTab(null);
       setUserActiveTab(null);
@@ -550,7 +546,7 @@ const fetchTeamsForTab = async (tabId : number) => {
   };
 
   const getUserData = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue= e.target.value;
+    const inputValue = e.target.value;
     setEmailInput(inputValue);
 
     try {
@@ -564,7 +560,9 @@ const fetchTeamsForTab = async (tabId : number) => {
 
       // Filter users whose email includes the input value
       const matchingUsers =
-      data?.filter((user) => user.role === "User" && user.email.includes(emailInput)) || [];
+        data?.filter(
+          (user) => user.role === "User" && user.email.includes(emailInput)
+        ) || [];
 
       if (matchingUsers.length > 0 || emailInput === "") {
         setMatchingUsers(matchingUsers);
@@ -628,13 +626,12 @@ const fetchTeamsForTab = async (tabId : number) => {
   const defaultSpaceData = async () => {
     if (!activeTab) return;
     if (!userActiveTab) return;
-    const tabSpace= userActiveTab || activeTab
+    const tabSpace = userActiveTab || activeTab;
     const { data, error } = await supabase
       .from("spaces")
       .select("*")
       .eq("id", tabSpace)
       .single();
-     
 
     if (error) {
       console.error("Error fetching spaces:", error);
@@ -643,7 +640,7 @@ const fetchTeamsForTab = async (tabId : number) => {
 
     if (data) {
       setSpaceId(data.id);
-      console.log(data.id,"Space ID") 
+      console.log(data.id, "Space ID");
     }
     // setUserTabActive(false);
     // setActiveTab(tabSpace);
@@ -661,7 +658,7 @@ const fetchTeamsForTab = async (tabId : number) => {
       .select("*")
       .eq("is_deleted", false)
       .eq("space_id", spaceId);
-      console.log("Fetching Team data")
+    console.log("Fetching Team data");
 
     if (error) {
       console.log(error);
@@ -713,23 +710,21 @@ const fetchTeamsForTab = async (tabId : number) => {
 
       try {
         // Insert selected user details as array of objects into the `teams` table
-        const { error: insertError } = await supabase
-          .from("teams")
-          .insert({
-            team_name: teamName,
-            members: fetchedMembers.map((member) => ({
-              id: member.id,
-              name: member.username, // Assuming `name` is a field in your `users` table
-              role: member.role,
-              department: member.department,
-              designation: member.designation,
-              email: member.email, // Assuming `email` is a field in your `users` table
-              entity_name: member.entity_name,
-              profile_image: member.profile_image,
-            })),
-            space_id: activeTab,
-            is_deleted: false,
-          });
+        const { error: insertError } = await supabase.from("teams").insert({
+          team_name: teamName,
+          members: fetchedMembers.map((member) => ({
+            id: member.id,
+            name: member.username, // Assuming `name` is a field in your `users` table
+            role: member.role,
+            department: member.department,
+            designation: member.designation,
+            email: member.email, // Assuming `email` is a field in your `users` table
+            entity_name: member.entity_name,
+            profile_image: member.profile_image,
+          })),
+          space_id: activeTab,
+          is_deleted: false,
+        });
 
         if (insertError) {
           console.error("Error saving members:", insertError);
@@ -759,26 +754,27 @@ const fetchTeamsForTab = async (tabId : number) => {
   };
 
   const fetchTeams = async () => {
-    const {data, error } = await supabase
+    const tabSpace1 = userActiveTab || activeTab;
+    setSpaceId(tabSpace1);
+    //if (!spaceId) return;
+    const { data, error } = await supabase
       .from("teams")
       .select("*")
       .eq("is_deleted", false)
-      .eq("space_id", spaceId);
-      console.log(spaceId,"Space ID")
+      .eq("space_id", tabSpace1);
+    console.log(spaceId, "Space ID");
 
     if (error) {
-      console.log(error,"error fetch");
+      console.log(error, "error fetch");
       return;
     }
-    if(data)
-    {
+    if (data) {
       const teamData = data.map((team) => ({
         ...team,
         tasks: [], // Initialize each team with an empty tasks array
       }));
-     console.log("Team Data",teamData);
+      console.log("Team Data", teamData);
     }
-   
   };
 
   const newFetchTeam = async () => {
@@ -791,7 +787,6 @@ const fetchTeamsForTab = async (tabId : number) => {
       console.log(error);
       return;
     }
-    
 
     return data;
   };
@@ -813,26 +808,26 @@ const fetchTeamsForTab = async (tabId : number) => {
   };
 
   const filterFetchTeams = async () => {
-      if (!spaceId) return;
-      const { data, error } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("is_deleted", false)
-        .eq("space_id", spaceId);
-  
-      if (error) {
-        console.log(error);
-        return;
-      }
-  
-      if (data) {
-        const teamData = data.map((team) => ({
-          ...team,
-          tasks: [], // Initialize each team with an empty tasks array
-        }));
-        setFilterTeams(teamData as Team[]);
-      }
-    };
+    if (!spaceId) return;
+    const { data, error } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("is_deleted", false)
+      .eq("space_id", spaceId);
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    if (data) {
+      const teamData = data.map((team) => ({
+        ...team,
+        tasks: [], // Initialize each team with an empty tasks array
+      }));
+      setFilterTeams(teamData as Team[]);
+    }
+  };
 
   const fetchTasks = async () => {
     const { data: tasksData, error: tasksError } = await supabase
@@ -908,57 +903,62 @@ const fetchTeamsForTab = async (tabId : number) => {
         await fetchTasks();
         toast({
           title: "Select a filter",
-          description: "Please select at least one filter option to get meaningful results.",
+          description:
+            "Please select at least one filter option to get meaningful results.",
           duration: 3000,
         });
         return;
       }
-  
+
       let filteredTeams = [];
       let filteredTasks = [];
-  
+
       // Filter teams based on teamFilterValue
       if (teamFilterValue) {
-        filteredTeams = FilterTeams.filter(team =>
+        filteredTeams = FilterTeams.filter((team) =>
           team.team_name?.toLowerCase().includes(teamFilterValue.toLowerCase())
         );
       } else {
         filteredTeams = FilterTeams; // No filter, include all teams
       }
-  
+
       // Filter tasks based on the selected filters
-      filteredTasks = allTasks.filter((task : any) => {
+      filteredTasks = allTasks.filter((task: any) => {
         const matchesTeam = teamFilterValue
           ? FilterTeams.some(
-              team =>
+              (team) =>
                 team.id === task.team_id &&
-                team.team_name?.toLowerCase().includes(teamFilterValue.toLowerCase())
+                team.team_name
+                  ?.toLowerCase()
+                  .includes(teamFilterValue.toLowerCase())
             )
           : true; // Include if no team filter applied
-  
+
         const matchesStatus = taskStatusFilterValue
-          ? task.task_status?.toLowerCase().includes(taskStatusFilterValue.toLowerCase())
+          ? task.task_status
+              ?.toLowerCase()
+              .includes(taskStatusFilterValue.toLowerCase())
           : true; // Include if no status filter applied
-  
+
         const matchesDate = dateFilterValue
           ? task.due_date?.includes(dateFilterValue)
           : true; // Include if no date filter applied
 
-          const isNotDeleted = task.is_deleted === false;
-  
+        const isNotDeleted = task.is_deleted === false;
+
         // Task matches if all selected filters match
         return matchesTeam && matchesStatus && matchesDate && isNotDeleted;
       });
-  
+
       // Map filtered tasks to their corresponding teams
-      const tasksWithTeams = filteredTasks.map((task : any) => {
-        const team = FilterTeams.find(team => team.id === task.team_id);
+      const tasksWithTeams = filteredTasks.map((task: any) => {
+        const team = FilterTeams.find((team) => team.id === task.team_id);
         return {
           ...task,
           teamName: team?.team_name || "No team found", // Include team name or fallback
         };
       });
-  
+
       // Show toast messages based on results
       if (tasksWithTeams.length === 0) {
         toast({
@@ -974,7 +974,7 @@ const fetchTeamsForTab = async (tabId : number) => {
           duration: 3000,
         });
       }
-  
+
       if (filteredTeams.length === 0) {
         toast({
           title: "No teams found",
@@ -983,7 +983,7 @@ const fetchTeamsForTab = async (tabId : number) => {
           variant: "destructive",
         });
       }
-  
+
       // Update the UI with filtered data
       setFilterTeams(filteredTeams);
       setAllTasks(tasksWithTeams); // Update tasks with their corresponding teams
@@ -997,7 +997,6 @@ const fetchTeamsForTab = async (tabId : number) => {
       });
     }
   };
-  
 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
@@ -1016,7 +1015,14 @@ const fetchTeamsForTab = async (tabId : number) => {
     fetchTasks();
     filterFetchTeams();
     fetchTeams();
-  }, [loggedUserData, activeTab, userActiveTab, teamFilterValue, taskStatusFilterValue, dateFilterValue]);
+  }, [
+    loggedUserData,
+    activeTab,
+    userActiveTab,
+    teamFilterValue,
+    taskStatusFilterValue,
+    dateFilterValue,
+  ]);
 
   // Filter the tabs based on the logged space ID
   const filteredTabs = userTab.filter((tab) => loggedSpaceId.includes(tab.id));
@@ -1027,9 +1033,8 @@ const fetchTeamsForTab = async (tabId : number) => {
       fetchTeams();
       setUserActiveTab(filteredTabs[0].id);
       setActiveTabNameUser(filteredTabs[0].space_name);
-  
     }
-  }, [filteredTabs,userTabActive]);
+  }, [filteredTabs, userTabActive]);
   return (
     <>
       <WebNavbar
@@ -1047,7 +1052,10 @@ const fetchTeamsForTab = async (tabId : number) => {
         // teamData={teamData}
         filterDialogOpen={filterDialogOpen}
         setFilterDialogOpen={setFilterDialogOpen}
-        teamResetFn = {() => {filterFetchTeams(); fetchTasks();}}
+        teamResetFn={() => {
+          filterFetchTeams();
+          fetchTasks();
+        }}
         notificationTrigger={notificationTrigger}
         setNotificationTrigger={setNotificationTrigger}
       />
@@ -1058,280 +1066,100 @@ const fetchTeamsForTab = async (tabId : number) => {
         <span>{loading}</span>
       </div>
       <div className="px-3 flex justify-start items-center gap-3 h-[calc(100vh-70px)]">
-        <div className="flex flex-col justify-between items-center text-center bg-white px-3 border-none rounded-[12px] overflow-x-auto w-[190px] max-w-[200px] h-full pt-3 pb-3 playlist-scroll">
-              <div className="text-sm text-gray-400 flex flex-col gap-2.5 w-full">
-          {(loggedUserData?.role === "owner" ||
+        <div className="flex flex-col justify-between items-center text-center bg-white px-3 border-none rounded-[12px] overflow-x-auto w-[190px] max-w-[200px] h-full pt-3 pb-3 playlist-scroll test3">
+          <div className="text-sm text-gray-400 flex flex-col gap-2.5 w-full">
+            {(loggedUserData?.role === "owner" ||
               (loggedUserData?.role === "User" &&
                 ((loggedUserData?.access?.space !== true &&
                   loggedUserData?.access?.all === true) ||
                   loggedUserData?.access?.space === true))) && (
-                    <div className="pt-0 sticky top-0 z-50 bg-white">
-              <button
-                onClick={addNewTab}
-                className=" rounded-lg border border-gray-300 px-2 py-0.5 flex items-center gap-2 h-10 min-w-fit text-gray-800 justify-center w-full"
-                // style={{ width: "max-content" }}
-              >
-                <HiMiniDocumentPlus className="w-5 h-5" />
-                Add Space
-              </button>
+              <div className="pt-0 sticky top-0 z-50 bg-white">
+                <button
+                  onClick={addNewTab}
+                  className=" rounded-lg border border-gray-300 px-2 py-0.5 flex items-center gap-2 h-10 min-w-fit text-gray-800 justify-center w-full"
+                  // style={{ width: "max-content" }}
+                >
+                  <HiMiniDocumentPlus className="w-5 h-5" />
+                  Add Space
+                </button>
               </div>
             )}
-            {loggedUserData?.role === "owner"
-              ? 
+            {loggedUserData?.role === "owner" ? (
               // {
-                tabs.length > 0 ? (
-                  tabs.map((tab) => (
-                    <div
-                      key={tab.id}
-                      onClick={() => handleTabClick(tab.id)}
-                      className={`space_input max-w-44 min-w-fit relative flex items-center gap-2 rounded-[10px] border pl-3 py-1 pr-8 cursor-pointer h-10 ${
-                        activeTab === tab.id
-                          ? "bg-[#1A56DB] text-white border-none"
-                          : "bg-white border-gray-300"
-                      }`}
-                    >
-                      <span>{tab.space_name.length > 12 ? `${tab.space_name.slice(0, 12)}...` : tab.space_name}</span>
-  
-                      {(loggedUserData?.role === "owner" ||
-                        (loggedUserData?.role === "User" &&
-                          ((loggedUserData?.access?.space !== true &&
-                            loggedUserData?.access?.all === true) ||
-                            loggedUserData?.access?.space === true))) && (
-                        <Sheet
-                        // open={spaceEditDialogOpen}
-                        // onOpenChange={setSpaceEditDialogOpen}
-                        >
-                          <SheetTrigger asChild>
-                            <EllipsisVertical
-                              className={`absolute right-2 focus:outline-none space_delete_button ${
-                                activeTab === tab.id
-                                  ? "text-white border-none"
-                                  : "bg-white border-gray-300 text-gray-400"
-                              }`}
-                              size={16}
-                            />
-                          </SheetTrigger>
-                          <SheetContent
-                            className="pt-2.5 p-3 font-inter flex flex-col justify-between"
-                            style={{ maxWidth: "415px" }}
-                          >
-                            <div>
-                              <SheetHeader>
-                                <SheetTitle className="text-gray-500 uppercase text-base">
-                                  space setting
-                                </SheetTitle>
-                              </SheetHeader>
-                              <div className="mt-3">
-                                <Label
-                                  htmlFor="name"
-                                  className="text-sm text-gray-900"
-                                >
-                                  Space Name
-                                </Label>
-                                <Input
-                                  id="name"
-                                  defaultValue={tab.space_name}
-                                  className="w-full mt-1"
-                                  onChange={(e) =>
-                                    setUpdatedSpaceName(e.target.value)
-                                  }
-                                  autoFocus
-                                />
-                              </div>
-                              <div className="pt-2">
-                                <Label
-                                  htmlFor="name"
-                                  className="text-sm text-gray-900"
-                                >
-                                  Teams
-                                </Label>
-                                <div className="border border-gray-300 mt-1 rounded p-3 min-h-40 h-[67vh] max-h-[70vh] overflow-auto playlist-scroll">
-                                  {spaceDetails.length > 0 ? (
-                                    spaceDetails.map(
-                                      (team: any, index: number) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-center justify-between mb-2"
-                                        >
-                                          <p className="text-gray-900 font-inter text-sm">
-                                            {team.team_name.length > 16
-                                              ? team.team_name.slice(0, 16) +
-                                                "..."
-                                              : team.team_name}
-                                          </p>
-                                          <div className="flex">
-                                            {team.members.length > 0 ? (
-                                              <>
-                                                {team.members
-                                                  .slice(0, 6)
-                                                  .map(
-                                                    (
-                                                      member: any,
-                                                      index: number
-                                                    ) => (
-                                                      <Image
-                                                        key={index}
-                                                        src={member.profile_image}
-                                                        alt={member.name}
-                                                        width={30}
-                                                        height={30}
-                                                        className={`w-[32px] h-[32px] rounded-full ${
-                                                          team.members.length ===
-                                                          1
-                                                            ? "mr-2.5"
-                                                            : team.members
-                                                                .length > 0
-                                                            ? "-mr-2.5"
-                                                            : ""
-                                                        } border-2 border-white`}
-                                                      />
-                                                    )
-                                                  )}
-                                                {team.members.length > 6 && (
-                                                  <div className="bg-gray-900 text-white rounded-full w-[32px] h-[32px] flex items-center justify-center text-xs border-2 border-white">
-                                                    +{team.members.length - 6}
-                                                  </div>
-                                                )}
-                                              </>
-                                            ) : (
-                                              <p className="text-gray-900 font-inter text-sm">
-                                                No Members Found
-                                              </p>
-                                            )}
-                                          </div>
-  
-                                          <Trash2
-                                            size={16}
-                                            className="cursor-pointer"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              deleteTeam(team, index);
-                                            }}
-                                          />
-                                        </div>
-                                      )
-                                    )
-                                  ) : (
-                                    <p className="text-gray-500 text-base font-inter">
-                                      No Team Found
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-  
-                            <SheetFooter className="">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="w-1/3 border border-red-500 text-red-500 text-sm hover:text-red-500"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteTab(tab.id);
-                                  setAdminSpaceLength(adminSpaceLength - 1);
-                                }}
-                              >
-                                Delete Space
-                              </Button>
-                              <SheetClose asChild>
-                                <Button
-                                  type="submit"
-                                  variant="outline"
-                                  className="w-1/3 text-sm"
-                                >
-                                  Cancel
-                                </Button>
-                              </SheetClose>
-                              <Button
-                                type="submit"
-                                className="bg-primaryColor-700 text-white hover:bg-primaryColor-700 text-sm w-1/3"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateSpaceTab(tab.id);
-                                }}
-                              >
-                                Update
-                              </Button>
-                            </SheetFooter>
-                          </SheetContent>
-                        </Sheet>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <DefaultSkeleton />
-                )
-              // }
-              
-              :
-                // Filter and map tabs based on loggedSpaceId
-                filteredTabs.length > 0 ? (
-                  filteredTabs
-                  .map((tab) => (
-                    <div
-                      key={tab.id}
-                      onClick={() => handleTabClick(tab.id)}
-                      className={`space_input max-w-44 min-w-fit relative flex items-center gap-2 rounded-[8px] border pl-3 py-1 pr-8 cursor-pointer h-10 ${
-                        userActiveTab === tab.id
-                          ? "bg-[#1A56DB] text-white border-none"
-                          : "bg-white border-gray-300" 
-                      }`}
-                    >
-                      <span>{tab.space_name.length > 12 ? `${tab.space_name.slice(0, 12)}...` : tab.space_name}</span>
+              tabs.length > 0 ? (
+                tabs.map((tab) => (
+                  <div
+                    key={tab.id}
+                    onClick={() => handleTabClick(tab.id)}
+                    className={`space_input max-w-44 min-w-fit relative flex items-center gap-2 rounded-[10px] border pl-3 py-1 pr-8 cursor-pointer h-10 ${
+                      activeTab === tab.id
+                        ? "bg-[#1A56DB] text-white border-none"
+                        : "bg-white border-gray-300"
+                    }`}
+                  >
+                    <span>
+                      {tab.space_name.length > 12
+                        ? `${tab.space_name.slice(0, 12)}...`
+                        : tab.space_name}
+                    </span>
 
-                      {(loggedUserData?.role === "owner" ||
-                        (loggedUserData?.role === "User" &&
-                          ((loggedUserData?.access?.space !== true &&
-                            loggedUserData?.access?.all === true) ||
-                            loggedUserData?.access?.space === true))) && (
-                        <Sheet>
-                          <SheetTrigger asChild>
-                            <EllipsisVertical
-                              className={`absolute right-2 focus:outline-none space_delete_button ${
-                                userActiveTab === tab.id
-                                  ? "text-white border-none"
-                                  : "bg-white border-gray-300 text-gray-400"
-                              }`}
-                              size={16}
-                            />
-                          </SheetTrigger>
-                          <SheetContent
-                            className="pt-2.5 p-3 font-inter flex flex-col justify-between"
-                            style={{ maxWidth: "415px" }}
-                          >
-                            <div>
-                              <SheetHeader>
-                                <SheetTitle className="text-gray-500 uppercase text-base">
-                                  Space Settings
-                                </SheetTitle>
-                              </SheetHeader>
-                              <div className="mt-3">
-                                <Label
-                                  htmlFor="name"
-                                  className="text-sm text-gray-900"
-                                >
-                                  Space Name
-                                </Label>
-                                <Input
-                                  id="name"
-                                  defaultValue={tab.space_name}
-                                  className="w-full mt-1"
-                                  onChange={(e) =>
-                                    setUpdatedSpaceName(e.target.value)
-                                  }
-                                  autoFocus
-                                />
-                              </div>
-                              <div className="pt-2">
-                                <Label
-                                  htmlFor="name"
-                                  className="text-sm text-gray-900"
-                                >
-                                  Teams
-                                </Label>
-                                <div className="border border-gray-300 mt-1 rounded p-3 min-h-40 h-[67vh] max-h-[70vh] overflow-auto playlist-scroll">
-                                  {spaceDetails.length > 0 ? (
-                                    spaceDetails.map((team, index) => (
+                    {(loggedUserData?.role === "owner" ||
+                      (loggedUserData?.role === "User" &&
+                        ((loggedUserData?.access?.space !== true &&
+                          loggedUserData?.access?.all === true) ||
+                          loggedUserData?.access?.space === true))) && (
+                      <Sheet
+                      // open={spaceEditDialogOpen}
+                      // onOpenChange={setSpaceEditDialogOpen}
+                      >
+                        <SheetTrigger asChild>
+                          <EllipsisVertical
+                            className={`absolute right-2 focus:outline-none space_delete_button ${
+                              activeTab === tab.id
+                                ? "text-white border-none"
+                                : "bg-white border-gray-300 text-gray-400"
+                            }`}
+                            size={16}
+                          />
+                        </SheetTrigger>
+                        <SheetContent
+                          className="pt-2.5 p-3 font-inter flex flex-col justify-between"
+                          style={{ maxWidth: "415px" }}
+                        >
+                          <div>
+                            <SheetHeader>
+                              <SheetTitle className="text-gray-500 uppercase text-base">
+                                space setting
+                              </SheetTitle>
+                            </SheetHeader>
+                            <div className="mt-3">
+                              <Label
+                                htmlFor="name"
+                                className="text-sm text-gray-900"
+                              >
+                                Space Name
+                              </Label>
+                              <Input
+                                id="name"
+                                defaultValue={tab.space_name}
+                                className="w-full mt-1"
+                                onChange={(e) =>
+                                  setUpdatedSpaceName(e.target.value)
+                                }
+                                autoFocus
+                              />
+                            </div>
+                            <div className="pt-2">
+                              <Label
+                                htmlFor="name"
+                                className="text-sm text-gray-900"
+                              >
+                                Teams
+                              </Label>
+                              <div className="border border-gray-300 mt-1 rounded p-3 min-h-40 h-[67vh] max-h-[70vh] overflow-auto playlist-scroll test2">
+                                {spaceDetails.length > 0 ? (
+                                  spaceDetails.map(
+                                    (team: any, index: number) => (
                                       <div
                                         key={index}
                                         className="flex items-center justify-between mb-2"
@@ -1382,6 +1210,7 @@ const fetchTeamsForTab = async (tabId : number) => {
                                             </p>
                                           )}
                                         </div>
+
                                         <Trash2
                                           size={16}
                                           className="cursor-pointer"
@@ -1391,269 +1220,449 @@ const fetchTeamsForTab = async (tabId : number) => {
                                           }}
                                         />
                                       </div>
-                                    ))
-                                  ) : (
-                                    <p className="text-gray-500 text-base font-inter">
-                                      No Team Found
-                                    </p>
-                                  )}
-                                </div>
+                                    )
+                                  )
+                                ) : (
+                                  <p className="text-gray-500 text-base font-inter">
+                                    No Team Found
+                                  </p>
+                                )}
                               </div>
                             </div>
+                          </div>
 
-                            <SheetFooter>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="w-1/3 border border-red-500 text-red-500 text-sm hover:text-red-500"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteTab(tab.id);
-                                }}
-                              >
-                                Delete Space
-                              </Button>
-                              <SheetClose asChild>
-                                <Button
-                                  type="submit"
-                                  variant="outline"
-                                  className="w-1/3 text-sm"
-                                >
-                                  Cancel
-                                </Button>
-                              </SheetClose>
+                          <SheetFooter className="">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-1/3 border border-red-500 text-red-500 text-sm hover:text-red-500"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteTab(tab.id);
+                                setAdminSpaceLength(adminSpaceLength - 1);
+                              }}
+                            >
+                              Delete Space
+                            </Button>
+                            <SheetClose asChild>
                               <Button
                                 type="submit"
-                                className="bg-primaryColor-700 text-white hover:bg-primaryColor-700 text-sm w-1/3"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateSpaceTab(tab.id);
-                                }}
+                                variant="outline"
+                                className="w-1/3 text-sm"
                               >
-                                Update
+                                Cancel
                               </Button>
-                            </SheetFooter>
-                          </SheetContent>
-                        </Sheet>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <DefaultSkeleton />
-                )
-                }
+                            </SheetClose>
+                            <Button
+                              type="submit"
+                              className="bg-primaryColor-700 text-white hover:bg-primaryColor-700 text-sm w-1/3"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateSpaceTab(tab.id);
+                              }}
+                            >
+                              Update
+                            </Button>
+                          </SheetFooter>
+                        </SheetContent>
+                      </Sheet>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <DefaultSkeleton />
+              )
+            ) : // }
+
+            // Filter and map tabs based on loggedSpaceId
+            filteredTabs.length > 0 ? (
+              filteredTabs.map((tab) => (
+                <div
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`space_input max-w-44 min-w-fit relative flex items-center gap-2 rounded-[8px] border pl-3 py-1 pr-8 cursor-pointer h-10 ${
+                    userActiveTab === tab.id
+                      ? "bg-[#1A56DB] text-white border-none"
+                      : "bg-white border-gray-300"
+                  }`}
+                >
+                  <span>
+                    {tab.space_name.length > 12
+                      ? `${tab.space_name.slice(0, 12)}...`
+                      : tab.space_name}
+                  </span>
+
+                  {(loggedUserData?.role === "owner" ||
+                    (loggedUserData?.role === "User" &&
+                      ((loggedUserData?.access?.space !== true &&
+                        loggedUserData?.access?.all === true) ||
+                        loggedUserData?.access?.space === true))) && (
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <EllipsisVertical
+                          className={`absolute right-2 focus:outline-none space_delete_button ${
+                            userActiveTab === tab.id
+                              ? "text-white border-none"
+                              : "bg-white border-gray-300 text-gray-400"
+                          }`}
+                          size={16}
+                        />
+                      </SheetTrigger>
+                      <SheetContent
+                        className="pt-2.5 p-3 font-inter flex flex-col justify-between"
+                        style={{ maxWidth: "415px" }}
+                      >
+                        <div>
+                          <SheetHeader>
+                            <SheetTitle className="text-gray-500 uppercase text-base">
+                              Space Settings
+                            </SheetTitle>
+                          </SheetHeader>
+                          <div className="mt-3">
+                            <Label
+                              htmlFor="name"
+                              className="text-sm text-gray-900"
+                            >
+                              Space Name
+                            </Label>
+                            <Input
+                              id="name"
+                              defaultValue={tab.space_name}
+                              className="w-full mt-1"
+                              onChange={(e) =>
+                                setUpdatedSpaceName(e.target.value)
+                              }
+                              autoFocus
+                            />
+                          </div>
+                          <div className="pt-2">
+                            <Label
+                              htmlFor="name"
+                              className="text-sm text-gray-900"
+                            >
+                              Teams
+                            </Label>
+                            <div className="border border-gray-300 mt-1 rounded p-3 min-h-40 h-[67vh] max-h-[70vh] overflow-auto playlist-scroll test1">
+                              {spaceDetails.length > 0 ? (
+                                spaceDetails.map((team, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center justify-between mb-2"
+                                  >
+                                    <p className="text-gray-900 font-inter text-sm">
+                                      {team.team_name.length > 16
+                                        ? team.team_name.slice(0, 16) + "..."
+                                        : team.team_name}
+                                    </p>
+                                    <div className="flex">
+                                      {team.members.length > 0 ? (
+                                        <>
+                                          {team.members
+                                            .slice(0, 6)
+                                            .map(
+                                              (member: any, index: number) => (
+                                                <Image
+                                                  key={index}
+                                                  src={member.profile_image}
+                                                  alt={member.name}
+                                                  width={30}
+                                                  height={30}
+                                                  className={`w-[32px] h-[32px] rounded-full ${
+                                                    team.members.length === 1
+                                                      ? "mr-2.5"
+                                                      : team.members.length > 0
+                                                      ? "-mr-2.5"
+                                                      : ""
+                                                  } border-2 border-white`}
+                                                />
+                                              )
+                                            )}
+                                          {team.members.length > 6 && (
+                                            <div className="bg-gray-900 text-white rounded-full w-[32px] h-[32px] flex items-center justify-center text-xs border-2 border-white">
+                                              +{team.members.length - 6}
+                                            </div>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <p className="text-gray-900 font-inter text-sm">
+                                          No Members Found
+                                        </p>
+                                      )}
+                                    </div>
+                                    <Trash2
+                                      size={16}
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteTeam(team, index);
+                                      }}
+                                    />
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-gray-500 text-base font-inter">
+                                  No Team Found
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <SheetFooter>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-1/3 border border-red-500 text-red-500 text-sm hover:text-red-500"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteTab(tab.id);
+                            }}
+                          >
+                            Delete Space
+                          </Button>
+                          <SheetClose asChild>
+                            <Button
+                              type="submit"
+                              variant="outline"
+                              className="w-1/3 text-sm"
+                            >
+                              Cancel
+                            </Button>
+                          </SheetClose>
+                          <Button
+                            type="submit"
+                            className="bg-primaryColor-700 text-white hover:bg-primaryColor-700 text-sm w-1/3"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateSpaceTab(tab.id);
+                            }}
+                          >
+                            Update
+                          </Button>
+                        </SheetFooter>
+                      </SheetContent>
+                    </Sheet>
+                  )}
+                </div>
+              ))
+            ) : (
+              <DefaultSkeleton />
+            )}
           </div>
         </div>
         <div className="w-[calc(100%-190px)] flex flex-col gap-3 h-[calc(100vh-70px)]">
           <div className="w-full h-[60px] flex justify-between items-center bg-white rounded-[10px] p-4">
-            {
-              loggedUserData?.role === "owner" ? (
-                <p className="text-xl font-semibold font-inter">{activeTabName || spaceName}</p>
-              ) : (
-                  <p className="text-xl font-semibold font-inter">{activeTabNameUser || spaceName}</p>
-              )
-            }
-            
-          {(
-            (loggedUserData?.role === "owner" && (adminSpaceLength > 0 || adminSpaceLength === 1)) ||
-            (loggedUserData?.role === "User" &&
-              ((loggedUserData?.access?.team !== true &&
-                loggedUserData?.access?.all === true) ||
-                loggedUserData?.access?.team === true) && (spaceLength > 0 || spaceLength === 1))
-              ) && (
-            <div className="flex gap-2 text-sm text-gray-400">
-              <Sheet
-                open={memberAddDialogOpen}
-                onOpenChange={setMemberAddDialogOpen}
-              >
-                <SheetTrigger asChild>
-                  <button
-                    className="rounded-[10px] border border-gray-400 text-gray-800 px-2 py-0.5 flex items-center justify-center gap-2 h-10"
-                  >
-                    <HiMiniDocumentPlus className="w-5 h-5" />
-                    Add Team
-                  </button>
-                </SheetTrigger>
-                <SheetContent
-                  className="min-h-screen overflow-y-scroll"
-                  style={{ maxWidth: "500px" }}
-                >
-                  <SheetHeader>
-                    <SheetTitle className="text-base">TEAM SETTING</SheetTitle>
-                  </SheetHeader>
-                  <div className="py-2">
-                    <label
-                      htmlFor="name"
-                      className="text-sm text-[#111928] font-medium"
-                    >
-                      Team Name
-                    </label>
-                    <Input
-                      id="name"
-                      placeholder="Team Name"
-                      className="text-gray-500 mt-1.5 py-3 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
-                      onChange={(e: any) => {
-                        setTeamName(e.target.value);
-                        setTeamNameError(false);
-                      }}
-                    />
-                    {teamNameError && (
-                      <p className="text-red-500 text-sm mt-1">
-                        Please fill the field
-                      </p>
-                    )}
-                    <div className="mt-8 relative">
-                      {matchingUsers.length > 0 &&
-                        emailInput.length > 0 &&
-                        !noUserFound && (
-                          <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
-                            {matchingUsers.length > 0 && (
-                              <ul>
-                                {matchingUsers.map((user, index) => (
-                                  <li
-                                    key={user.id}
-                                    className={`p-2 cursor-pointer ${
-                                      index === highlightedIndex
-                                        ? "bg-gray-200"
-                                        : "hover:bg-gray-100"
-                                    }`}
-                                    onClick={() => {handleUserSelect(user)}}
-                                    onMouseEnter={() =>
-                                      setHighlightedIndex(index)
-                                    }
-                                  >
-                                    {user.email}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        )}
-                      {noUserFound && (
-                        <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
-                          <ul>
-                            <li className="p-2 cursor-pointer hover:bg-gray-100">
-                              No User Found
-                            </li>
-                          </ul>
-                        </div>
-                      )}
-                    </div>
+            {loggedUserData?.role === "owner" ? (
+              <p className="text-xl font-semibold font-inter">
+                {activeTabName || spaceName}
+              </p>
+            ) : (
+              <p className="text-xl font-semibold font-inter">
+                {activeTabNameUser || spaceName}
+              </p>
+            )}
 
-                    <div>
+            {((loggedUserData?.role === "owner" &&
+              (adminSpaceLength > 0 || adminSpaceLength === 1)) ||
+              (loggedUserData?.role === "User" &&
+                ((loggedUserData?.access?.team !== true &&
+                  loggedUserData?.access?.all === true) ||
+                  loggedUserData?.access?.team === true) &&
+                (spaceLength > 0 || spaceLength === 1))) && (
+              <div className="flex gap-2 text-sm text-gray-400">
+                <Sheet
+                  open={memberAddDialogOpen}
+                  onOpenChange={setMemberAddDialogOpen}
+                >
+                  <SheetTrigger asChild>
+                    <button className="rounded-[10px] border border-gray-400 text-gray-800 px-2 py-0.5 flex items-center justify-center gap-2 h-10">
+                      <HiMiniDocumentPlus className="w-5 h-5" />
+                      Add Team
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    className="min-h-screen overflow-y-scroll"
+                    style={{ maxWidth: "500px" }}
+                  >
+                    <SheetHeader>
+                      <SheetTitle className="text-base">
+                        TEAM SETTING
+                      </SheetTitle>
+                    </SheetHeader>
+                    <div className="py-2">
                       <label
-                        htmlFor="members"
+                        htmlFor="name"
                         className="text-sm text-[#111928] font-medium"
                       >
-                        Members
+                        Team Name
                       </label>
                       <Input
-                        id="members"
-                        autoComplete="off"
-                        placeholder="Add email"
-                        className="text-gray-500 mt-1.5 h-12 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
-                        onChange={getUserData}
-                        value={emailInput}
-                        
+                        id="name"
+                        placeholder="Team Name"
+                        className="text-gray-500 mt-1.5 py-3 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
+                        onChange={(e: any) => {
+                          setTeamName(e.target.value);
+                          setTeamNameError(false);
+                        }}
                       />
+                      {teamNameError && (
+                        <p className="text-red-500 text-sm mt-1">
+                          Please fill the field
+                        </p>
+                      )}
+                      <div className="mt-8 relative">
+                        {matchingUsers.length > 0 &&
+                          emailInput.length > 0 &&
+                          !noUserFound && (
+                            <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                              {matchingUsers.length > 0 && (
+                                <ul>
+                                  {matchingUsers.map((user, index) => (
+                                    <li
+                                      key={user.id}
+                                      className={`p-2 cursor-pointer ${
+                                        index === highlightedIndex
+                                          ? "bg-gray-200"
+                                          : "hover:bg-gray-100"
+                                      }`}
+                                      onClick={() => {
+                                        handleUserSelect(user);
+                                      }}
+                                      onMouseEnter={() =>
+                                        setHighlightedIndex(index)
+                                      }
+                                    >
+                                      {user.email}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          )}
+                        {noUserFound && (
+                          <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                            <ul>
+                              <li className="p-2 cursor-pointer hover:bg-gray-100">
+                                No User Found
+                              </li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
 
-                      {/* <Button className="absolute right-[30px] bottom-[38px] rounded-[10px] border border-zinc-300 bg-primaryColor-700 text-white text-xs font-medium hover:bg-primaryColor-700">
+                      <div>
+                        <label
+                          htmlFor="members"
+                          className="text-sm text-[#111928] font-medium"
+                        >
+                          Members
+                        </label>
+                        <Input
+                          id="members"
+                          autoComplete="off"
+                          placeholder="Add email"
+                          className="text-gray-500 mt-1.5 h-12 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
+                          onChange={getUserData}
+                          value={emailInput}
+                        />
+
+                        {/* <Button className="absolute right-[30px] bottom-[38px] rounded-[10px] border border-zinc-300 bg-primaryColor-700 text-white text-xs font-medium hover:bg-primaryColor-700">
                     <Plus size={16} />
                     Add
                   </Button> */}
-                    </div>
-                    {teamMemberError && (
-                      <p className="text-red-500 text-sm mt-1">
-                        Please fill the field
-                      </p>
-                    )}
-                    {addedMembers.length > 0 && (
-                      <div className="mt-2 p-2 flex flex-wrap items-center gap-2 w-full border border-gray-300 rounded-md">
-                        {addedMembers.map((member, index) => (
-                          <div
-                            key={member.id}
-                            className="flex justify-between items-center gap-2 py-1 px-2 w-full text-sm text-gray-500"
-                          >
-                            <div className="flex items-center gap-1">
-                              <Image
-                                src={member.profile_image}
-                                alt="user image"
-                                width={36}
-                                height={36}
-                                className="w-[32px] h-[32px] rounded-full"
-                              />
-                              <span>{member.username}</span>
-                            </div>
-                            <span
-                              className={`${
-                                member.role === "superadmin"
-                                  ? "text-[#0E9F6E]"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {member.designation?.length > 25
-                                ? `${member.designation?.slice(0, 26)}...`
-                                : member.designation}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeMember(member, index);
-                              }}
-                              className="focus:outline-none space_delete_button text-gray-400"
-                            >
-                              <Trash2 className="text-black" size={18} />
-                            </button>
-                          </div>
-                        ))}
                       </div>
-                    )}
-                  </div>
-                  <SheetFooter className="mt-5">
-                    <Button
-                      type="submit"
-                      variant={"outline"}
-                      className="w-1/2 border border-gray-200 text-gray-800 font-medium"
-                      onClick={handleClose}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      className="w-1/2 bg-primaryColor-700 hover:bg-blue-600 text-white"
-                      onClick={handleSaveMembers}
-                    >
-                      Save
-                    </Button>
-                  </SheetFooter>
-                </SheetContent>
-              </Sheet>
-            </div>
-          )}
+                      {teamMemberError && (
+                        <p className="text-red-500 text-sm mt-1">
+                          Please fill the field
+                        </p>
+                      )}
+                      {addedMembers.length > 0 && (
+                        <div className="mt-2 p-2 flex flex-wrap items-center gap-2 w-full border border-gray-300 rounded-md">
+                          {addedMembers.map((member, index) => (
+                            <div
+                              key={member.id}
+                              className="flex justify-between items-center gap-2 py-1 px-2 w-full text-sm text-gray-500"
+                            >
+                              <div className="flex items-center gap-1">
+                                <Image
+                                  src={member.profile_image}
+                                  alt="user image"
+                                  width={36}
+                                  height={36}
+                                  className="w-[32px] h-[32px] rounded-full"
+                                />
+                                <span>{member.username}</span>
+                              </div>
+                              <span
+                                className={`${
+                                  member.role === "superadmin"
+                                    ? "text-[#0E9F6E]"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {member.designation?.length > 25
+                                  ? `${member.designation?.slice(0, 26)}...`
+                                  : member.designation}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeMember(member, index);
+                                }}
+                                className="focus:outline-none space_delete_button text-gray-400"
+                              >
+                                <Trash2 className="text-black" size={18} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="mt-5">
+                      <Button
+                        type="submit"
+                        variant={"outline"}
+                        className="w-1/2 border border-gray-200 text-gray-800 font-medium"
+                        onClick={handleClose}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="w-1/2 bg-primaryColor-700 hover:bg-blue-600 text-white"
+                        onClick={handleSaveMembers}
+                      >
+                        Save
+                      </Button>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            )}
           </div>
-        <SpaceTeam
-          spaceId={spaceId as number}
-          teamData={teamData}
-          setTeamData={fetchTeamData}
-          loggedUserData={loggedUserData as any}
-          searchValue={searchValue as string}
-          setSearchValue={setSearchValue as any}
-          teamFilterValue={teamFilterValue as string}
-          setTeamFilterValue={setTeamFilterValue as any}
-          taskStatusFilterValue={taskStatusFilterValue as string}
-          setTaskStatusFilterValue={setTaskStatusFilterValue as any}
-          dateFilterValue={dateFilterValue as string}
-          setDateFilterValue={setDateFilterValue as any}
-          allTasks={allTasks as any}
-          filterTeams = {FilterTeams as any}
-          setFilterTeams = {setFilterTeams as any}
-          // setAllTasks={setAllTasks as any}
-          filterFetchTeams={filterFetchTeams as any}
-          filterFetchTasks={fetchTasks as any}
-          notificationTrigger={notificationTrigger}
-          setNotificationTrigger={setNotificationTrigger}
-          newTabTeamTrigger={newTabTeamTrigger}
-        />
+          <SpaceTeam
+            spaceId={spaceId as number}
+            teamData={teamData}
+            setTeamData={fetchTeamData}
+            loggedUserData={loggedUserData as any}
+            searchValue={searchValue as string}
+            setSearchValue={setSearchValue as any}
+            teamFilterValue={teamFilterValue as string}
+            setTeamFilterValue={setTeamFilterValue as any}
+            taskStatusFilterValue={taskStatusFilterValue as string}
+            setTaskStatusFilterValue={setTaskStatusFilterValue as any}
+            dateFilterValue={dateFilterValue as string}
+            setDateFilterValue={setDateFilterValue as any}
+            allTasks={allTasks as any}
+            filterTeams={FilterTeams as any}
+            setFilterTeams={setFilterTeams as any}
+            // setAllTasks={setAllTasks as any}
+            filterFetchTeams={filterFetchTeams as any}
+            filterFetchTasks={fetchTasks as any}
+            notificationTrigger={notificationTrigger}
+            setNotificationTrigger={setNotificationTrigger}
+            newTabTeamTrigger={newTabTeamTrigger}
+          />
         </div>
       </div>
     </>

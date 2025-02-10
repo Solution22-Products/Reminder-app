@@ -54,7 +54,6 @@ import {
 import Footer from "../footer/page";
 import "@/app/(mob)/task/style.css";
 import { ToastAction } from "@/components/ui/toast";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const UsertaskStatusOptions = [
   {
@@ -420,37 +419,13 @@ const Task = () => {
   };
 
   const handleDeleteTask = async (taskId: string, teamId: string) => {
-  const handleDeleteTask = async (taskId: string, teamId: string) => {
     setSwipedTasks((prev) => ({ ...prev, [taskId]: false })); // Close swipe
-    console.log("task deleted", taskId, teamId);
     console.log("task deleted", taskId, teamId);
     const { data, error } = await supabase
       .from("tasks")
       .update({ is_deleted: true })
       .eq("team_id", teamId)
       .eq("id", taskId);
-    if (error) throw error;
-    const fetchData = async () => {
-      const { data: tasks } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("is_deleted", false);
-
-      if (tasks) setAllTasks(tasks);
-    };
-    fetchData();
-    toast({
-      title: "Deleted Successfully!",
-      description: "Task deleted successfully!",
-      action: (
-        <ToastAction
-          altText="Undo"
-          onClick={() => handleTaskUndo(teamId, taskId)}
-        >
-          Undo
-        </ToastAction>
-      ),
-    });
     if (error) throw error;
     const fetchData = async () => {
       const { data: tasks } = await supabase
@@ -489,13 +464,10 @@ const Task = () => {
           .select("*")
           .eq("is_deleted", false);
 
-
         if (tasks) setAllTasks(tasks);
       };
 
       // fetchTasks(); // Refresh the tasks list
-      fetchData();
-
       fetchData();
 
       toast({
@@ -577,7 +549,7 @@ const Task = () => {
     }
 
     // Filter tasks based on role
-    const filtered = userTasks.filter((task: any) => {
+    const filtered = allTasks.filter((task: any) => {
       const isTeamMatch = selectedTeam?.id === task.team_id;
       const hasMentionMatch = task.mentions.some((mention: string) =>
         mention.toLowerCase().includes(value)
@@ -595,9 +567,6 @@ const Task = () => {
 
     setFilteredTasksBySearch(filtered);
   };
-  // useEffect(() => {
-  //   setFilteredTasksBySearch(filtered)
-  // }, [allTasks, selectedTeam, selectedTaskStatus, userId, filterDate])
   // Function to move date backward
   useEffect(() => {
     if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
@@ -768,13 +737,9 @@ const Task = () => {
             </DrawerContent>
           </Drawer>
           <div className="w-[180px] h-6 text-center">
-            {selectedSpace ? (
-              <h2 className="text-lg font-bold font-gesit text-blackish text-center">
-                {selectedSpace.space_name}
-              </h2>
-            ) : (
-              <Skeleton className=" bg-gray-300 w-full h-full" />
-            )}
+            <h2 className="text-lg font-bold font-gesit text-blackish text-center">
+              {selectedSpace.space_name}
+            </h2>
           </div>
           <Select open={selectOpen} onOpenChange={setSelectOpen}>
             <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
@@ -878,7 +843,7 @@ const Task = () => {
           <Drawer open={isTeamDrawerOpen} onOpenChange={setIsTeamDrawerOpen}>
             <DrawerTrigger>
               <div className="bg-white py-3 rounded-xl border h-[40px] w-full border-gray-300 px-[18px] flex items-center">
-                <p>{selectedTeam?.team_name || "Select a Team"}</p>
+                <p>{selectedTeam?.team_name}</p>
                 <RiArrowDropDownLine className="w-[18px] h-[18px] text-black ml-auto" />
               </div>
             </DrawerTrigger>
@@ -1037,10 +1002,6 @@ const Task = () => {
                           {userId?.role === "owner" && swipedTasks[task.id] && (
                             <div
                               className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
-                          {/* Swipe Actions (Only visible when swiped & owner) */}
-                          {userId?.role === "owner" && swipedTasks[task.id] && (
-                            <div
-                              className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
             z-50 transition-all duration-300"
                             >
                               <button
@@ -1049,24 +1010,7 @@ const Task = () => {
                               >
                                 <Check className="w-6 h-6" />
                               </button>
-                            >
-                              <button
-                                className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
-                                onClick={() => handleCompleteTask(task.id)}
-                              >
-                                <Check className="w-6 h-6" />
-                              </button>
 
-                              <button
-                                className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
-                                onClick={() =>
-                                  handleDeleteTask(task.id, task.team_id)
-                                }
-                              >
-                                <Trash2 className="w-6 h-6" />
-                              </button>
-                            </div>
-                          )}
                               <button
                                 className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
                                 onClick={() =>
@@ -1118,21 +1062,6 @@ const Task = () => {
                                   </Select>
                                 </DrawerHeader>
 
-                                {/* Task Details */}
-                                <div className="p-4 border border-[#CECECE] rounded-[10px]">
-                                  <p>
-                                    <span className="text-[#BA6A6A]">
-                                      @{selectedSpace?.space_name}
-                                    </span>{" "}
-                                    <span className="text-[#5898C6]">
-                                      @{selectedTeam?.team_name}
-                                    </span>{" "}
-                                    <span className="text-[#518A37]">
-                                      {task.mentions}
-                                    </span>{" "}
-                                    {task.task_content}
-                                  </p>
-                                </div>
                                 {/* Task Details */}
                                 <div className="p-4 border border-[#CECECE] rounded-[10px]">
                                   <p>
@@ -1200,7 +1129,7 @@ const Task = () => {
               onOpenChange={setIsFilterDrawerOpen}
             >
               <DrawerTrigger onClick={() => setIsFilterDrawerOpen(true)}>
-                <div className="flex w-10 h-10 p-2 justify-center items-center rounded-lg border border-zinc-300 bg-white">
+                <div className="flex w-10 h-10  p-[8px_12px] justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white">
                   <FaEllipsisH className="h-4 w-6" />
                 </div>
               </DrawerTrigger>
@@ -1208,28 +1137,23 @@ const Task = () => {
                 <DrawerTitle className="pt-[18px] px-5">Filter</DrawerTitle>
                 <Command>
                   <CommandList>
-                    <p> {userId?.role}</p>
+                    {/* <p> {userId?.role}</p> */}
                     <ul className="mt-4 space-y-5 px-5 pt-3">
                       {userId?.role === "owner"
                         ? adminTaskStatusOptions.map((status) => (
                             <li
                               key={status.value}
-                              tabIndex={0}
-                              role="button"
                               onClick={() => {
                                 setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close drawer on selection
+                                setIsFilterDrawerOpen(false); // Close the drawer on selection
                               }}
-                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
+                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
                                 selectedTaskStatus === status.value
                                   ? "text-zinc-950 font-semibold"
                                   : "text-blackish"
                               }`}
                             >
-                              <span>{status.label}</span>
-                              {selectedTaskStatus === status.value && (
-                                <Check className="h-4 w-4 text-zinc-950" />
-                              )}
+                              {status.label}
                             </li>
                           ))
                         : UsertaskStatusOptions.filter(
@@ -1237,30 +1161,24 @@ const Task = () => {
                           ).map((status) => (
                             <li
                               key={status.value}
-                              tabIndex={0}
-                              role="button"
                               onClick={() => {
                                 setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close drawer on selection
+                                setIsFilterDrawerOpen(false); // Close the drawer on selection
                               }}
-                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
+                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
                                 selectedTaskStatus === status.value
                                   ? "text-zinc-950 font-semibold"
                                   : "text-blackish"
                               }`}
                             >
-                              <span>{status.label}</span>
-                              {selectedTaskStatus === status.value && (
-                                <Check className="h-4 w-4 text-zinc-950" />
-                              )}
+                              {status.label}
                             </li>
                           ))}
                     </ul>
-                  </div>
-                </div>
+                  </CommandList>
+                </Command>
               </DrawerContent>
             </Drawer>
-            
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -1436,77 +1354,95 @@ const Task = () => {
                     <DrawerContent className="px-4">
                       <DrawerHeader className="flex justify-between items-center px-0">
                         <DrawerTitle>Edit Task</DrawerTitle>
-                        <Select 
-                        defaultValue={task.task_status}
-                         onValueChange={(value) => setTaskStatus(value)}>
-                          
-                          <SelectTrigger
-                            className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
-                              task.task_status === "todo"
-                                ? "text-reddish bg-[#F8DADA]"
-                                : task.task_status === "In progress"
-                                ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                : "text-[#142D57] bg-[#DEE9FC]"
-                            }`}
+                        {userId?.role === "User" &&
+                        task.task_status === "Completed" ? (
+                          <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                            Completed
+                          </Button>
+                        ) : (
+                          <Select
+                            defaultValue={task.task_status || "todo"}
+                            onValueChange={(value) => setTaskStatus(value)}
                           >
-                            <SelectValue placeholder="status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="todo">To Do</SelectItem>
-                            <SelectItem value="In progress">
-                              In Progress
-                            </SelectItem>
-                            <SelectItem value="feedback">Feedback</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </DrawerHeader>
-
-                      {/* Task Details */}
-                      <div className="p-4 border border-[#CECECE] rounded-[10px]">
-                        <p>
-                          <span className="text-[#BA6A6A]">
-                            @{selectedSpace?.space_name}
-                          </span>{" "}
-                          <span className="text-[#5898C6]">
-                            @{selectedTeam?.team_name}
-                          </span>{" "}
-                          <span className="text-[#518A37]">
-                            {task.mentions}
-                          </span>{" "}
-                          {task.task_content}
-                        </p>
-                      </div>
-
-                      {/* Task Actions */}
-                      <div className="w-full flex items-center gap-3 mt-5 mb-8">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className="w-1/2 justify-center text-left font-normal"
+                            <SelectTrigger
+                              className={`w-[130px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                task.task_status === "todo"
+                                  ? "text-reddish bg-[#F8DADA]"
+                                  : task.task_status === "In progress"
+                                  ? "text-[#EEA15A] bg-[#F8F0DA]"
+                                  : task.task_status ===
+                                    "Internal feedback"
+                                  ? "text-[#142D57] bg-[#DEE9FC]"
+                                  : "text-[#3FAD51] bg-[#E5F8DA]"
+                              }`}
                             >
-                              {date ? (
-                                format(date, "PPP")
-                              ) : (
-                                <span>{task.due_date}</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={date}
-                              onSelect={setDate}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <Button
-                          className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
-                          onClick={() => handleUpdateTask(task.id,taskStatus)}
+                              <SelectValue placeholder="status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="todo">To Do</SelectItem>
+                              <SelectItem value="In progress">
+                                In Progress
+                              </SelectItem>
+                              <SelectItem value="Internal feedback">
+                                 Internal feedback
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </DrawerHeader>
+                      <div className=" border-black rounded-[10px] text-center">
+                        <MentionsInput
+                          value={editTaskInputValue}
+                          onChange={(e) => {
+                            handleChange(e);
+                          }}
+                          placeholder="Type @ to mention spaces, teams, or employees"
+                          className="mentions-input border p-2 rounded-md w-full"
                         >
-                          Update
-                        </Button>
+                          <Mention
+                            trigger="@"
+                            data={employees}
+                            displayTransform={(id, display) => `@${display} `}
+                            className=""
+                          />
+                        </MentionsInput>
+
+                        <div className="w-full flex items-center gap-3 my-4">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-1/2 justify-center text-left font-normal",
+                                  !date && "text-muted-foreground"
+                                )}
+                              >
+                                {date ? (
+                                  format(date, "PPP")
+                                ) : (
+                                  <span>{task.due_date}</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={date || new Date()}
+                                onSelect={setDate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <Button
+                            className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
+                            onClick={() => handleUpdateTask(task.id)}
+                          >
+                            Update
+                          </Button>
+                        </div>
                       </div>
                     </DrawerContent>
                   </Drawer>
@@ -1527,7 +1463,16 @@ const Task = () => {
             </p>
           </div>
         </div>
+        {/* <div className="fixed top-[300px ] z-50">
+        <NewTask/>
+        </div> */}
       </div>
+      {/* <Footer
+        notifyMobTrigger={""}
+        setNotifyMobTrigger={""}
+        test={""}
+        setTest={""}
+      /> */}
       <Footer
       //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
       />

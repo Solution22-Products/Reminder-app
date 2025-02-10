@@ -677,7 +677,7 @@ const Task = () => {
                 <SheetContent className="w-full bg-mobbg p-4  flex flex-col">
                   {/* Search Input */}
                   <div className="relative w-[90%]">
-                    <FiSearch className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
+                    <FiSearch className="absolute left-3 top-3 w-4 h-4 text-zinc-500"/>
                     <Input
                       placeholder="Search ..."
                       value={searchTasks}

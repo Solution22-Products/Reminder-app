@@ -54,6 +54,7 @@ import {
 import Footer from "../footer/page";
 import "@/app/(mob)/task/style.css";
 import { ToastAction } from "@/components/ui/toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const UsertaskStatusOptions = [
   {
@@ -419,13 +420,37 @@ const Task = () => {
   };
 
   const handleDeleteTask = async (taskId: string, teamId: string) => {
+  const handleDeleteTask = async (taskId: string, teamId: string) => {
     setSwipedTasks((prev) => ({ ...prev, [taskId]: false })); // Close swipe
+    console.log("task deleted", taskId, teamId);
     console.log("task deleted", taskId, teamId);
     const { data, error } = await supabase
       .from("tasks")
       .update({ is_deleted: true })
       .eq("team_id", teamId)
       .eq("id", taskId);
+    if (error) throw error;
+    const fetchData = async () => {
+      const { data: tasks } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("is_deleted", false);
+
+      if (tasks) setAllTasks(tasks);
+    };
+    fetchData();
+    toast({
+      title: "Deleted Successfully!",
+      description: "Task deleted successfully!",
+      action: (
+        <ToastAction
+          altText="Undo"
+          onClick={() => handleTaskUndo(teamId, taskId)}
+        >
+          Undo
+        </ToastAction>
+      ),
+    });
     if (error) throw error;
     const fetchData = async () => {
       const { data: tasks } = await supabase
@@ -464,10 +489,13 @@ const Task = () => {
           .select("*")
           .eq("is_deleted", false);
 
+
         if (tasks) setAllTasks(tasks);
       };
 
       // fetchTasks(); // Refresh the tasks list
+      fetchData();
+
       fetchData();
 
       toast({
@@ -549,7 +577,7 @@ const Task = () => {
     }
 
     // Filter tasks based on role
-    const filtered = allTasks.filter((task: any) => {
+    const filtered = userTasks.filter((task: any) => {
       const isTeamMatch = selectedTeam?.id === task.team_id;
       const hasMentionMatch = task.mentions.some((mention: string) =>
         mention.toLowerCase().includes(value)
@@ -567,6 +595,9 @@ const Task = () => {
 
     setFilteredTasksBySearch(filtered);
   };
+  // useEffect(() => {
+  //   setFilteredTasksBySearch(filtered)
+  // }, [allTasks, selectedTeam, selectedTaskStatus, userId, filterDate])
   // Function to move date backward
   useEffect(() => {
     if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
@@ -737,9 +768,13 @@ const Task = () => {
             </DrawerContent>
           </Drawer>
           <div className="w-[180px] h-6 text-center">
-            <h2 className="text-lg font-bold font-gesit text-blackish text-center">
-              {selectedSpace.space_name}
-            </h2>
+            {selectedSpace ? (
+              <h2 className="text-lg font-bold font-gesit text-blackish text-center">
+                {selectedSpace.space_name}
+              </h2>
+            ) : (
+              <Skeleton className=" bg-gray-300 w-full h-full" />
+            )}
           </div>
           <Select open={selectOpen} onOpenChange={setSelectOpen}>
             <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
@@ -843,7 +878,7 @@ const Task = () => {
           <Drawer open={isTeamDrawerOpen} onOpenChange={setIsTeamDrawerOpen}>
             <DrawerTrigger>
               <div className="bg-white py-3 rounded-xl border h-[40px] w-full border-gray-300 px-[18px] flex items-center">
-                <p>{selectedTeam?.team_name}</p>
+                <p>{selectedTeam?.team_name || "Select a Team"}</p>
                 <RiArrowDropDownLine className="w-[18px] h-[18px] text-black ml-auto" />
               </div>
             </DrawerTrigger>
@@ -1002,6 +1037,10 @@ const Task = () => {
                           {userId?.role === "owner" && swipedTasks[task.id] && (
                             <div
                               className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
+                          {/* Swipe Actions (Only visible when swiped & owner) */}
+                          {userId?.role === "owner" && swipedTasks[task.id] && (
+                            <div
+                              className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
             z-50 transition-all duration-300"
                             >
                               <button
@@ -1010,7 +1049,24 @@ const Task = () => {
                               >
                                 <Check className="w-6 h-6" />
                               </button>
+                            >
+                              <button
+                                className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
+                                onClick={() => handleCompleteTask(task.id)}
+                              >
+                                <Check className="w-6 h-6" />
+                              </button>
 
+                              <button
+                                className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
+                                onClick={() =>
+                                  handleDeleteTask(task.id, task.team_id)
+                                }
+                              >
+                                <Trash2 className="w-6 h-6" />
+                              </button>
+                            </div>
+                          )}
                               <button
                                 className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
                                 onClick={() =>
@@ -1062,6 +1118,21 @@ const Task = () => {
                                   </Select>
                                 </DrawerHeader>
 
+                                {/* Task Details */}
+                                <div className="p-4 border border-[#CECECE] rounded-[10px]">
+                                  <p>
+                                    <span className="text-[#BA6A6A]">
+                                      @{selectedSpace?.space_name}
+                                    </span>{" "}
+                                    <span className="text-[#5898C6]">
+                                      @{selectedTeam?.team_name}
+                                    </span>{" "}
+                                    <span className="text-[#518A37]">
+                                      {task.mentions}
+                                    </span>{" "}
+                                    {task.task_content}
+                                  </p>
+                                </div>
                                 {/* Task Details */}
                                 <div className="p-4 border border-[#CECECE] rounded-[10px]">
                                   <p>
@@ -1129,7 +1200,7 @@ const Task = () => {
               onOpenChange={setIsFilterDrawerOpen}
             >
               <DrawerTrigger onClick={() => setIsFilterDrawerOpen(true)}>
-                <div className="flex w-10 h-10  p-[8px_12px] justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white">
+                <div className="flex w-10 h-10 p-2 justify-center items-center rounded-lg border border-zinc-300 bg-white">
                   <FaEllipsisH className="h-4 w-6" />
                 </div>
               </DrawerTrigger>
@@ -1143,17 +1214,22 @@ const Task = () => {
                         ? adminTaskStatusOptions.map((status) => (
                             <li
                               key={status.value}
+                              tabIndex={0}
+                              role="button"
                               onClick={() => {
                                 setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close the drawer on selection
+                                setIsFilterDrawerOpen(false); // Close drawer on selection
                               }}
-                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
+                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
                                 selectedTaskStatus === status.value
                                   ? "text-zinc-950 font-semibold"
                                   : "text-blackish"
                               }`}
                             >
-                              {status.label}
+                              <span>{status.label}</span>
+                              {selectedTaskStatus === status.value && (
+                                <Check className="h-4 w-4 text-zinc-950" />
+                              )}
                             </li>
                           ))
                         : UsertaskStatusOptions.filter(
@@ -1161,24 +1237,30 @@ const Task = () => {
                           ).map((status) => (
                             <li
                               key={status.value}
+                              tabIndex={0}
+                              role="button"
                               onClick={() => {
                                 setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close the drawer on selection
+                                setIsFilterDrawerOpen(false); // Close drawer on selection
                               }}
-                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
+                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
                                 selectedTaskStatus === status.value
                                   ? "text-zinc-950 font-semibold"
                                   : "text-blackish"
                               }`}
                             >
-                              {status.label}
+                              <span>{status.label}</span>
+                              {selectedTaskStatus === status.value && (
+                                <Check className="h-4 w-4 text-zinc-950" />
+                              )}
                             </li>
                           ))}
                     </ul>
-                  </CommandList>
-                </Command>
+                  </div>
+                </div>
               </DrawerContent>
             </Drawer>
+            
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -1200,6 +1282,10 @@ const Task = () => {
             {/* Date Picker */}
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
+                <button
+                  className="flex w-[110px] h-10 px-4 font-geist justify-center items-center rounded-[10px] border border-zinc-300 bg-white text-[#09090B]"
+                  onClick={() => setPopoverOpen(true)}
+                >
                 <button
                   className="flex w-[110px] h-10 px-4 font-geist justify-center items-center rounded-[10px] border border-zinc-300 bg-white text-[#09090B]"
                   onClick={() => setPopoverOpen(true)}
@@ -1463,17 +1549,10 @@ const Task = () => {
             </p>
           </div>
         </div>
-        {/* <div className="fixed top-[300px ] z-50">
-        <NewTask/>
-        </div> */}
       </div>
-      {/* <Footer
-        notifyMobTrigger={""}
-        setNotifyMobTrigger={""}
-        test={""}
-        setTest={""}
-      /> */}
       <Footer
+      //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+      />
       //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
       />
     </>

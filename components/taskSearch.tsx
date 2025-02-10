@@ -1,4 +1,62 @@
-// {/* <div className="w-10 h-10">
+
+// import { Trash2, X} from "lucide-react";
+// import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet";
+// import { DrawerContent, DrawerHeader, DrawerTitle ,Drawer} from "./ui/drawer";
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+// import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+// import { FiSearch } from "react-icons/fi";
+// import { Input } from "./ui/input";
+// import { OverdueListSkeleton } from "@/app/(web)/components/skeleton-ui";
+// import { Button } from "./ui/button";
+// import { useState } from "react";
+
+// interface TasksSearchProps{
+// userTasks:any;
+
+// }
+
+// const TaskSearch:React.FC<TasksSearchProps> = ({userTasks}) => {
+//     const [date, setDate] = useState<Date | null>(null);
+//     const [taskLoading, setTaskLoading] = useState<boolean>(false);
+//     const [swipedTasks, setSwipedTasks] = useState<any>({});
+
+//     const [taskStatus, setTaskStatus] = useState<string>("todo");
+//     const [openTaskId, setOpenTaskId] = useState<any>(null);
+//     const [searchTasks, setSearchTasks] = useState("");
+//     const [filteredTasksBySearch, setFilteredTasksBySearch] = useState<any[]>([]);
+//     const handleSearchByTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
+//         const value = event.target.value.toLowerCase();
+//         setSearchTasks(value);
+    
+//         if (!value.trim()) {
+//           // If input is empty, don't show tasks
+//           setFilteredTasksBySearch([]);
+//           return;
+//         }
+    
+//         // Filter tasks based on role
+//         const filtered = userTasks.filter((task: any) => {
+//           const isTeamMatch = selectedTeam?.id === task.team_id;
+//           const hasMentionMatch = task.mentions.some((mention: string) =>
+//             mention.toLowerCase().includes(value)
+//           );
+    
+//           if (userId?.role === "owner") {
+//             return isTeamMatch && hasMentionMatch; // Owner: all tasks in the team with matching mentions
+//           } else {
+//             const isUserMentioned = task.mentions.includes(
+//               `@${userId?.entity_name}`
+//             );
+//             return isTeamMatch && isUserMentioned && hasMentionMatch; // User: Only their own tasks
+//           }
+//         });
+    
+//         setFilteredTasksBySearch(filtered);
+//       };
+
+//     return (
+
+//         <div className="w-10 h-10">
 //               <Sheet>
 //                 <SheetTrigger>
 //                   <FiSearch className="absolute mt-3 ml-[12px] text-zinc-500" />
@@ -203,7 +261,7 @@
 //                                 <div className="w-full flex items-center gap-3 mt-5 mb-8">
 //                                   <Popover>
 //                                     <PopoverTrigger asChild>
-//                                       <Button
+//                                       <Button 
 //                                         variant={"outline"}
 //                                         className="w-1/2 justify-center text-left font-normal"
 //                                       >
@@ -244,4 +302,7 @@
 //                   </div>
 //                 </SheetContent>
 //               </Sheet>
-//             </div> */}
+//             </div>
+//     )
+// }
+// export default TaskSearch;

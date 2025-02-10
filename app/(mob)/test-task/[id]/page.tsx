@@ -53,6 +53,7 @@ import {
 import Footer from "../../footer/page";
 import AddTaskMentions from "@/components/addTaskMentions";
 import "./style.css";
+import { string } from "zod";
 
 const UsertaskStatusOptions = [
   {
@@ -64,8 +65,8 @@ const UsertaskStatusOptions = [
     label: "In progress",
   },
   {
-    value: "feedback",
-    label: "feedback",
+    value: "Internal feedback",
+    label: "Internal feedback",
   },
 ];
 
@@ -79,8 +80,8 @@ const adminTaskStatusOptions = [
     label: "In progress",
   },
   {
-    value: "feedback",
-    label: "feedback",
+    value: "Internal feedback",
+    label: "Internal feedback",
   },
   {
     value: "Completed",
@@ -136,11 +137,8 @@ const Task = (props: Props) => {
   const [mentionedItems, setMentionedItems] = useState<
     { id: number; name: string }[]
   >([]);
-  const [adminOverdueTasks, setAdminOverdueTasks] = useState<any[]>([]);
+  // const [adminOverdueTasks, setAdminOverdueTasks] = useState<any[]>([]);
   const [spaces, setSpaces] = useState<MentionData[]>([]);
-  const [teams, setTeams] = useState<MentionData[]>([]);
-  const [ids, setIds] = useState<string[]>([]);
-  const [mentionLevel, setMentionLevel] = useState<number>(1);
   const [memberData, setMemberData] = useState<string[]>([]);
   const [employees, setEmployees] = useState<MentionData[]>([]);
   const [editTaskInputValue, setEditTaskInputValue] = useState("");
@@ -158,7 +156,7 @@ const Task = (props: Props) => {
         if (spaces) setAllSpace(spaces);
         if (teams) setAllTeams(teams);
         if (tasks) setAllTasks(tasks);
-        setAdminOverdueTasks(spaces ?? []);
+        // setAdminOverdueTasks(spaces ?? []);
 
         if (!userId) return;
 
@@ -375,7 +373,12 @@ const Task = (props: Props) => {
       const currentTask = taskData[0];
 
       // Prepare updated fields
-      const updatedFields: { due_date?: string; task_status?: string } = {};
+      const updatedFields: {
+        due_date?: string;
+        task_status?: string;
+        task_content?: string;
+        mentions?: string[];
+      } = {};
 
       if (date) {
         updatedFields.due_date = formatDate(date as Date);
@@ -387,6 +390,40 @@ const Task = (props: Props) => {
         updatedFields.task_status = taskStatus;
       } else {
         updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
+      }
+
+      if (editTaskInputValue) {
+        let mentions: string[] = [];
+
+        // Extract @mentions
+        const mentionPattern = /@\w+(?:_\w+)*\b/g;
+        const extractedMentions =
+          editTaskInputValue.match(mentionPattern) || [];
+        mentions.push(...extractedMentions);
+
+        // Extract mentions from brackets
+        const bracketPattern = /\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g;
+        let match: RegExpExecArray | null;
+        while ((match = bracketPattern.exec(editTaskInputValue)) !== null) {
+          mentions.push(`@${match[1]}`);
+        }
+
+        // Remove duplicate mentions
+        mentions = Array.from(new Set(mentions));
+
+        let plainText = editTaskInputValue
+          .replace(/@\w+(?:_\w+)*\b/g, "") // Remove @mentions
+          .replace(/\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g, "") // Remove bracket mentions
+          .replace(/@/g, "") // Remove any remaining '@'
+          .trim();
+
+        updatedFields.task_content = plainText;
+        updatedFields.mentions = mentions;
+        console.log("inside new content");
+      } else {
+        updatedFields.task_content = currentTask.task_content;
+        updatedFields.mentions = currentTask.mentions;
+        console.log("inside old content");
       }
 
       // Update the task
@@ -560,93 +597,37 @@ const Task = (props: Props) => {
     }
   }, [router]);
 
-  const extractMentions = (value: string) => {
-    const mentionRegex = /@\[(.*?)\]\((\d+)\)/g;
-    const matches = Array.from(value.matchAll(mentionRegex)).map((match) => ({
-      name: match[1],
-      id: parseInt(match[2], 10),
-    }));
-    setMentionedItems(matches);
-  };
-
-  const fetchTeamsAndTasks = async (teamId?: string) => {
+  const fetchTeamsAndTasks = async () => {
     try {
       const { data: teamData, error: teamError } = await supabase
         .from("teams")
-        .select("*")
-        .eq("space_id", teamId)
-        .eq("is_deleted", false);
-
-      if (teamError) throw teamError;
-      {
-        // userId?.role === "owner" &&
-        setTeams(
-          teamData.map((team) => ({ id: team.id, display: team.team_name }))
-        );
-        // console.log(
-        //   teamData.map((team) => ({ id: team.id, display: team.team_name }))
-        // );
-      }
-
-      const { data: teamMember, error: teamMemberError } = await supabase
-        .from("teams")
         .select("members")
-        .eq("id", ids[1])
+        .eq("id", selectedTeam?.id)
         .eq("is_deleted", false);
 
-      if (teamMemberError) throw teamMemberError;
-
-      // Ensure data exists and map correctly
-      if (teamMember && teamMember.length > 0) {
-        const members = teamMember.flatMap((team) => team.members);
+      if (teamData && teamData.length > 0) {
+        const members = teamData.flatMap((team) => team.members);
 
         setMemberData(members);
         setEmployees(
-          members.map((member) => ({ id: member.id, display: member.name }))
+          members.map((member) => ({
+            id: member.id,
+            display: member.entity_name,
+          }))
         );
-        console.log(
-          members.map((member) => ({ id: member.id, name: member.name }))
-        );
-      } else {
-        console.log("No members found.");
       }
-
-      console.log(ids[1]);
     } catch (err) {
       console.error("Error fetching task data:", err);
-      setTaskLoading(false);
     }
   };
 
   const handleChange = (event: { target: { value: string } }) => {
     const newValue = event.target.value;
     setEditTaskInputValue(newValue);
-    extractMentions(newValue);
     console.log(newValue);
 
-    // Extract mention IDs
-    const mentionIds = Array.from(
-      newValue.matchAll(/\(([^)]+)\)/g),
-      (match) => match[1]
-    );
-
-    setIds(mentionIds);
-    mentionIds.forEach((id) => fetchTeamsAndTasks(id));
-
-    if (newValue === "") {
-      setMentionedItems([]);
-      setMentionLevel(1);
-    }
+    fetchTeamsAndTasks();
   };
-
-  useEffect(() => {
-    if (openTaskId) {
-      const task = filteredTasks.find((task) => task.id === openTaskId);
-      if (task) {
-        setEditTaskInputValue(task.mentions + " " + task.task_content);
-      }
-    }
-  }, [openTaskId, filteredTasks]);
 
   return (
     <>
@@ -908,7 +889,7 @@ const Task = (props: Props) => {
                                   ? "text-reddish bg-[#F8DADA]"
                                   : task.task_status === "In progress"
                                   ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                  : task.task_status === "feedback"
+                                  : task.task_status === "Internal feedback"
                                   ? "text-[#142D57] bg-[#DEE9FC]"
                                   : "text-[#3FAD51] bg-[#E5F8DA]"
                               }`}
@@ -936,7 +917,7 @@ const Task = (props: Props) => {
                 <DrawerTitle className="pt-[18px] px-5">Filter</DrawerTitle>
                 <Command>
                   <CommandList>
-                    <p> {userId?.role}</p>
+                    
                     <ul className="mt-4 space-y-5 px-5 pt-3">
                       {userId?.role === "owner"
                         ? adminTaskStatusOptions.map((status) => (
@@ -1046,7 +1027,16 @@ const Task = (props: Props) => {
                 className="relative"
               >
                 <div
-                  onClick={() => setOpenTaskId(task.id)}
+                  onClick={() => {
+                    setOpenTaskId(task.id);
+                    setEditTaskInputValue(
+                      task.mentions
+                        .map((mention: string) => `${mention}`)
+                        .join(" ") +
+                        " " +
+                        task.task_content
+                    );
+                  }}
                   className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
                     swipedTaskId === task.id
                       ? "-translate-x-20"
@@ -1061,7 +1051,12 @@ const Task = (props: Props) => {
                     </div>
                     <p className="text-black mt-2 text-sm">
                       <span className="font-semibold inline-block">
-                        {task.mentions}
+                        {task.mentions.map((mention: string, index: number) => (
+                          <span key={index}>
+                            {mention}
+                            {index !== task.mentions.length - 1 && " "}
+                          </span>
+                        ))}
                       </span>{" "}
                       {task.task_content}
                     </p>
@@ -1086,7 +1081,7 @@ const Task = (props: Props) => {
                           ? "text-reddish bg-[#F8DADA]"
                           : task.task_status === "In progress"
                           ? "text-[#EEA15A] bg-[#F8F0DA]"
-                          : task.task_status === "feedback"
+                          : task.task_status === "Internal feedback"
                           ? "text-[#142D57] bg-[#DEE9FC]"
                           : "text-[#3FAD51] bg-[#E5F8DA]"
                       }`}
@@ -1120,11 +1115,8 @@ const Task = (props: Props) => {
 
                 {openTaskId === task.id && (
                   <Drawer
-                    open={openTaskId !== null}
-                    onOpenChange={() => {
-                      setOpenTaskId(null);
-                      // setEditTaskInputValue(task.mentions + task.task_content);
-                    }}
+                    open={openTaskId === null ? false : true}
+                    onOpenChange={() => setOpenTaskId(null)}
                   >
                     <DrawerContent className="px-4">
                       <DrawerHeader className="flex justify-between items-center px-0">
@@ -1140,12 +1132,12 @@ const Task = (props: Props) => {
                             onValueChange={(value) => setTaskStatus(value)}
                           >
                             <SelectTrigger
-                              className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                              className={`w-[130px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                 task.task_status === "todo"
                                   ? "text-reddish bg-[#F8DADA]"
                                   : task.task_status === "In progress"
                                   ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                  : task.task_status === "feedback"
+                                  : task.task_status === "Internal feedback"
                                   ? "text-[#142D57] bg-[#DEE9FC]"
                                   : "text-[#3FAD51] bg-[#E5F8DA]"
                               }`}
@@ -1157,12 +1149,14 @@ const Task = (props: Props) => {
                               <SelectItem value="In progress">
                                 In Progress
                               </SelectItem>
-                              <SelectItem value="feedback">Feedback</SelectItem>
-                              {userId?.role === "owner" && (
+                              <SelectItem value="Internal feedback">
+                                Internal feedback
+                              </SelectItem>
+                              {/* {userId?.role === "owner" && (
                                 <SelectItem value="Completed">
                                   Completed
                                 </SelectItem>
-                              )}
+                              )} */}
                             </SelectContent>
                           </Select>
                         )}
@@ -1170,21 +1164,17 @@ const Task = (props: Props) => {
                       <div className=" border-black rounded-[10px] text-center">
                         <MentionsInput
                           value={editTaskInputValue}
-                          onChange={(e) => {handleChange(e)}}
+                          onChange={(e) => {
+                            handleChange(e);
+                          }}
                           placeholder="Type @ to mention spaces, teams, or employees"
                           className="mentions-input border p-2 rounded-md w-full"
                         >
                           <Mention
                             trigger="@"
-                            data={
-                              mentionLevel === 1
-                                ? spaces
-                                : mentionLevel === 2
-                                ? teams
-                                : employees
-                            }
+                            data={employees}
                             displayTransform={(id, display) => `@${display} `}
-                            onAdd={() => setMentionLevel((prev) => prev + 1)}
+                            className=""
                           />
                         </MentionsInput>
 

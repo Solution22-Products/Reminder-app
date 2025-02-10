@@ -283,11 +283,11 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
 
         setMemberData(members);
         setEmployees(
-          members.map((member) => ({ id: member.id, display: member.name }))
+          members.map((member) => ({ id: member.id, display: member.entity_name }))
         );
-        console.log(
-          members.map((member) => ({ id: member.id, name: member.name }))
-        );
+        // console.log(
+        //   members.map((member) => ({ id: member.id, name: member.name }))
+        // );
       } else {
         console.log("No members found.");
       }
@@ -336,6 +336,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
   };
 
   const handleCreateTask = async () => {
+    console.log("created");
     const names = Array.from(
       inputValue.matchAll(/@\[(.*?)\]/g),
       (match) => match[1]

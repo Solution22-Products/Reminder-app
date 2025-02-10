@@ -69,7 +69,7 @@ const AddTaskMentions: React.FC<ReactProps> = ({
 
         setMemberData(members);
         setEmployees(
-          members.map((member) => ({ id: member.id, display: member.name }))
+          members.map((member) => ({ id: member.id, display: member.entity_name }))
         );
       }
     } catch (err) {

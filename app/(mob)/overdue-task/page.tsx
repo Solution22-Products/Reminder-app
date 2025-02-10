@@ -537,7 +537,9 @@ const OverdueTaskPage = () => {
         )}
       </div>
     </main>
-    <Footer notifyMobTrigger={''} setNotifyMobTrigger={''} test = {''} setTest={''}/>
+    <Footer
+        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+         />
     </>
   );
 };

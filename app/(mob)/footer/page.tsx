@@ -20,6 +20,7 @@ interface UserData {
   access: { space: boolean; team: boolean; task: boolean; all: boolean };
 }
 
+<<<<<<< HEAD
 interface props {
   notifyMobTrigger: any;
   setNotifyMobTrigger: any;
@@ -33,6 +34,16 @@ const Footer: React.FC<props> = ({
   test,
   setTest,
 }) => {
+=======
+// interface props {
+//   notifyMobTrigger : any;
+//   setNotifyMobTrigger : any
+//   test : any;
+//   setTest : any
+// }
+
+const Footer  = () => {
+>>>>>>> de924175ebf5f968d1e582e2d21d99753926df9b
   const pathname = usePathname();
   const route = useRouter();
   const [userId, setUserId] = useState<UserData | null>(null);
@@ -68,6 +79,7 @@ const Footer: React.FC<props> = ({
       }
     };
 
+<<<<<<< HEAD
     getUser();
   }, []);
 
@@ -106,6 +118,11 @@ const Footer: React.FC<props> = ({
   useEffect(() => {
     getUnnotifiedTasks();
   }, [userId, notifyMobTrigger, test]);
+=======
+    useEffect(() => {
+      getUnnotifiedTasks();
+    },[userId]);
+>>>>>>> de924175ebf5f968d1e582e2d21d99753926df9b
 
   return (
     <footer className="fixed  z-[1] bottom-0 w-full h-[83px] pt-[12px] pb-[30px]  border border-gray-300 bg-white flex justify-around items-center">

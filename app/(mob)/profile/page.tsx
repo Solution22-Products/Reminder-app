@@ -23,6 +23,7 @@ import { Router } from "next/router";
 import { OverdueListSkeleton } from "@/app/(web)/components/skeleton-ui";
 import { getLoggedInUserData } from "@/app/(signin-setup)/sign-in/action";
 import { useGlobalContext } from "@/context/store";
+import Footer from "../footer/page";
 
 interface UserData {
   id: string;
@@ -193,7 +194,6 @@ const UserProfile = () => {
   };
 
   useEffect(() => {
-    console.log(userId);
     const redirectToTask = () => {
       router.push("/profile");
     };
@@ -211,7 +211,6 @@ const UserProfile = () => {
   useEffect(() => {
     const getUser = async () => {
         const user = await getLoggedInUserData();
-          console.log(user, " user");
         const { data, error } = await supabase
           .from("users")
           .select("*")
@@ -222,7 +221,6 @@ const UserProfile = () => {
           console.log(error);
           return;
         }
-        console.log(data);
         form.setValue("name", data.username);
         form.setValue("email", data.email);
         form.setValue("mobile", data.mobile);
@@ -497,6 +495,9 @@ const UserProfile = () => {
           </div>
         </div>
       </div>
+      <Footer
+        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+         />
     </>
   );
 };

@@ -208,10 +208,6 @@
   .mentions-input__input{
     padding: 5px;
   }
-  /* .mentions-input .mentions-input__control .mentions-input__input:focus-visible{
-    border: none !important;
-    padding: 5px;
-  } */
   .mentions-input__suggestions{
     padding: 10px;
     max-height: 100px !important;

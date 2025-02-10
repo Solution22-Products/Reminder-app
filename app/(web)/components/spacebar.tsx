@@ -1058,7 +1058,7 @@ const fetchTeamsForTab = async (tabId : number) => {
         <span>{loading}</span>
       </div>
       <div className="px-3 flex justify-start items-center gap-3 h-[calc(100vh-70px)]">
-        <div className="flex flex-col justify-between items-center text-center bg-white px-3 border-none rounded-[12px] overflow-x-auto w-[170px] max-w-[200px] h-full pt-3 pb-3 playlist-scroll">
+        <div className="flex flex-col justify-between items-center text-center bg-white px-3 border-none rounded-[12px] overflow-x-auto w-[190px] max-w-[200px] h-full pt-3 pb-3 playlist-scroll">
               <div className="text-sm text-gray-400 flex flex-col gap-2.5 w-full">
           {(loggedUserData?.role === "owner" ||
               (loggedUserData?.role === "User" &&
@@ -1444,7 +1444,7 @@ const fetchTeamsForTab = async (tabId : number) => {
                 }
           </div>
         </div>
-        <div className="w-[calc(100%-170px)] flex flex-col gap-3 h-[calc(100vh-70px)]">
+        <div className="w-[calc(100%-190px)] flex flex-col gap-3 h-[calc(100vh-70px)]">
           <div className="w-full h-[60px] flex justify-between items-center bg-white rounded-[10px] p-4">
             {
               loggedUserData?.role === "owner" ? (

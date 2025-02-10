@@ -55,109 +55,191 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [taskStatus, setTaskStatus] = useState<string>("todo");
 
-  const fetchTaskData = async () => {
-    try {
-      const { data: taskData, error: taskError } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("is_deleted", false);
+  const [allSpace, setAllSpace] = useState<any[]>([]);
+  const [allTeams, setAllTeams] = useState<any[]>([]);
+  const [allTasks, setAllTasks] = useState<any[]>([]);
+  const [userSpace, setUserSpace] = useState<any[]>([]);
 
-      if (taskError) throw taskError;
-
-      const { data: teamData, error: teamError } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("is_deleted", false);
-
-      if (teamError) throw teamError;
-
-      const { data: spaceData, error: spaceError } = await supabase
-        .from("spaces")
-        .select("*")
-        .eq("is_deleted", false);
-
-      if (spaceError) throw spaceError;
-
-      setAdminOverdueTasks(spaceData);
-      const filteredTasks = taskData
-        .map((task) => {
-          const team = teamData.find((team) => team.id === task.team_id);
-          const space = spaceData.find((space) => space.id === task.space_id);
-          if (
-            team &&
-            space &&
-            task.mentions?.includes(`@${userId?.entity_name}`)
-          ) {
-            return {
-              ...task,
-              team_name: team.team_name,
-              space_name: space.space_name,
-            };
-          }
-          return null;
-        })
-        .filter(Boolean);
-
-      // const overdue = filteredTasks.filter((task) =>
-      //   new Date(task.due_date).getTime()
-      // );
-      const adminOverdue = taskData.map((task) => {
-        const team = teamData.find((team) => team.id === task.team_id);
-        const space = spaceData.find((space) => space.id === task.space_id);
-        return team && space
-          ? {
-              ...task,
-              team_name: team.team_name,
-              space_name: space.space_name,
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [{ data: spaces }, { data: teams }, { data: tasks }] = await Promise.all([
+          supabase.from("spaces").select("*").eq("is_deleted", false),
+          supabase.from("teams").select("*").eq("is_deleted", false),
+          supabase.from("tasks").select("*").eq("is_deleted", false),
+        ]);
+  
+        if (spaces) setAllSpace(spaces);
+        if (teams) setAllTeams(teams);
+        if (tasks) setAllTasks(tasks);
+        setAdminOverdueTasks(spaces ?? []);
+  
+        if (!userId) return;
+  
+        const matchedTeams = teams?.filter((team) =>
+          team.members.some((member : any) => member.entity_name === userId.entity_name)
+        ) || [];
+  
+        const matchedSpaceIds = new Set(matchedTeams.map((team) => team.space_id));
+        const matchedSpaces = spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
+        setUserSpace(matchedSpaces);
+  
+        const getUniqueItems = (array : any, key : any) => {
+          const seen = new Set();
+          return array.filter((item : any) => {
+            const value = item[key];
+            if (!seen.has(value)) {
+              seen.add(value);
+              return true;
             }
-          : null;
-      });
+            return false;
+          });
+        };
+  
+        const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
+        if (sourceData) {
+          setSpaces(
+            getUniqueItems(
+              sourceData.map((space) => ({ id: space.id, display: space.space_name })),
+              "display"
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, [userId]);
+  
 
-      // setOverdueTasks(filteredTasks);
-      // setAdminOverdueTasks(adminOverdue);
-      setTaskLoading(false);
-
-      const getUniqueItems = <T, K extends keyof T>(array: T[], key: K) => {
-        const seen = new Set();
-        return array.filter((item) => {
-          const value = item[key];
-          if (!seen.has(value)) {
-            seen.add(value);
-            return true;
-          }
-          return false;
-        });
-      };
-
-      const sourceData =
-        userId?.role === "owner" ? adminOverdueTasks : filteredTasks;
-
-      setSpaces(
-        getUniqueItems(
-          sourceData.map((space) =>
-            userId?.role === "User"
-              ? { id: space.space_id, display: space.space_name }
-              : { id: space.id, display: space.space_name }
-          ),
-          "display"
+  useEffect(() => {
+    if (userId?.role === "owner") {
+      setUserSpace([...allSpace]);
+    } else {
+      const matchedTeams = allTeams.filter((team) =>
+        team.members.some(
+          (member: any) =>
+            member.entity_name === (userId?.entity_name)
         )
       );
-
-      setTeams(
-        getUniqueItems(
-          sourceData.map((team) =>
-            userId?.role === "User"
-              ? { id: team.team_id, display: team.team_name }
-              : { id: team.id, display: team.team_name }
-          ),
-          "display"
-        )
+      console.log(matchedTeams, " matchedTeams");
+      const matchedSpaceIds = new Set(
+        matchedTeams.map((team) => team.space_id)
       );
-    } catch (err) {
-      console.error("Error fetching task data:", err);
-      setTaskLoading(false);
+
+      const matchedSpaces = allSpace.filter((space) =>
+        matchedSpaceIds.has(space.id)
+      );
+      setUserSpace(matchedSpaces);
+      console.log(matchedSpaces, " matchedSpaces");
     }
-  };
+  }, [allSpace, allTeams, userId]);
+
+  // const fetchTaskData = async () => {
+  //   try {
+  //     const { data: taskData, error: taskError } = await supabase
+  //       .from("tasks")
+  //       .select("*")
+  //       .eq("is_deleted", false);
+
+  //     if (taskError) throw taskError;
+
+  //     const { data: teamData, error: teamError } = await supabase
+  //       .from("teams")
+  //       .select("*")
+  //       .eq("is_deleted", false);
+
+  //     if (teamError) throw teamError;
+
+  //     const { data: spaceData, error: spaceError } = await supabase
+  //       .from("spaces")
+  //       .select("*")
+  //       .eq("is_deleted", false);
+
+  //     if (spaceError) throw spaceError;
+
+  //     // setAdminOverdueTasks(spaceData);
+  //     const filteredTasks = taskData
+  //       .map((task) => {
+  //         const team = teamData.find((team) => team.id === task.team_id);
+  //         const space = spaceData.find((space) => space.id === task.space_id);
+  //         if (
+  //           team &&
+  //           space &&
+  //           task.mentions?.includes(`@${userId?.entity_name}`)
+  //         ) {
+  //           return {
+  //             ...task,
+  //             team_name: team.team_name,
+  //             space_name: space.space_name,
+  //           };
+  //         }
+  //         return null;
+  //       })
+  //       .filter(Boolean);
+
+  //     // const overdue = filteredTasks.filter((task) =>
+  //     //   new Date(task.due_date).getTime()
+  //     // );
+  //     const adminOverdue = taskData.map((task) => {
+  //       const team = teamData.find((team) => team.id === task.team_id);
+  //       const space = spaceData.find((space) => space.id === task.space_id);
+  //       return team && space
+  //         ? {
+  //             ...task,
+  //             team_name: team.team_name,
+  //             space_name: space.space_name,
+  //           }
+  //         : null;
+  //     });
+
+  //     // setOverdueTasks(filteredTasks);
+  //     // setAdminOverdueTasks(adminOverdue);
+  //     setTaskLoading(false);
+
+  //     const getUniqueItems = <T, K extends keyof T>(array: T[], key: K) => {
+  //       const seen = new Set();
+  //       return array.filter((item) => {
+  //         const value = item[key];
+  //         if (!seen.has(value)) {
+  //           seen.add(value);
+  //           return true;
+  //         }
+  //         return false;
+  //       });
+  //     };
+
+  //     const sourceData =
+  //       userId?.role === "owner" ? adminOverdueTasks : filteredTasks;
+
+  //     setSpaces(
+  //       getUniqueItems(
+  //         sourceData.map((space) =>
+  //           userId?.role === "User"
+  //             ? { id: space.space_id, display: space.space_name }
+  //             : { id: space.id, display: space.space_name }
+  //         ),
+  //         "display"
+  //       )
+  //     );
+
+  //     setTeams(
+  //       getUniqueItems(
+  //         sourceData.map((team) =>
+  //           userId?.role === "User"
+  //             ? { id: team.team_id, display: team.team_name }
+  //             : { id: team.id, display: team.team_name }
+  //         ),
+  //         "display"
+  //       )
+  //     );
+  //   } catch (err) {
+  //     console.error("Error fetching task data:", err);
+  //     setTaskLoading(false);
+  //   }
+  // };
 
   const extractMentions = (value: string) => {
     const mentionRegex = /@\[(.*?)\]\((\d+)\)/g;
@@ -178,7 +260,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
 
       if (teamError) throw teamError;
       {
-        userId?.role === "owner" &&
+        // userId?.role === "owner" &&
           setTeams(
             teamData.map((team) => ({ id: team.id, display: team.team_name }))
           );
@@ -228,7 +310,6 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
       (match) => match[1]
     );
 
-    console.log("Extracted IDs:", mentionIds);
     setIds(mentionIds);
 
     // Fetch data for all extracted IDs
@@ -311,7 +392,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
   };
 
   useEffect(() => {
-    fetchTaskData();
+    // fetchTaskData();
   }, [userId]);
 
   return (
@@ -371,7 +452,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
                     ? employees
                     : []
                 }
-                displayTransform={(id, display) => `@${display}`}
+                displayTransform={(id, display) => `@${display} `}
                 onAdd={() => setMentionLevel((prev) => prev + 1)}
                 className="p-5"
               />

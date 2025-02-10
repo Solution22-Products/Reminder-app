@@ -51,8 +51,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
 import Footer from "../footer/page";
+import "@/app/(mob)/task/style.css";
+import { ToastAction } from "@/components/ui/toast";
 
 const UsertaskStatusOptions = [
   {
@@ -120,6 +121,9 @@ const Task = () => {
   const [selectOpen, setSelectOpen] = useState(false);
   const [profileLoader, setProfileLoader] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+  const [swipedTasks, setSwipedTasks] = useState<{ [key: number]: boolean }>(
+    {}
+  );
   const today = new Date();
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
@@ -206,31 +210,7 @@ const Task = () => {
     setSelectedTeam(filteredTeams[0]);
   }, [selectedSpace]);
 
-  // useEffect(() => {
-  //   console.log("Selected Team:", selectedTeam);
-
-  //   var filteredTasks = null;
-  //   if (userId?.role == "owner") {
-  //     filteredTasks = allTasks.filter(
-  //       (task: any) => task.team_id === selectedTeam?.id
-  //     );
-
-  //     setUserTasks(filteredTasks);
-  //   } else {
-  //     filteredTasks = allTasks.filter(
-  //       (task: any) =>
-  //         selectedTeam?.id === task.team_id &&
-  //         task.mentions.some(
-  //           (mention: string) =>
-  //             mention === "@everyone" || mention === `@${userId?.entity_name}`
-  //         )
-  //     );
-  //     setUserTasks(filteredTasks);
-  //   }
-  //   setTaskLoading(false);
-  //   console.log("Filtered Tasks:", filteredTasks);
-  // }, [selectedTeam, allTasks]);
-  const handleUpdateTask = async (id: number) => {
+  const handleUpdateTask = async (id: number, newStatus?:string) => {
     try {
       // Fetch the task data
       const { data: taskData, error: taskError } = await supabase
@@ -249,19 +229,21 @@ const Task = () => {
       const currentTask = taskData[0];
 
       // Prepare updated fields
-      const updatedFields: { due_date?: string; task_status?: string } = {};
+      const updatedFields: { due_date?: string; task_status?: string } = {
+        due_date: date ? formatDate(date as Date) : currentTask.due_date, // Update due date if changed
+        task_status: newStatus ?? currentTask.task_status, // Ensure new status updates correctly
+      };
+      // if (date) {
+      //   updatedFields.due_date = formatDate(date as Date);
+      // } else {
+      //   updatedFields.due_date = currentTask.due_date; // Keep the old value if no new date is provided
+      // }
 
-      if (date) {
-        updatedFields.due_date = formatDate(date as Date);
-      } else {
-        updatedFields.due_date = currentTask.due_date; // Keep the old value if no new date is provided
-      }
-
-      if (taskStatus) {
-        updatedFields.task_status = taskStatus;
-      } else {
-        updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
-      }
+      // if (taskStatus) {
+      //   updatedFields.task_status = taskStatus || newStatus;
+      // } else {
+      //   updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
+      // }
 
       // Update the task
       const { error } = await supabase
@@ -275,6 +257,7 @@ const Task = () => {
 
       setOpenTaskId(null);
       setDate(undefined);
+      setTaskStatus("");
 
       // Send a success notification
       if ("Notification" in window) {
@@ -307,21 +290,89 @@ const Task = () => {
   const filteredTasks = userTasks.filter((task) =>
     selectedTaskStatus ? task.task_status === selectedTaskStatus : true
   );
-  // const handlers = useSwipeable({
-  //   onSwipedLeft: () => setSwipedTaskId(taskId),
-  //   onSwipedRight: () => setSwipedTaskId(null),
-  //   preventScrollOnSwipe: true,
-  //   trackMouse: true,
-  // });
+  const handleSwipe = (taskId: number, direction: "left" | "right") => {
+    setSwipedTasks((prev) => ({
+      ...prev,
+      [taskId]: direction === "left", // Swiped left means action buttons appear
+    }));
+  };
 
-  const handleDeleteTask = async (taskId: string) => {
-    console.log("task deleted");
+  const handleDeleteTask = async (taskId: string,teamId:string) => {
+    setSwipedTasks((prev) => ({ ...prev, [taskId]: false })); // Close swipe
+    console.log("task deleted",taskId ,teamId);
     const { data, error } = await supabase
       .from("tasks")
       .update({ is_deleted: true })
+      .eq("team_id", teamId)
       .eq("id", taskId);
+      if(error) throw error
+      const fetchData = async () => {
+        
+        const { data: tasks } = await supabase
+          .from("tasks")
+          .select("*")
+          .eq("is_deleted", false);
+  
+       
+        if (tasks) setAllTasks(tasks);
+      };
+      fetchData();
+      toast({
+        title: "Deleted Successfully!",
+        description: "Task deleted successfully!",
+        action: (
+          <ToastAction
+            altText="Undo"
+            onClick={() => handleTaskUndo(teamId, taskId)}
+          >
+            Undo
+          </ToastAction>
+        ),
+      });
   };
-  const handleCompleteTask = (taskId: string) => {};
+  const handleTaskUndo = async (teamId: string, taskId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .update({ is_deleted: false })
+        .eq("team_id", teamId)
+        .eq("id", taskId);
+
+      if (error) throw error;
+      const fetchData = async () => {
+        
+        const { data: tasks } = await supabase
+          .from("tasks")
+          .select("*")
+          .eq("is_deleted", false);
+  
+       
+        if (tasks) setAllTasks(tasks);
+      };
+
+      // fetchTasks(); // Refresh the tasks list
+        fetchData()
+     
+      toast({
+        title: "Undo Successful",
+        description: "The task has been restored.",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error("Error undoing delete:", error);
+      toast({
+        title: "Error",
+        description: "Failed to restore the task. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  };
+  const handleCompleteTask = async (id:number) => {
+ 
+    await handleUpdateTask(id, "Completed");
+    setSwipedTasks((prev) => ({ ...prev, [id]: false })); // Close swipe
+  };
   const handleSearchByTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value.toLowerCase();
     setSearchTasks(value);
@@ -623,7 +674,7 @@ const Task = () => {
                     className="w-10 h-10 justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white"
                   />
                 </SheetTrigger>
-                <SheetContent className="w-full bg-mobbg p-4">
+                <SheetContent className="w-full bg-mobbg p-4  flex flex-col">
                   {/* Search Input */}
                   <div className="relative w-[90%]">
                     <FiSearch className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
@@ -636,67 +687,204 @@ const Task = () => {
                     <X
                       size={14}
                       className="absolute right-3 top-3 cursor-pointer w-4 h-5 text-zinc-500"
-                      onClick={() => setSearchTasks("")}
+                      onClick={() => {
+                        setSearchTasks("");
+                        setFilteredTasksBySearch([]);
+                      }}
                     />
                   </div>
 
                   {/* Filtered Tasks List */}
-                  <div className="mt-4">
-                    {taskLoadingSearch ? (
-                      <OverdueListSkeleton />
-                    ) : filteredTasksBySearch.length === 0 ? (
-                      <div className="w-full  flex justify-center items-center">
-                        <p className="text-[#A6A6A7] text-lg font-medium">
-                          No Task Found
+                  <div className="mt-4 w-full flex-1 h-[60vh] overflow-y-auto playlist-scroll">
+                  {taskLoading ? (
+            <OverdueListSkeleton />
+          ) : filteredTasksBySearch.length === 0 ? (
+            <div className="w-full h-full flex justify-center items-center">
+              <p className="text-[#A6A6A7] text-lg font-medium">
+                No Task Found
+              </p>
+            </div>
+          ) : (
+            filteredTasksBySearch.map((task: any, index: number) => (
+              <div
+                key={task.id}
+                className="relative"
+                {...(userId?.role === "owner" && {
+                  onTouchStart: (e) => {
+                    const startX = e.touches[0].clientX;
+                    const handleTouchMove = (moveEvent: TouchEvent) => {
+                      const endX = moveEvent.touches[0].clientX;
+                      if (startX - endX > 50) {
+                        handleSwipe(task.id, "left"); // Swipe left
+                        document.removeEventListener(
+                          "touchmove",
+                          handleTouchMove
+                        );
+                      } else if (endX - startX > 50) {
+                        handleSwipe(task.id, "right"); // Swipe right
+                        document.removeEventListener(
+                          "touchmove",
+                          handleTouchMove
+                        );
+                      }
+                    };
+                    document.addEventListener("touchmove", handleTouchMove);
+                  },
+                })}
+              >
+                {/* Task Card */}
+                <div
+                  onClick={() => setOpenTaskId(task.id)}
+                  className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
+                    swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
+                  }`}
+                >
+                  <div className="w-full">
+                    <div className="flex justify-between items-center">
+                      <p className="text-[12px] text-[#A6A6A7] font-medium">
+                        {task.time}
+                      </p>
+                    </div>
+                    <p className="text-black mt-2 text-sm">
+                      <span className="font-semibold inline-block">
+                        {task.mentions}
+                      </span>{" "}
+                      {task.task_content}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center mt-3">
+                    <span className="text-red-500 font-bold text-[12px]">
+                      {new Date(task.due_date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                    <span
+                      className={`rounded-3xl text-sm font-semibold py-1.5 px-2 ${
+                        task.task_status === "todo"
+                          ? "text-reddish bg-[#F8DADA]"
+                          : task.task_status === "In progress"
+                          ? "text-[#EEA15A] bg-[#F8F0DA]"
+                          : task.task_status === "feedback"
+                          ? "text-[#142D57] bg-[#DEE9FC]"
+                          : "text-[#3FAD51] bg-[#E5F8DA]"
+                      }`}
+                    >
+                      {task.task_status}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Swipe Actions (Only visible when swiped & owner) */}
+                {userId?.role === "owner" && swipedTasks[task.id] && (
+                  <div
+                    className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
+            z-50 transition-all duration-300"
+                  >
+                    <button
+                      className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
+                      onClick={() => handleCompleteTask(task.id)}
+                    >
+                      <Check className="w-6 h-6" />
+                    </button>
+
+                    <button
+                      className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
+                      onClick={() => handleDeleteTask(task.id, task.team_id)}
+                    >
+                      <Trash2 className="w-6 h-6" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Task Drawer (Edit Task) */}
+                {openTaskId === task.id && (
+                  <Drawer
+                    open={openTaskId !== null}
+                    onOpenChange={() => setOpenTaskId(null)}
+                  >
+                    <DrawerContent className="px-4">
+                      <DrawerHeader className="flex justify-between items-center px-0">
+                        <DrawerTitle>Edit Task</DrawerTitle>
+                        <Select 
+                        defaultValue={task.task_status}
+                         onValueChange={(value) => setTaskStatus(value)}>
+                          
+                          <SelectTrigger
+                            className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                              task.task_status === "todo"
+                                ? "text-reddish bg-[#F8DADA]"
+                                : task.task_status === "In progress"
+                                ? "text-[#EEA15A] bg-[#F8F0DA]"
+                                : "text-[#142D57] bg-[#DEE9FC]"
+                            }`}
+                          >
+                            <SelectValue placeholder="status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="todo">To Do</SelectItem>
+                            <SelectItem value="In progress">
+                              In Progress
+                            </SelectItem>
+                            <SelectItem value="feedback">Feedback</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </DrawerHeader>
+
+                      {/* Task Details */}
+                      <div className="p-4 border border-[#CECECE] rounded-[10px]">
+                        <p>
+                          <span className="text-[#BA6A6A]">
+                            @{selectedSpace?.space_name}
+                          </span>{" "}
+                          <span className="text-[#5898C6]">
+                            @{selectedTeam?.team_name}
+                          </span>{" "}
+                          <span className="text-[#518A37]">
+                            {task.mentions}
+                          </span>{" "}
+                          {task.task_content}
                         </p>
                       </div>
-                    ) : (
-                      filteredTasksBySearch.map((task: any, index: number) => (
-                        <div
-                          key={index}
-                          className="p-3 bg-white border border-zinc-300 rounded-lg mb-2"
-                        >
-                          <div className="w-full">
-                            <div className="flex justify-between items-center">
-                              <p className="text-[12px] text-[#A6A6A7] font-medium">
-                                {task.time}
-                              </p>
-                            </div>
-                            <p className="text-black mt-2 text-sm">
-                              <span className="font-semibold inline-block">
-                                {task.mentions}
-                              </span>{" "}
-                              {task.task_content}
-                            </p>
-                          </div>
-                          <div className="flex justify-between items-center mt-3">
-                            <span className="text-red-500 font-bold text-[12px]">
-                              {new Date(task.due_date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                }
-                              )}
-                            </span>
-                            <span
-                              className={`rounded-3xl text-sm font-semibold py-1.5 px-2 ${
-                                task.task_status === "todo"
-                                  ? "text-reddish bg-[#F8DADA]"
-                                  : task.task_status === "In progress"
-                                  ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                  : task.task_status === "feedback"
-                                  ? "text-[#142D57] bg-[#DEE9FC]"
-                                  : "text-[#3FAD51] bg-[#E5F8DA]"
-                              }`}
+
+                      {/* Task Actions */}
+                      <div className="w-full flex items-center gap-3 mt-5 mb-8">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={"outline"}
+                              className="w-1/2 justify-center text-left font-normal"
                             >
-                              {task.task_status}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    )}
+                              {date ? (
+                                format(date, "PPP")
+                              ) : (
+                                <span>{task.due_date}</span>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={date}
+                              onSelect={setDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <Button
+                          className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
+                          onClick={() => handleUpdateTask(task.id,taskStatus)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
+                )}
+              </div>
+            ))
+          )}
                   </div>
                 </SheetContent>
               </Sheet>
@@ -775,9 +963,9 @@ const Task = () => {
             </button>
 
             {/* Date Picker */}
-            <Popover>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
-                <button className="flex w-[110px] h-10 px-4 font-geist justify-center items-center rounded-[10px] border border-zinc-300 bg-white text-[#09090B]">
+                <button className="flex w-[110px] h-10 px-4 font-geist justify-center items-center rounded-[10px] border border-zinc-300 bg-white text-[#09090B]"  onClick={() => setPopoverOpen(true)}>
                   {filterDate
                     ? format(filterDate, "dd MMM yy")
                     : format(new Date(), "dd MMM yy")}
@@ -807,10 +995,10 @@ const Task = () => {
           </div>
         </div>
 
-        <div className="w-full  overflow-y-scroll playlist-scroll">
+        <div className="w-full overflow-y-scroll playlist-scroll relative">
           {taskLoading ? (
             <OverdueListSkeleton />
-          ) : filteredTasks.length == 0 ? (
+          ) : filteredTasks.length === 0 ? (
             <div className="w-full h-full flex justify-center items-center">
               <p className="text-[#A6A6A7] text-lg font-medium">
                 No Task Found
@@ -819,16 +1007,36 @@ const Task = () => {
           ) : (
             filteredTasks.map((task: any, index: number) => (
               <div
-                key={index}
-                // {...handlers}
+                key={task.id}
                 className="relative"
+                {...(userId?.role === "owner" && {
+                  onTouchStart: (e) => {
+                    const startX = e.touches[0].clientX;
+                    const handleTouchMove = (moveEvent: TouchEvent) => {
+                      const endX = moveEvent.touches[0].clientX;
+                      if (startX - endX > 50) {
+                        handleSwipe(task.id, "left"); // Swipe left
+                        document.removeEventListener(
+                          "touchmove",
+                          handleTouchMove
+                        );
+                      } else if (endX - startX > 50) {
+                        handleSwipe(task.id, "right"); // Swipe right
+                        document.removeEventListener(
+                          "touchmove",
+                          handleTouchMove
+                        );
+                      }
+                    };
+                    document.addEventListener("touchmove", handleTouchMove);
+                  },
+                })}
               >
+                {/* Task Card */}
                 <div
                   onClick={() => setOpenTaskId(task.id)}
                   className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
-                    swipedTaskId === task.id
-                      ? "-translate-x-20"
-                      : "translate-x-0"
+                    swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
                   }`}
                 >
                   <div className="w-full">
@@ -866,76 +1074,65 @@ const Task = () => {
                       {task.task_status}
                     </span>
                   </div>
-                  {/* Swipe Actions - Only visible when swiped */}
-                  {swipedTaskId === task.id && (
-                    <div className="absolute right-0 top-0 h-full flex gap-2">
-                      {userId?.role === "owner" && (
-                        <button
-                          className="bg-red-500 text-white p-2 rounded-l-lg flex items-center justify-center w-12"
-                          onClick={() => handleDeleteTask(task.id)}
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      )}
-                      {userId?.role === "owner" &&
-                        task.task_status !== "Completed" && (
-                          <button
-                            className="bg-green-500 text-white p-2 rounded-r-lg flex items-center justify-center w-12"
-                            onClick={() => handleCompleteTask(task.id)}
-                          >
-                            <CheckCircle size={20} />
-                          </button>
-                        )}
-                    </div>
-                  )}
                 </div>
 
+                {/* Swipe Actions (Only visible when swiped & owner) */}
+                {userId?.role === "owner" && swipedTasks[task.id] && (
+                  <div
+                    className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
+            z-50 transition-all duration-300"
+                  >
+                    <button
+                      className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
+                      onClick={() => handleCompleteTask(task.id)}
+                    >
+                      <Check className="w-6 h-6" />
+                    </button>
+
+                    <button
+                      className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
+                      onClick={() => handleDeleteTask(task.id, task.team_id)}
+                    >
+                      <Trash2 className="w-6 h-6" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Task Drawer (Edit Task) */}
                 {openTaskId === task.id && (
                   <Drawer
-                    open={openTaskId === null ? false : true}
+                    open={openTaskId !== null}
                     onOpenChange={() => setOpenTaskId(null)}
                   >
                     <DrawerContent className="px-4">
                       <DrawerHeader className="flex justify-between items-center px-0">
                         <DrawerTitle>Edit Task</DrawerTitle>
-                        {userId?.role === "User" &&
-                        task.task_status === "Completed" ? (
-                          <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
-                            Completed
-                          </Button>
-                        ) : (
-                          <Select
-                            defaultValue={task.task_status || "todo"}
-                            onValueChange={(value) => setTaskStatus(value)}
+                        <Select 
+                        defaultValue={task.task_status}
+                         onValueChange={(value) => setTaskStatus(value)}>
+                          
+                          <SelectTrigger
+                            className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                              task.task_status === "todo"
+                                ? "text-reddish bg-[#F8DADA]"
+                                : task.task_status === "In progress"
+                                ? "text-[#EEA15A] bg-[#F8F0DA]"
+                                : "text-[#142D57] bg-[#DEE9FC]"
+                            }`}
                           >
-                            <SelectTrigger
-                              className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
-                                task.task_status === "todo"
-                                  ? "text-reddish bg-[#F8DADA]"
-                                  : task.task_status === "In progress"
-                                  ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                  : task.task_status === "feedback"
-                                  ? "text-[#142D57] bg-[#DEE9FC]"
-                                  : "text-[#3FAD51] bg-[#E5F8DA]"
-                              }`}
-                            >
-                              <SelectValue placeholder="status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="todo">To Do</SelectItem>
-                              <SelectItem value="In progress">
-                                In Progress
-                              </SelectItem>
-                              <SelectItem value="feedback">Feedback</SelectItem>
-                              {userId?.role === "owner" && (
-                                <SelectItem value="Completed">
-                                  Completed
-                                </SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        )}
+                            <SelectValue placeholder="status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="todo">To Do</SelectItem>
+                            <SelectItem value="In progress">
+                              In Progress
+                            </SelectItem>
+                            <SelectItem value="feedback">Feedback</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </DrawerHeader>
+
+                      {/* Task Details */}
                       <div className="p-4 border border-[#CECECE] rounded-[10px]">
                         <p>
                           <span className="text-[#BA6A6A]">
@@ -950,17 +1147,15 @@ const Task = () => {
                           {task.task_content}
                         </p>
                       </div>
+
+                      {/* Task Actions */}
                       <div className="w-full flex items-center gap-3 mt-5 mb-8">
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
                               variant={"outline"}
-                              className={cn(
-                                "w-1/2 justify-center text-left font-normal",
-                                !date && "text-muted-foreground"
-                              )}
+                              className="w-1/2 justify-center text-left font-normal"
                             >
-                              {/* <CalendarIcon /> */}
                               {date ? (
                                 format(date, "PPP")
                               ) : (
@@ -979,7 +1174,7 @@ const Task = () => {
                         </Popover>
                         <Button
                           className="bg-[#1A56DB] text-white hover:bg-[#1A56DB] font-medium text-sm text-center shadow-none w-1/2 rounded-[10px]"
-                          onClick={() => handleUpdateTask(task.id)}
+                          onClick={() => handleUpdateTask(task.id,taskStatus)}
                         >
                           Update
                         </Button>

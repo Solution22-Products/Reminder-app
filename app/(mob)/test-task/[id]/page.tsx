@@ -1152,11 +1152,11 @@ const Task = (props: Props) => {
                               <SelectItem value="Internal feedback">
                                 Internal feedback
                               </SelectItem>
-                              {/* {userId?.role === "owner" && (
+                              {userId?.role === "owner" && (
                                 <SelectItem value="Completed">
                                   Completed
                                 </SelectItem>
-                              )} */}
+                              )}
                             </SelectContent>
                           </Select>
                         )}

@@ -1386,6 +1386,11 @@ const Task = () => {
                               <SelectItem value="Internal feedback">
                                  Internal feedback
                               </SelectItem>
+                              {userId?.role === "owner" && (
+                                <SelectItem value="Completed">
+                                  Completed
+                                </SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                         )}

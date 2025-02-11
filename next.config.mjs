@@ -25,7 +25,21 @@ const nextConfig = {
                 pathname: '/userProfile/**',
               },
         ]
-    }
+    },
+    reactStrictMode: false,
+    async headers() {
+      return [
+        {
+          source: "/:path*",
+          headers: [
+            {
+              key: "Content-Security-Policy",
+              value: "upgrade-insecure-requests",
+            },
+          ],
+        },
+      ];
+    },
    
 };
 

@@ -172,7 +172,7 @@ const SignIn = () => {
   return (
     <div className="md:flex sm:block justify-end min-h-screen font-inter">
       <Toaster />
-      <div className="md:w-1/2 sm:w-full h-screen flex flex-col justify-center relative">
+      <div className="lg:w-1/2 sm:w-full h-screen flex flex-col justify-center relative">
         <div className="lg:w-[515px] p-10 md:w-full w-full md:p-12 lg:p-0 m-auto lg_start_width">
           <div className="absolute top-4 left-4"></div>
           <h1 className="text-3xl font-bold mb-7">Sign In</h1>
@@ -331,7 +331,7 @@ const SignIn = () => {
           </Form>
         </div>
       </div>
-      <div className="w-1/2 lottie_img sm:none md:block flex justify-center items-center h-screen">
+      <div className="lg:w-1/2 w-full lottie_img hidden lg:flex justify-center items-center h-screen">
         <div className="w-full h-full relative flex justify-center items-center">
           <Image
             src="/images/signin-image.png"
@@ -341,12 +341,12 @@ const SignIn = () => {
             height={500}
           />
           {/* <Lottie
-            animationData={LottielabLogin1}
-            loop={true}
-            style={{ width: "100%", height: "80%" }}
-            className="lottie_img"
-          />
-          <div className="w-[200px] h-[100px] bg-white absolute md:bottom-[0px] lg:bottom-[25px] right-20 lottie_hide"></div> */}
+      animationData={LottielabLogin1}
+      loop={true}
+      style={{ width: "100%", height: "80%" }}
+      className="lottie_img"
+    />
+    <div className="w-[200px] h-[100px] bg-white absolute lg:bottom-[25px] right-20 lottie_hide"></div> */}
         </div>
       </div>
     </div>

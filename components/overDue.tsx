@@ -130,7 +130,9 @@ const OverDue : React.FC<Task> = ({ taskTrigger }) => {
                           </p>
                         </div>
                         <p className="text-black mt-2 text-sm">
-                          <p className="font-semibold">{task.mentions}</p>{" "}
+                          <p className="font-semibold">{task.mentions
+                        .map((mention: string) => `${mention}`)
+                        .join(" ")}</p>{" "}
                           {task.task_content.length > 60
                             ? task.task_content.slice(0, 60) + "..."
                             : task.task_content}

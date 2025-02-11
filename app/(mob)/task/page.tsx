@@ -54,6 +54,7 @@ import {
 import Footer from "../footer/page";
 import "@/app/(mob)/task/style.css";
 import { ToastAction } from "@/components/ui/toast";
+import AddTaskMentions from "@/components/addTaskMentions";
 import TaskSearch from "@/components/taskSearch";
 
 const UsertaskStatusOptions = [
@@ -134,6 +135,7 @@ const Task = () => {
   const [spaces, setSpaces] = useState<MentionData[]>([]);
   const [memberData, setMemberData] = useState<string[]>([]);
   const [employees, setEmployees] = useState<MentionData[]>([]);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -307,107 +309,107 @@ const Task = () => {
   }, [selectedSpace]);
 
   const handleUpdateTask = async (id: number) => {
-      try {
-        // Fetch the task data
-        const { data: taskData, error: taskError } = await supabase
-          .from("tasks")
-          .select("*")
-          .eq("id", id)
-          .eq("is_deleted", false);
-  
-        if (taskError) throw new Error("Failed to fetch task details");
-  
-        if (!taskData || taskData.length === 0) {
-          console.error("Task not found");
-          return;
-        }
-  
-        const currentTask = taskData[0];
-  
-        // Prepare updated fields
-        const updatedFields: {
-          due_date?: string;
-          task_status?: string;
-          task_content?: string;
-          mentions?: string[];
-        } = {};
-  
-        if (date) {
-          updatedFields.due_date = formatDate(date as Date);
-        } else {
-          updatedFields.due_date = currentTask.due_date; // Keep the old value if no new date is provided
-        }
-  
-        if (taskStatus) {
-          updatedFields.task_status = taskStatus;
-        } else {
-          updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
-        }
-  
-        if (editTaskInputValue) {
-          let mentions: string[] = [];
-  
-          // Extract @mentions
-          const mentionPattern = /@\w+(?:_\w+)*\b/g;
-          const extractedMentions =
-            editTaskInputValue.match(mentionPattern) || [];
-          mentions.push(...extractedMentions);
-  
-          // Extract mentions from brackets
-          const bracketPattern = /\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g;
-          let match: RegExpExecArray | null;
-          while ((match = bracketPattern.exec(editTaskInputValue)) !== null) {
-            mentions.push(`@${match[1]}`);
-          }
-  
-          // Remove duplicate mentions
-          mentions = Array.from(new Set(mentions));
-  
-          let plainText = editTaskInputValue
-            .replace(/@\w+(?:_\w+)*\b/g, "") // Remove @mentions
-            .replace(/\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g, "") // Remove bracket mentions
-            .replace(/@/g, "") // Remove any remaining '@'
-            .trim();
-  
-          updatedFields.task_content = plainText;
-          updatedFields.mentions = mentions;
-          console.log("inside new content");
-        } else {
-          updatedFields.task_content = currentTask.task_content;
-          updatedFields.mentions = currentTask.mentions;
-          console.log("inside old content");
-        }
-  
-        // Update the task
-        const { error } = await supabase
-          .from("tasks")
-          .update(updatedFields)
-          .eq("id", id);
-  
-        if (error) throw new Error("Failed to update the task");
-  
-        // Refresh task data and reset state
-  
-        setOpenTaskId(null);
-        setDate(undefined);
-        fetchData();
-  
-        toast({
-          title: "Success",
-          description: "Task updated successfully.",
-          variant: "default",
-          duration: 3000,
-        });
-      } catch (err: any) {
-        console.error(err);
-        toast({
-          title: "Error",
-          description: err.message || "Something went wrong. Please try again.",
-          duration: 3000,
-        });
+    try {
+      // Fetch the task data
+      const { data: taskData, error: taskError } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("id", id)
+        .eq("is_deleted", false);
+
+      if (taskError) throw new Error("Failed to fetch task details");
+
+      if (!taskData || taskData.length === 0) {
+        console.error("Task not found");
+        return;
       }
-    };
-    
+
+      const currentTask = taskData[0];
+
+      // Prepare updated fields
+      const updatedFields: {
+        due_date?: string;
+        task_status?: string;
+        task_content?: string;
+        mentions?: string[];
+      } = {};
+
+      if (date) {
+        updatedFields.due_date = formatDate(date as Date);
+      } else {
+        updatedFields.due_date = currentTask.due_date; // Keep the old value if no new date is provided
+      }
+
+      if (taskStatus) {
+        updatedFields.task_status = taskStatus;
+      } else {
+        updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
+      }
+
+      if (editTaskInputValue) {
+        let mentions: string[] = [];
+
+        // Extract @mentions
+        const mentionPattern = /@\w+(?:_\w+)*\b/g;
+        const extractedMentions =
+          editTaskInputValue.match(mentionPattern) || [];
+        mentions.push(...extractedMentions);
+
+        // Extract mentions from brackets
+        const bracketPattern = /\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g;
+        let match: RegExpExecArray | null;
+        while ((match = bracketPattern.exec(editTaskInputValue)) !== null) {
+          mentions.push(`@${match[1]}`);
+        }
+
+        // Remove duplicate mentions
+        mentions = Array.from(new Set(mentions));
+
+        let plainText = editTaskInputValue
+          .replace(/@\w+(?:_\w+)*\b/g, "") // Remove @mentions
+          .replace(/\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g, "") // Remove bracket mentions
+          .replace(/@/g, "") // Remove any remaining '@'
+          .trim();
+
+        updatedFields.task_content = plainText;
+        updatedFields.mentions = mentions;
+        console.log("inside new content");
+      } else {
+        updatedFields.task_content = currentTask.task_content;
+        updatedFields.mentions = currentTask.mentions;
+        console.log("inside old content");
+      }
+
+      // Update the task
+      const { error } = await supabase
+        .from("tasks")
+        .update(updatedFields)
+        .eq("id", id);
+
+      if (error) throw new Error("Failed to update the task");
+
+      // Refresh task data and reset state
+
+      setOpenTaskId(null);
+      setDate(undefined);
+      fetchData();
+
+      toast({
+        title: "Success",
+        description: "Task updated successfully.",
+        variant: "default",
+        duration: 3000,
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: err.message || "Something went wrong. Please try again.",
+        duration: 3000,
+      });
+    }
+  };
+
   // Filter tasks based on selectedTaskStatus
   const filteredTasks = userTasks.filter((task) =>
     selectedTaskStatus ? task.task_status === selectedTaskStatus : true
@@ -507,7 +509,7 @@ const Task = () => {
       // Prepare updated fields
       const updatedFields: { task_status?: string } = {};
 
-        updatedFields.task_status = "Completed";
+      updatedFields.task_status = "Completed";
 
       // Update the task
       const { error } = await supabase
@@ -696,7 +698,16 @@ const Task = () => {
 
   return (
     <>
-      <div className="flex flex-col bg-navbg px-[18px] h-[463px] space-y-[18px] ">
+      <div
+        className={`flex flex-col bg-navbg px-[18px] ${
+          userId?.role === "owner" ||
+          (userId?.role === "User" &&
+            ((userId?.access?.task !== true && userId?.access?.all === true) ||
+              userId?.access?.task === true))
+            ? "h-[470px]"
+            : "h-full"
+        } space-y-[18px]`}
+      >
         <header className="flex justify-between items-center bg-navbg pt-[18px]">
           <Drawer open={isSpaceDrawerOpen} onOpenChange={setIsSpaceDrawerOpen}>
             <DrawerTrigger onClick={() => setIsSpaceDrawerOpen(true)}>
@@ -878,9 +889,10 @@ const Task = () => {
             </DrawerContent>
           </Drawer>
           <div className="flex gap-2">
-            <TaskSearch  userTasks={userTasks}
-            userIdRole={userId?.role || '' }
-            teamId={selectedTeam?.id || ''}
+            <TaskSearch
+              userTasks={userTasks}
+              userIdRole={userId?.role || ""}
+              teamId={selectedTeam?.id || ""}
             />
             <Drawer
               open={isFilterDrawerOpen}
@@ -1052,13 +1064,18 @@ const Task = () => {
                     </div>
                     <p className="text-black mt-2 text-sm">
                       <span className="font-semibold inline-block">
-                        {task.mentions}
+                        {task.mentions.map((mention: string, index: number) => (
+                          <span key={index}>
+                            {mention}
+                            {index !== task.mentions.length - 1 && " "}
+                          </span>
+                        ))}
                       </span>{" "}
                       {task.task_content}
                     </p>
                   </div>
                   <div className="flex justify-between items-center mt-3">
-                  <span
+                    <span
                       className={`font-bold text-[12px] ${
                         new Date(task.due_date) >= new Date()
                           ? "text-[#14B8A6]"
@@ -1125,7 +1142,7 @@ const Task = () => {
                           </Button>
                         ) : (
                           <Select
-                            defaultValue={task.task_status || "todo"}
+                            defaultValue={task.task_status}
                             onValueChange={(value) => setTaskStatus(value)}
                           >
                             <SelectTrigger
@@ -1134,8 +1151,7 @@ const Task = () => {
                                   ? "text-reddish bg-[#F8DADA]"
                                   : task.task_status === "In progress"
                                   ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                  : task.task_status ===
-                                    "Internal feedback"
+                                  : task.task_status === "Internal feedback"
                                   ? "text-[#142D57] bg-[#DEE9FC]"
                                   : "text-[#3FAD51] bg-[#E5F8DA]"
                               }`}
@@ -1148,9 +1164,13 @@ const Task = () => {
                                 In Progress
                               </SelectItem>
                               <SelectItem value="Internal feedback">
-                                 Internal feedback
+                                Internal feedback
                               </SelectItem>
-                              {userId?.role=="owner" && <SelectItem value="Completed">  Completed</SelectItem>}
+                              {userId?.role === "owner" && (
+                                <SelectItem value="Completed">
+                                  Completed
+                                </SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                         )}
@@ -1163,6 +1183,15 @@ const Task = () => {
                           }}
                           placeholder="Type @ to mention spaces, teams, or employees"
                           className="mentions-input border p-2 rounded-md w-full"
+                          disabled={
+                            !(
+                              userId?.role === "owner" ||
+                              (userId?.role === "User" &&
+                                ((userId?.access?.task !== true &&
+                                  userId?.access?.all === true) ||
+                                  userId?.access?.task === true))
+                            )
+                          }
                         >
                           <Mention
                             trigger="@"
@@ -1228,16 +1257,18 @@ const Task = () => {
             </p>
           </div>
         </div>
-        {/* <div className="fixed top-[300px ] z-50">
-        <NewTask/>
-        </div> */}
       </div>
-      {/* <Footer
-        notifyMobTrigger={""}
-        setNotifyMobTrigger={""}
-        test={""}
-        setTest={""}
-      /> */}
+      {(userId?.role === "owner" ||
+        (userId?.role === "User" &&
+          ((userId?.access?.task !== true && userId?.access?.all === true) ||
+            userId?.access?.task === true))) && (
+        <AddTaskMentions
+          selectedTeam={selectedTeam}
+          selectedSpace={selectedSpace}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
+      )}
       <Footer
       //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
       />

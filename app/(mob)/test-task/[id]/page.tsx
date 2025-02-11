@@ -781,7 +781,7 @@ const Task = (props: Props) => {
           <Drawer open={isTeamDrawerOpen} onOpenChange={setIsTeamDrawerOpen}>
             <DrawerTrigger>
               <div className="bg-white py-3 rounded-xl border h-[40px] w-full border-gray-300 px-[18px] flex items-center">
-                <p>{selectedTeam?.team_name}</p>
+                <p>{selectedTeam?.team_name || "select a Team"}</p>
                 <RiArrowDropDownLine className="w-[18px] h-[18px] text-black ml-auto" />
               </div>
             </DrawerTrigger>

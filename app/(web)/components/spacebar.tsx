@@ -761,7 +761,7 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
       .from("teams")
       .select("*")
       .eq("is_deleted", false)
-      .eq("space_id", tabSpace1);
+      .eq("space_id", spaceId);
     console.log(spaceId, "Space ID");
 
     if (error) {
@@ -774,6 +774,7 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
         tasks: [], // Initialize each team with an empty tasks array
       }));
       console.log("Team Data", teamData);
+      //console.log("Team Data 1", spaceId, "2", teamData);
     }
   };
 
@@ -1030,11 +1031,18 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
   // Set the first tab as active after filtering
   useEffect(() => {
     if (filteredTabs.length > 0 && userTabActive) {
-      fetchTeams();
       setUserActiveTab(filteredTabs[0].id);
       setActiveTabNameUser(filteredTabs[0].space_name);
+      fetchTeams();
+      defaultSpaceData();
     }
   }, [filteredTabs, userTabActive]);
+
+  useEffect(() => {
+    fetchTeams();
+    defaultSpaceData();
+  }, []);
+
   return (
     <>
       <WebNavbar

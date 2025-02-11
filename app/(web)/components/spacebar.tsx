@@ -62,6 +62,7 @@ interface Team {
 //   });
 
 const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
+  const { userId } = useGlobalContext();
   const route = useRouter();
   const [teams,setTeams] = useState<Team[]>([]);
   const [tabs, setTabs] = useState<Tab[]>([]);
@@ -105,6 +106,8 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
   const [adminSpaceLength, setAdminSpaceLength] = useState<number>(0);
   const [notificationTrigger, setNotificationTrigger] = useState(false);
   const [newTabTeamTrigger, setNewTabTeamTrigger] = useState(false);
+  const [allSpace, setAllSpace] = useState<any[]>([]);
+  const [allTeams, setAllTeams] = useState<any[]>([]);
 
   useEffect(() => {
     fetchSpaces();
@@ -899,6 +902,67 @@ const fetchTeamsForTab = async (tabId : number) => {
       setAllTasks(tasksData);
     }
   };
+  
+  // const fetchTasks = async () => {
+  //   try {
+  //     const [{ data: spaces }, { data: teams }, { data: tasks }] =
+  //       await Promise.all([
+  //         supabase.from("spaces").select("*").eq("is_deleted", false),
+  //         supabase.from("teams").select("*").eq("is_deleted", false),
+  //         supabase.from("tasks").select("*").eq("is_deleted", false),
+  //       ]);
+
+  //     if (spaces) setAllSpace(spaces);
+  //     if (teams) setAllTeams(teams);
+  //     if (tasks) setAllTasks(tasks);
+
+  //     if (!userId) return;
+
+  //     const matchedTeams =
+  //       teams?.filter((team) =>
+  //         team.members.some(
+  //           (member: any) => member.entity_name === userId.entity_name
+  //         )
+  //       ) || [];
+
+  //       console.log(matchedTeams);
+
+  //     const matchedSpaceIds = new Set(
+  //       matchedTeams.map((team) => team.space_id)
+  //     );
+  //     const matchedSpaces =
+  //       spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
+  //     // setUserSpace(matchedSpaces);
+  //     console.log(matchedSpaces);
+
+  //     const getUniqueItems = (array: any, key: any) => {
+  //       const seen = new Set();
+  //       return array.filter((item: any) => {
+  //         const value = item[key];
+  //         if (!seen.has(value)) {
+  //           seen.add(value);
+  //           return true;
+  //         }
+  //         return false;
+  //       });
+  //     };
+
+  //     const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
+  //     // if (sourceData) {
+  //     //   setSpaces(
+  //     //     getUniqueItems(
+  //     //       sourceData.map((space) => ({
+  //     //         id: space.id,
+  //     //         display: space.space_name,
+  //     //       })),
+  //     //       "display"
+  //     //     )
+  //     //   );
+  //     // }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   }
+  // };
 
   const handleFilterTasksAndTeams = async () => {
     try {

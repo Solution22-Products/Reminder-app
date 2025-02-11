@@ -195,8 +195,33 @@ const Footer = () => {
         className={`flex flex-col items-center cursor-pointer group relative ${
           isActive("/notification") ? "text-[#1A56DB]" : "text-gray-400"
         }`}
+        style={addLoader.includes("notification") ? { pointerEvents: "none" } : {}}
         onClick={() => handleSpaceClick("notification")}
       >
+        {addLoader.includes('notification') ? (
+          <svg
+            className="animate-spin h-5 w-5"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            key="task"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="#1A56DB"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="#1A56DB"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        ) : (
+        <div className="flex flex-col items-center">
         <BellDot className="w-[22px] h-[22px] group-hover:text-[#1A56DB] transition-all duration-200" />
         <span className="absolute -top-0.5 right-[15px] bg-red-500 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[10px] text-white">
           {userId?.role === "owner"
@@ -206,6 +231,8 @@ const Footer = () => {
         <p className="font-inter font-medium text-xs group-hover:text-[#1A56DB] transition-all duration-200">
           Notification
         </p>
+        </div>
+        )}
       </div>
     </footer>
   );

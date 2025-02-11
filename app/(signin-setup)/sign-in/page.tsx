@@ -298,7 +298,7 @@ const SignIn = () => {
               </Dialog>
               <Button
                 type="submit"
-                className="w-full bg-[#14B8A6] hover:bg-[#2e998d]"
+                className="w-full bg-primaryColor-700 hover:bg-primaryColor-700"
                 style={{ marginTop: "30px" }}
                 disabled={signinLoading}
               >

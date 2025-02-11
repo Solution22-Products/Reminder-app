@@ -631,7 +631,10 @@ const Task = (props: Props) => {
 
   return (
     <>
-      <div className="flex flex-col bg-navbg px-[18px] h-[470px] space-y-[18px] ">
+      <div className={`flex flex-col bg-navbg px-[18px] ${(userId?.role === "owner" ||
+        (userId?.role === "User" &&
+          ((userId?.access?.task !== true && userId?.access?.all === true) ||
+            userId?.access?.task === true))) ? "h-[470px]" : "h-full"} space-y-[18px]`}>
         <header className="flex justify-between items-center bg-navbg pt-[18px]">
           <Drawer open={isSpaceDrawerOpen} onOpenChange={setIsSpaceDrawerOpen}>
             <DrawerTrigger onClick={() => setIsSpaceDrawerOpen(true)}>
@@ -917,7 +920,6 @@ const Task = (props: Props) => {
                 <DrawerTitle className="pt-[18px] px-5">Filter</DrawerTitle>
                 <Command>
                   <CommandList>
-                    
                     <ul className="mt-4 space-y-5 px-5 pt-3">
                       {userId?.role === "owner"
                         ? adminTaskStatusOptions.map((status) => (
@@ -1169,6 +1171,15 @@ const Task = (props: Props) => {
                           }}
                           placeholder="Type @ to mention spaces, teams, or employees"
                           className="mentions-input border p-2 rounded-md w-full"
+                          disabled={
+                            !(
+                              userId?.role === "owner" ||
+                              (userId?.role === "User" &&
+                                ((userId?.access?.task !== true &&
+                                  userId?.access?.all === true) ||
+                                  userId?.access?.task === true))
+                            )
+                          }
                         >
                           <Mention
                             trigger="@"
@@ -1235,12 +1246,18 @@ const Task = (props: Props) => {
           </div>
         </div>
       </div>
-      <AddTaskMentions
-        selectedTeam={selectedTeam}
-        selectedSpace={selectedSpace}
-        inputValue={inputValue}
-        setInputValue={setInputValue}
-      />
+      {(userId?.role === "owner" ||
+        (userId?.role === "User" &&
+          ((userId?.access?.task !== true && userId?.access?.all === true) ||
+            userId?.access?.task === true))) && (
+        <AddTaskMentions
+          selectedTeam={selectedTeam}
+          selectedSpace={selectedSpace}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
+      )}
+
       <Footer
       //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
       />

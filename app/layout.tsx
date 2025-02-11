@@ -24,11 +24,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className='font-geist'>
-      <head>
-        <link rel="icon" href="../public/images/menu-top_bar.png" sizes="any" />
-        <link rel="icon" type="image/png" href="../public/images/menu-top_bar.png" sizes="32x32" />
-        <link rel="icon" type="image/png" href="../public/images/menu-top_bar.png" sizes="16x16" />
-      </head>
       <body>
         {children}
         {/* <Footer /> */}

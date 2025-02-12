@@ -66,88 +66,39 @@ const OverdueTaskPage = () => {
     try {
       const { data: taskData, error: taskError } = await supabase
         .from("tasks")
-        .select("*")
+        .select("*, team_name:teams(team_name), space_name:spaces(space_name)")
         .eq("is_deleted", false);
-
-      if (taskError) {
-        console.error(taskError);
-        setTaskLoading(false);
-        return;
-      }
-
-      if (taskData) {
-        const { data: teamData, error: teamError } = await supabase
-          .from("teams")
-          .select("*")
-          .eq("is_deleted", false);
-
-        if (teamError) {
-          console.error(teamError);
-          setTaskLoading(false);
-          return;
-        }
-
-        const { data: spaceData, error: spaceError } = await supabase
-          .from("spaces")
-          .select("*")
-          .eq("is_deleted", false);
-
-        if (spaceError) {
-          console.error(spaceError);
-          setTaskLoading(false);
-          return;
-        }
-
-        const now = new Date().getTime();
-
-        const filteredTasks = taskData
-          .map((task) => {
-            const team = teamData.find((team) => team.id === task.team_id);
-            const space = spaceData.find((space) => space.id === task.space_id);
-            if (
-              team &&
-              space &&
+  
+      if (taskError) throw taskError;
+  
+      const now = Date.now();
+  
+      if (userId?.role === "owner") {
+        // Owner sees all overdue tasks
+        const ownerOverdueTasks = taskData
+          .map((task: any) => ({ ...task, team_name: task.team_name?.team_name, space_name: task.space_name?.space_name }))
+          .filter((task) => new Date(task.due_date).getTime() < now);
+  
+        setAdminOverdueTasks(ownerOverdueTasks);
+        console.log("ownerOverdueTasks ", ownerOverdueTasks);
+      } else {
+        // User sees only their assigned overdue tasks
+        const userOverdueTasks = taskData
+          .map((task: any) => ({ ...task, team_name: task.team_name?.team_name, space_name: task.space_name?.space_name }))
+          .filter(
+            (task) =>
+              new Date(task.due_date).getTime() < now &&
               task.mentions?.includes(`@${userId?.entity_name}`)
-            ) {
-              return {
-                ...task,
-                team_name: team.team_name,
-                space_name: space.space_name,
-              };
-            }
-            return null;
-          })
-          .filter(Boolean);
-
-        const overdue = filteredTasks.filter(
-          (task) => new Date(task.due_date).getTime() < now
-        );
-
-        const adminOverdue = taskData
-          .map((task) => {
-            const team = teamData.find((team) => team.id === task.team_id);
-            const space = spaceData.find((space) => space.id === task.space_id);
-            return team && space
-              ? {
-                  ...task,
-                  team_name: team.team_name,
-                  space_name: space.space_name,
-                }
-              : null;
-          })
-          .filter((task) => task && new Date(task.due_date).getTime() < now);
-
-        setOverdueTasks(overdue);
-        console.log("overdue", filteredTasks);
-        setAdminOverdueTasks(adminOverdue);
-        console.log("adminOverdue", adminOverdue);
-        setTaskLoading(false);
+          );
+  
+          setAdminOverdueTasks(userOverdueTasks);
       }
     } catch (err) {
       console.error("Error fetching task data:", err);
+    } finally {
       setTaskLoading(false);
     }
-  };
+  };  
 
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
@@ -354,14 +305,14 @@ const OverdueTaskPage = () => {
       <div className="w-full h-[calc(100vh-170px)] top-0 block overflow-y-scroll playlist-scroll">
         {taskLoading ? (
           <OverdueListSkeleton />
-        ) : adminOverdueTasks.length === 0 || overdueTasks.length === 0 ? (
+        ) : adminOverdueTasks.length === 0 ? (
           <div className="w-full h-full flex justify-center items-center">
             <p className="text-[#A6A6A7] text-lg font-medium">
               No Overdue Task
             </p>
           </div>
         ) : (
-          (userId?.role === "owner" ? adminOverdueTasks : overdueTasks).map(
+          adminOverdueTasks.map(
             (task: any, index: number) => (
               <div key={index}>
                 <div
@@ -377,7 +328,7 @@ const OverdueTaskPage = () => {
                             : task.team_name}
                         </p>
                         <p className="text-[#737373] bg-[#F4F4F8] text-sm font-semibold px-2 py-0.5 rounded-full">
-                          {task.space_name.length > 12
+                          {task.space_name?.length > 12
                             ? task.space_name.slice(0, 12) + "..."
                             : task.space_name}
                         </p>

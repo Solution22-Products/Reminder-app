@@ -474,14 +474,7 @@ const Task = (props: Props) => {
       .eq("team_id", teamId)
       .eq("id", taskId);
     if (error) throw error;
-    const fetchData = async () => {
-      const { data: tasks } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("is_deleted", false);
-
-      if (tasks) setAllTasks(tasks);
-    };
+    
     fetchData();
     toast({
       title: "Deleted Successfully!",

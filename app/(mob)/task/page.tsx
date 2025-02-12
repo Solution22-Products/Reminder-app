@@ -56,6 +56,14 @@ import "@/app/(mob)/task/style.css";
 import { ToastAction } from "@/components/ui/toast";
 import AddTaskMentions from "@/components/addTaskMentions";
 import TaskSearch from "@/components/taskSearch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const UsertaskStatusOptions = [
   {
@@ -128,9 +136,8 @@ const Task = () => {
   const [selectOpen, setSelectOpen] = useState(false);
   const [profileLoader, setProfileLoader] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
-  const [swipedTasks, setSwipedTasks] = useState<{ [key: number]: boolean }>(
-    {}
-  );
+  const [swipedTasks, setSwipedTasks] = useState<{ [key: number]: boolean }>({});
+  const[isDialogOpen,setIsDialogOpen]=useState(false)
   const [editTaskInputValue, setEditTaskInputValue] = useState("");
   const [spaces, setSpaces] = useState<MentionData[]>([]);
   const [memberData, setMemberData] = useState<string[]>([]);
@@ -420,6 +427,17 @@ const Task = () => {
       [taskId]: direction === "left", // Swiped left means action buttons appear
     }));
   };
+  // const fetchTaskData = async (teamId:string) => {
+  //   const { data: tasks } = await supabase
+  //     .from("tasks")
+  //     .select("*")
+  //     .eq("is_deleted", false)
+  //     .eq("team_id", teamId)
+     
+  //     console.log("delete done")
+
+  //   // if (tasks) setUserTasks(tasks);
+  // };
 
   const handleDeleteTask = async (taskId: string, teamId: string) => {
     setSwipedTasks((prev) => ({ ...prev, [taskId]: false })); // Close swipe
@@ -430,14 +448,7 @@ const Task = () => {
       .eq("team_id", teamId)
       .eq("id", taskId);
     if (error) throw error;
-    const fetchData = async () => {
-      const { data: tasks } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("is_deleted", false);
-
-      if (tasks) setAllTasks(tasks);
-    };
+    
     fetchData();
     toast({
       title: "Deleted Successfully!",
@@ -461,16 +472,6 @@ const Task = () => {
         .eq("id", taskId);
 
       if (error) throw error;
-      // const fetchData = async () => {
-      //   const { data: tasks } = await supabase
-      //     .from("tasks")
-      //     .select("*")
-      //     .eq("is_deleted", false);
-
-      //   if (tasks) setAllTasks(tasks);
-      // };
-
-      // fetchTasks(); // Refresh the tasks list
       fetchData();
 
       toast({
@@ -729,8 +730,8 @@ const Task = () => {
                         tabIndex={0}
                         className={`flex items-center justify-between text-black py-2 px-4 border-b border-[#D4D4D8] ${
                           selectedSpace === space.space_name
-                            ? "bg-gray-100"
-                            : ""
+                            ? "text-zinc-950 font-semibold"
+                            : "text-blackish"
                         }`}
                         onClick={() => {
                           setSelectedSpace(space);
@@ -899,31 +900,40 @@ const Task = () => {
               onOpenChange={setIsFilterDrawerOpen}
             >
               <DrawerTrigger onClick={() => setIsFilterDrawerOpen(true)}>
-                <div className="flex w-10 h-10  p-[8px_12px] justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white">
+                <div className="flex w-10 h-10 p-2 justify-center items-center rounded-lg border border-zinc-300 bg-white">
                   <FaEllipsisH className="h-4 w-6" />
                 </div>
               </DrawerTrigger>
-              <DrawerContent className="h-[70%]">
-                <DrawerTitle className="pt-[18px] px-5">Filter</DrawerTitle>
-                <Command>
-                  <CommandList>
+
+              <DrawerContent>
+                <div className="p-4">
+                  <DrawerHeader className="text-left">
+                    <DrawerTitle>Filter</DrawerTitle>
+                  </DrawerHeader>
+
+                  <div className="pb-7">
                     {/* <p> {userId?.role}</p> */}
-                    <ul className="mt-4 space-y-5 px-5 pt-3">
+                    <ul className="space-y-2 p-4">
                       {userId?.role === "owner"
                         ? adminTaskStatusOptions.map((status) => (
                             <li
                               key={status.value}
+                              tabIndex={0}
+                              role="button"
                               onClick={() => {
                                 setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close the drawer on selection
+                                setIsFilterDrawerOpen(false); // Close drawer on selection
                               }}
-                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
+                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
                                 selectedTaskStatus === status.value
                                   ? "text-zinc-950 font-semibold"
                                   : "text-blackish"
                               }`}
                             >
-                              {status.label}
+                              <span>{status.label}</span>
+                              {selectedTaskStatus === status.value && (
+                                <Check className="h-4 w-4 text-zinc-950" />
+                              )}
                             </li>
                           ))
                         : UsertaskStatusOptions.filter(
@@ -931,22 +941,27 @@ const Task = () => {
                           ).map((status) => (
                             <li
                               key={status.value}
+                              tabIndex={0}
+                              role="button"
                               onClick={() => {
                                 setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close the drawer on selection
+                                setIsFilterDrawerOpen(false); // Close drawer on selection
                               }}
-                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
+                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
                                 selectedTaskStatus === status.value
                                   ? "text-zinc-950 font-semibold"
                                   : "text-blackish"
                               }`}
                             >
-                              {status.label}
+                              <span>{status.label}</span>
+                              {selectedTaskStatus === status.value && (
+                                <Check className="h-4 w-4 text-zinc-950" />
+                              )}
                             </li>
                           ))}
                     </ul>
-                  </CommandList>
-                </Command>
+                  </div>
+                </div>
               </DrawerContent>
             </Drawer>
           </div>
@@ -1064,12 +1079,16 @@ const Task = () => {
                     </div>
                     <p className="text-black mt-2 text-sm">
                       <span className="font-semibold inline-block">
-                        {task.mentions.map((mention: string, index: number) => (
-                          <span key={index}>
-                            {mention}
-                            {index !== task.mentions.length - 1 && " "}
-                          </span>
-                        ))}
+                        {Array.isArray(task.mentions) &&
+                          task.mentions.length > 0 &&
+                          task.mentions.map(
+                            (mention: string, index: number) => (
+                              <span key={index}>
+                                {mention}
+                                {index !== task.mentions.length - 1 && " "}
+                              </span>
+                            )
+                          )}
                       </span>{" "}
                       {task.task_content}
                     </p>
@@ -1117,12 +1136,47 @@ const Task = () => {
                       <Check className="w-6 h-6" />
                     </button>
 
-                    <button
-                      className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
-                      onClick={() => handleDeleteTask(task.id, task.team_id)}
-                    >
-                      <Trash2 className="w-6 h-6" />
-                    </button>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                      <DialogTrigger asChild>
+                        <button
+                          className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
+                          onClick={() => setIsDialogOpen(true)}
+                        >
+                          <Trash2 className="w-6 h-6" />
+                        </button>
+                      </DialogTrigger>
+
+                      <DialogContent className="w-[80vw] max-w-sm px-6 py-4">
+                        <DialogHeader className="p-0 text-left">
+                          <DialogTitle className="text-lg font-semibold">
+                            Delete Task
+                          </DialogTitle>
+                          <DialogDescription className="text-sm text-gray-600 leading-6 mt-1">
+                            Do you want to delete this task?
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="flex justify-start items-center w-full gap-4 mt-4">
+                          <Button
+                            variant="outline"
+                            className="w-1/3"
+                            type="submit"
+                            onClick={() => setIsDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            className="bg-red-600 hover:bg-red-500 w-1/3"
+                            type="button"
+                            onClick={() =>
+                              handleDeleteTask(task.id, task.team_id)
+                            }
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
 

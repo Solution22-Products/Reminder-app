@@ -54,6 +54,16 @@ import Footer from "../../footer/page";
 import AddTaskMentions from "@/components/addTaskMentions";
 import "./style.css";
 import { string } from "zod";
+import TaskSearch from "@/components/taskSearch";
+import { ToastAction } from "@/components/ui/toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const UsertaskStatusOptions = [
   {
@@ -142,6 +152,10 @@ const Task = (props: Props) => {
   const [memberData, setMemberData] = useState<string[]>([]);
   const [employees, setEmployees] = useState<MentionData[]>([]);
   const [editTaskInputValue, setEditTaskInputValue] = useState("");
+  const [swipedTasks, setSwipedTasks] = useState<{ [key: number]: boolean }>(
+    {}
+  );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -466,43 +480,155 @@ const Task = (props: Props) => {
   //   trackMouse: true,
   // });
 
-  const handleDeleteTask = async (taskId: string) => {
-    console.log("task deleted");
+  const handleDeleteTask = async (taskId: string, teamId: string) => {
+    setSwipedTasks((prev) => ({ ...prev, [taskId]: false })); // Close swipe
+    console.log("task deleted", taskId, teamId);
     const { data, error } = await supabase
       .from("tasks")
       .update({ is_deleted: true })
+      .eq("team_id", teamId)
       .eq("id", taskId);
-  };
-  const handleCompleteTask = (taskId: string) => {};
-  const handleSearchByTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.toLowerCase();
-    setSearchTasks(value);
+    if (error) throw error;
+    const fetchData = async () => {
+      const { data: tasks } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("is_deleted", false);
 
-    if (!value.trim()) {
-      // If input is empty, don't show tasks
-      setFilteredTasksBySearch([]);
-      return;
-    }
-
-    // Filter tasks based on role
-    const filtered = allTasks.filter((task: any) => {
-      const isTeamMatch = selectedTeam?.id === task.team_id;
-      const hasMentionMatch = task.mentions.some((mention: string) =>
-        mention.toLowerCase().includes(value)
-      );
-
-      if (userId?.role === "owner") {
-        return isTeamMatch && hasMentionMatch; // Owner: all tasks in the team with matching mentions
-      } else {
-        const isUserMentioned = task.mentions.includes(
-          `@${userId?.entity_name}`
-        );
-        return isTeamMatch && isUserMentioned && hasMentionMatch; // User: Only their own tasks
-      }
+      if (tasks) setAllTasks(tasks);
+    };
+    fetchData();
+    toast({
+      title: "Deleted Successfully!",
+      description: "Task deleted successfully!",
+      action: (
+        <ToastAction
+          altText="Undo"
+          onClick={() => handleTaskUndo(teamId, taskId)}
+        >
+          Undo
+        </ToastAction>
+      ),
     });
-
-    setFilteredTasksBySearch(filtered);
   };
+  const handleTaskUndo = async (teamId: string, taskId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .update({ is_deleted: false })
+        .eq("team_id", teamId)
+        .eq("id", taskId);
+
+      if (error) throw error;
+      // const fetchData = async () => {
+      //   const { data: tasks } = await supabase
+      //     .from("tasks")
+      //     .select("*")
+      //     .eq("is_deleted", false);
+
+      //   if (tasks) setAllTasks(tasks);
+      // };
+
+      // fetchTasks(); // Refresh the tasks list
+      fetchData();
+
+      toast({
+        title: "Undo Successful",
+        description: "The task has been restored.",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error("Error undoing delete:", error);
+      toast({
+        title: "Error",
+        description: "Failed to restore the task. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  };
+  const handleCompleteTask = async (id: number) => {
+    try {
+      // Fetch the task data
+      const { data: taskData, error: taskError } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("id", id)
+        .eq("is_deleted", false);
+
+      if (taskError) throw new Error("Failed to fetch task details");
+
+      if (!taskData || taskData.length === 0) {
+        console.error("Task not found");
+        return;
+      }
+
+      const currentTask = taskData[0];
+
+      // Prepare updated fields
+      const updatedFields: { task_status?: string } = {};
+
+      updatedFields.task_status = "Completed";
+
+      // Update the task
+      const { error } = await supabase
+        .from("tasks")
+        .update(updatedFields)
+        .eq("id", id);
+
+      if (error) throw new Error("Failed to update the task");
+
+      // Refresh task data and reset state
+
+      setOpenTaskId(null);
+      setDate(undefined);
+      setTaskStatus("");
+      fetchData();
+
+      toast({
+        title: "Task Updated",
+        description: "The task has been updated successfully.",
+        duration: 3000,
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: err.message || "Something went wrong. Please try again.",
+        duration: 3000,
+      });
+    }
+    setSwipedTasks((prev) => ({ ...prev, [id]: false })); // Close swipe
+  };
+  // const handleSearchByTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const value = event.target.value.toLowerCase();
+  //   setSearchTasks(value);
+
+  //   if (!value.trim()) {
+  //     // If input is empty, don't show tasks
+  //     setFilteredTasksBySearch([]);
+  //     return;
+  //   }
+
+  //   // Filter tasks based on role
+  //   const filtered = allTasks.filter((task: any) => {
+  //     const isTeamMatch = selectedTeam?.id === task.team_id;
+  //     const hasMentionMatch = task.mentions.some((mention: string) =>
+  //       mention.toLowerCase().includes(value)
+  //     );
+
+  //     if (userId?.role === "owner") {
+  //       return isTeamMatch && hasMentionMatch; // Owner: all tasks in the team with matching mentions
+  //     } else {
+  //       const isUserMentioned = task.mentions.includes(
+  //         `@${userId?.entity_name}`
+  //       );
+  //       return isTeamMatch && isUserMentioned && hasMentionMatch; // User: Only their own tasks
+  //     }
+  //   });
+
+  //   setFilteredTasksBySearch(filtered);
+  // };
   // Function to move date backward
   useEffect(() => {
     if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
@@ -628,13 +754,25 @@ const Task = (props: Props) => {
 
     fetchTeamsAndTasks();
   };
+  const handleSwipe = (taskId: number, direction: "left" | "right") => {
+    setSwipedTasks((prev) => ({
+      ...prev,
+      [taskId]: direction === "left", // Swiped left means action buttons appear
+    }));
+  };
 
   return (
     <>
-      <div className={`flex flex-col bg-navbg px-[18px] ${(userId?.role === "owner" ||
-        (userId?.role === "User" &&
-          ((userId?.access?.task !== true && userId?.access?.all === true) ||
-            userId?.access?.task === true))) ? "h-[470px]" : "h-full"} space-y-[18px]`}>
+      <div
+        className={`flex flex-col bg-navbg px-[18px] ${
+          userId?.role === "owner" ||
+          (userId?.role === "User" &&
+            ((userId?.access?.task !== true && userId?.access?.all === true) ||
+              userId?.access?.task === true))
+            ? "h-[470px]"
+            : "h-full"
+        } space-y-[18px]`}
+      >
         <header className="flex justify-between items-center bg-navbg pt-[18px]">
           <Drawer open={isSpaceDrawerOpen} onOpenChange={setIsSpaceDrawerOpen}>
             <DrawerTrigger onClick={() => setIsSpaceDrawerOpen(true)}>
@@ -820,122 +958,50 @@ const Task = (props: Props) => {
             </DrawerContent>
           </Drawer>
           <div className="flex gap-2">
-            <div className="w-10 h-10">
-              <Sheet>
-                <SheetTrigger>
-                  <FiSearch className="absolute mt-3 ml-[12px] text-zinc-500" />
-                  <input
-                    type="text"
-                    className="w-10 h-10 justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white"
-                  />
-                </SheetTrigger>
-                <SheetContent className="w-full bg-mobbg p-4">
-                  {/* Search Input */}
-                  <div className="relative w-[90%]">
-                    <FiSearch className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
-                    <Input
-                      placeholder="Search ..."
-                      value={searchTasks}
-                      onChange={handleSearchByTasks}
-                      className="rounded-[10px] bg-white h-10 pl-10 w-full border-[#D4D4D8]"
-                    />
-                    <X
-                      size={14}
-                      className="absolute right-3 top-3 cursor-pointer w-4 h-5 text-zinc-500"
-                      onClick={() => setSearchTasks("")}
-                    />
-                  </div>
-
-                  {/* Filtered Tasks List */}
-                  <div className="mt-4">
-                    {taskLoadingSearch ? (
-                      <OverdueListSkeleton />
-                    ) : filteredTasksBySearch.length === 0 ? (
-                      <div className="w-full  flex justify-center items-center">
-                        <p className="text-[#A6A6A7] text-lg font-medium">
-                          No Task Found
-                        </p>
-                      </div>
-                    ) : (
-                      filteredTasksBySearch.map((task: any, index: number) => (
-                        <div
-                          key={index}
-                          className="p-3 bg-white border border-zinc-300 rounded-lg mb-2"
-                        >
-                          <div className="w-full">
-                            <div className="flex justify-between items-center">
-                              <p className="text-[12px] text-[#A6A6A7] font-medium">
-                                {task.time}
-                              </p>
-                            </div>
-                            <p className="text-black mt-2 text-sm">
-                              <span className="font-semibold inline-block">
-                                {task.mentions}
-                              </span>{" "}
-                              {task.task_content}
-                            </p>
-                          </div>
-                          <div className="flex justify-between items-center mt-3">
-                            <span className="text-red-500 font-bold text-[12px]">
-                              {new Date(task.due_date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                }
-                              )}
-                            </span>
-                            <span
-                              className={`rounded-3xl text-sm font-semibold py-1.5 px-2 ${
-                                task.task_status === "todo"
-                                  ? "text-reddish bg-[#F8DADA]"
-                                  : task.task_status === "In progress"
-                                  ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                  : task.task_status === "Internal feedback"
-                                  ? "text-[#142D57] bg-[#DEE9FC]"
-                                  : "text-[#3FAD51] bg-[#E5F8DA]"
-                              }`}
-                            >
-                              {task.task_status}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+            <TaskSearch
+              userTasks={userTasks}
+              userIdRole={userId?.role || ""}
+              teamId={selectedTeam?.id || ""}
+            />
             <Drawer
               open={isFilterDrawerOpen}
               onOpenChange={setIsFilterDrawerOpen}
             >
               <DrawerTrigger onClick={() => setIsFilterDrawerOpen(true)}>
-                <div className="flex w-10 h-10  p-[8px_12px] justify-center items-center gap-[6px] rounded-lg border border-zinc-300 bg-white">
+                <div className="flex w-10 h-10 p-2 justify-center items-center rounded-lg border border-zinc-300 bg-white">
                   <FaEllipsisH className="h-4 w-6" />
                 </div>
               </DrawerTrigger>
-              <DrawerContent className="h-[70%]">
-                <DrawerTitle className="pt-[18px] px-5">Filter</DrawerTitle>
-                <Command>
-                  <CommandList>
-                    <ul className="mt-4 space-y-5 px-5 pt-3">
+
+              <DrawerContent>
+                <div className="p-4">
+                  <DrawerHeader className="text-left">
+                    <DrawerTitle>Filter</DrawerTitle>
+                  </DrawerHeader>
+
+                  <div className="pb-7">
+                    {/* <p> {userId?.role}</p> */}
+                    <ul className="space-y-2">
                       {userId?.role === "owner"
                         ? adminTaskStatusOptions.map((status) => (
                             <li
                               key={status.value}
+                              tabIndex={0}
+                              role="button"
                               onClick={() => {
                                 setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close the drawer on selection
+                                setIsFilterDrawerOpen(false); // Close drawer on selection
                               }}
-                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
+                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
                                 selectedTaskStatus === status.value
                                   ? "text-zinc-950 font-semibold"
                                   : "text-blackish"
                               }`}
                             >
-                              {status.label}
+                              <span>{status.label}</span>
+                              {selectedTaskStatus === status.value && (
+                                <Check className="h-4 w-4 text-zinc-950" />
+                              )}
                             </li>
                           ))
                         : UsertaskStatusOptions.filter(
@@ -943,22 +1009,27 @@ const Task = (props: Props) => {
                           ).map((status) => (
                             <li
                               key={status.value}
+                              tabIndex={0}
+                              role="button"
                               onClick={() => {
                                 setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close the drawer on selection
+                                setIsFilterDrawerOpen(false); // Close drawer on selection
                               }}
-                              className={`flex items-center border-b-[1px] border-zinc-300 cursor-pointer ${
+                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
                                 selectedTaskStatus === status.value
                                   ? "text-zinc-950 font-semibold"
                                   : "text-blackish"
                               }`}
                             >
-                              {status.label}
+                              <span>{status.label}</span>
+                              {selectedTaskStatus === status.value && (
+                                <Check className="h-4 w-4 text-zinc-950" />
+                              )}
                             </li>
                           ))}
                     </ul>
-                  </CommandList>
-                </Command>
+                  </div>
+                </div>
               </DrawerContent>
             </Drawer>
           </div>
@@ -1024,9 +1095,30 @@ const Task = (props: Props) => {
           ) : (
             filteredTasks.map((task: any, index: number) => (
               <div
-                key={index}
-                // {...handlers}
+                key={task.id}
                 className="relative"
+                {...(userId?.role === "owner" && {
+                  onTouchStart: (e) => {
+                    const startX = e.touches[0].clientX;
+                    const handleTouchMove = (moveEvent: TouchEvent) => {
+                      const endX = moveEvent.touches[0].clientX;
+                      if (startX - endX > 50) {
+                        handleSwipe(task.id, "left"); // Swipe left
+                        document.removeEventListener(
+                          "touchmove",
+                          handleTouchMove
+                        );
+                      } else if (endX - startX > 50) {
+                        handleSwipe(task.id, "right"); // Swipe right
+                        document.removeEventListener(
+                          "touchmove",
+                          handleTouchMove
+                        );
+                      }
+                    };
+                    document.addEventListener("touchmove", handleTouchMove);
+                  },
+                })}
               >
                 <div
                   onClick={() => {
@@ -1040,9 +1132,7 @@ const Task = (props: Props) => {
                     );
                   }}
                   className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
-                    swipedTaskId === task.id
-                      ? "-translate-x-20"
-                      : "translate-x-0"
+                    swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
                   }`}
                 >
                   <div className="w-full">
@@ -1053,12 +1143,16 @@ const Task = (props: Props) => {
                     </div>
                     <p className="text-black mt-2 text-sm">
                       <span className="font-semibold inline-block">
-                        {task.mentions.map((mention: string, index: number) => (
-                          <span key={index}>
-                            {mention}
-                            {index !== task.mentions.length - 1 && " "}
-                          </span>
-                        ))}
+                        {Array.isArray(task.mentions) &&
+                          task.mentions.length > 0 &&
+                          task.mentions.map(
+                            (mention: string, index: number) => (
+                              <span key={index}>
+                                {mention}
+                                {index !== task.mentions.length - 1 && " "}
+                              </span>
+                            )
+                          )}
                       </span>{" "}
                       {task.task_content}
                     </p>
@@ -1092,28 +1186,61 @@ const Task = (props: Props) => {
                     </span>
                   </div>
                   {/* Swipe Actions - Only visible when swiped */}
-                  {swipedTaskId === task.id && (
-                    <div className="absolute right-0 top-0 h-full flex gap-2">
-                      {userId?.role === "owner" && (
-                        <button
-                          className="bg-red-500 text-white p-2 rounded-l-lg flex items-center justify-center w-12"
-                          onClick={() => handleDeleteTask(task.id)}
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      )}
-                      {userId?.role === "owner" &&
-                        task.task_status !== "Completed" && (
-                          <button
-                            className="bg-green-500 text-white p-2 rounded-r-lg flex items-center justify-center w-12"
-                            onClick={() => handleCompleteTask(task.id)}
-                          >
-                            <CheckCircle size={20} />
-                          </button>
-                        )}
-                    </div>
-                  )}
                 </div>
+                {userId?.role === "owner" && swipedTasks[task.id] && (
+                  <div
+                    className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
+            z-50 transition-all duration-300"
+                  >
+                    <button
+                      className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
+                      onClick={() => handleCompleteTask(task.id)}
+                    >
+                      <Check className="w-6 h-6" />
+                    </button>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                      <DialogTrigger asChild>
+                        <button
+                          className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
+                          onClick={() => setIsDialogOpen(true)}
+                        >
+                          <Trash2 className="w-6 h-6" />
+                        </button>
+                      </DialogTrigger>
+
+                      <DialogContent className="w-[80vw] max-w-sm px-6 py-4">
+                        <DialogHeader className="p-0 text-left">
+                          <DialogTitle className="text-lg font-semibold">
+                            Delete Task
+                          </DialogTitle>
+                          <DialogDescription className="text-sm text-gray-600 leading-6 mt-1">
+                            Do you want to delete this task?
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="flex justify-start items-center w-full gap-4 mt-4">
+                          <Button
+                            variant="outline"
+                            className="w-1/3"
+                            type="submit"
+                            onClick={() => setIsDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            className="bg-red-600 hover:bg-red-500 w-1/3"
+                            type="button"
+                            onClick={() =>
+                              handleDeleteTask(task.id, task.team_id)
+                            }
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                )}
 
                 {openTaskId === task.id && (
                   <Drawer

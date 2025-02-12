@@ -424,7 +424,7 @@ const OverdueTaskPage = () => {
                           ? "text-reddish bg-[#F8DADA]"
                           : task.task_status === "In progress"
                           ? "text-[#EEA15A] bg-[#F8F0DA]"
-                          : task.task_status === "feedback"
+                          : task.task_status === "Internal feedback"
                           ? "text-[#142D57] bg-[#DEE9FC]"
                           : "text-[#3FAD51] bg-[#E5F8DA]"
                       }`}
@@ -458,7 +458,7 @@ const OverdueTaskPage = () => {
                                   ? "text-reddish bg-[#F8DADA]"
                                   : task.task_status === "In progress"
                                   ? "text-[#EEA15A] bg-[#F8F0DA]"
-                                  : task.task_status === "feedback"
+                                  : task.task_status === "Internal feedback"
                                   ? "text-[#142D57] bg-[#DEE9FC]"
                                   : "text-[#3FAD51] bg-[#E5F8DA]"
                               }`}
@@ -470,7 +470,7 @@ const OverdueTaskPage = () => {
                               <SelectItem value="In progress">
                                 In Progress
                               </SelectItem>
-                              <SelectItem value="feedback">Feedback</SelectItem>
+                              <SelectItem value="feedback">Internal feedback</SelectItem>
                               {userId?.role === "owner" && (
                                 <SelectItem value="Completed">
                                   Completed

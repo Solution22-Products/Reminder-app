@@ -23,6 +23,15 @@ import { ToastAction } from "@/components/ui/toast";
 import { toast } from "@/hooks/use-toast";
 import { MentionsInput, Mention } from "react-mentions";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 
 interface TasksSearchProps {
   userTasks: any;
@@ -48,7 +57,8 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
   const [editTaskInputValue, setEditTaskInputValue] = useState<string>("");
    const [employees, setEmployees] = useState<MentionData[]>([]);
    const [memberData, setMemberData] = useState<string[]>([]);
-   const[tasks,setTasks]=useState<any>([]);   
+   const[tasks,setTasks]=useState<any>([]); 
+   const[isDialogOpen,setIsDialogOpen]  = useState(false);
 
    const fetchData = async () => {
     const { data: tasks, error } = await supabase
@@ -65,29 +75,32 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
   };
   
   
-   const handleSearchByTasks = (e: any) => {
-    setSearchTasks(e.target.value);
-    if (!e.target.value.trim()) {
+  const handleSearchByTasks = (e: any) => {
+    let searchValue = e.target.value.replace(/ /g, "_"); // Convert spaces to underscores
+    setSearchTasks(searchValue);
+  
+    if (!searchValue.trim()) {
       setFilteredTasksBySearch([]);
       return;
     }
-
+  
     const filtered = userTasks.filter((task: any) => {
       const taskContentMatch = task.task_content
         .toLowerCase()
-        .includes(e.target.value.toLowerCase());
-
+        .includes(searchValue.toLowerCase());
+  
       const mentionsMatch = Array.isArray(task.mentions)
         ? task.mentions.some((mention: string) =>
-            mention.toLowerCase().includes(e.target.value.toLowerCase())
+            mention.toLowerCase().includes(searchValue.toLowerCase())
           )
-        : task.mentions?.toLowerCase().includes(e.target.value.toLowerCase());
-
+        : task.mentions?.toLowerCase().includes(searchValue.toLowerCase());
+  
       return taskContentMatch || mentionsMatch;
     });
-
+  
     setFilteredTasksBySearch(filtered);
   };
+  
   const handleCompleteTask = async (id: number) => {
     try {
       // Fetch the task data
@@ -349,7 +362,7 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
               }}
             />
           </div>
-          {userIdRole}
+          {/* {userIdRole} */}
 
           {/* Filtered Tasks List */}
           <div className="mt-4 w-full flex-1 h-[60vh] overflow-y-auto playlist-scroll">
@@ -419,7 +432,13 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
                     </p>
                   </div>
                   <div className="flex justify-between items-center mt-3">
-                    <span className="text-red-500 font-bold text-[12px]">
+                  <span
+                      className={`font-bold text-[12px] ${
+                        new Date(task.due_date) >= new Date()
+                          ? "text-[#14B8A6]"
+                          : "text-red-500"
+                      }`}
+                    >
                       {new Date(task.due_date).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "short",
@@ -455,14 +474,47 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
                         <Check className="w-6 h-6" />
                       </button>
 
-                      <button
-                        className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
-                        onClick={() =>
-                          handleDeleteTask(task.id, task.team_id)
-                        }
-                      >
-                        <Trash2 className="w-6 h-6" />
-                      </button>
+                      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                      <DialogTrigger asChild>
+                        <button
+                          className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
+                          onClick={() => setIsDialogOpen(true)}
+                        >
+                          <Trash2 className="w-6 h-6" />
+                        </button>
+                      </DialogTrigger>
+
+                      <DialogContent className="w-[80vw] max-w-sm px-6 py-4">
+                        <DialogHeader className="p-0 text-left">
+                          <DialogTitle className="text-lg font-semibold">
+                            Delete Task
+                          </DialogTitle>
+                          <DialogDescription className="text-sm text-gray-600 leading-6 mt-1">
+                            Do you want to delete this task?
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="flex justify-start items-center w-full gap-4 mt-4">
+                          <Button
+                            variant="outline"
+                            className="w-1/3"
+                            type="submit"
+                            onClick={() => setIsDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            className="bg-red-600 hover:bg-red-500 w-1/3"
+                            type="button"
+                            onClick={() =>
+                              handleDeleteTask(task.id, task.team_id)
+                            }
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                     </div>
                   )}
 

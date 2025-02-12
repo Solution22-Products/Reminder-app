@@ -929,6 +929,16 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
                                     {/* Save Changes Button */}
                                     <div className="flex justify-center gap-4 mt-5">
+                                      {/* DELETE BUTTON INSIDE SHEET */}
+                                      <Button
+                                        className="border-none w-1/2 bg-red-600 hover:bg-red-500 hover:text-white text-white"
+                                        variant="outline"
+                                        onClick={() =>
+                                          handleDeleteTeam(team.id)
+                                        }
+                                      >
+                                        Delete
+                                      </Button>
                                       <Button
                                         className="w-1/2"
                                         onClick={() =>
@@ -1697,6 +1707,16 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
                                         {/* Save Changes Button */}
                                         <div className="flex justify-center gap-4 mt-5">
+                                          {/* DELETE BUTTON INSIDE SHEET */}
+                                          <Button
+                                            className="border-none w-1/2 bg-red-600 hover:bg-red-500 hover:text-white text-white"
+                                            variant="outline"
+                                            onClick={() =>
+                                              handleDeleteTeam(team.id)
+                                            }
+                                          >
+                                            Delete
+                                          </Button>
                                           <Button
                                             className="w-1/2"
                                             onClick={() =>

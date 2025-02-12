@@ -262,7 +262,7 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
     setSelectedActiveTab(id);
     setSpaceId(id);
     // fetchTeams();
-    // fetchTeamData()
+    // fetchTeamData();
   };
 
   // Add a new tab in database and UI
@@ -756,7 +756,7 @@ const SpaceBar: React.FC<loggedUserDataProps> = ({ loggedUserData }) => {
   const fetchTeams = async () => {
     const tabSpace1 = userActiveTab || activeTab;
     setSpaceId(tabSpace1);
-    //if (!spaceId) return;
+    if (!spaceId) return;
     const { data, error } = await supabase
       .from("teams")
       .select("*")

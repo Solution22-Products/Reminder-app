@@ -115,7 +115,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   const [taskStatus, setTaskStatus] = useState<string>("todo");
   // const [allTasks, setAllTasks] = useState<any>([]);
   const [teamName, setTeamName] = useState<string>("");
-  const [teamNameDialogOpen, setTeamNameDialogOpen] = useState(false);
+  // const [teamNameDialogOpen, setTeamNameDialogOpen] = useState(false);
   const [teamNameSheetOpen, setTeamNameSheetOpen] = useState(false);
   const [addedMembers, setAddedMembers] = useState<any[]>([]);
   const [matchingUsers, setMatchingUsers] = useState<Tab[]>([]);
@@ -130,7 +130,27 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   const [role, setRole] = useState("");
   const [loggedTeamId, setLoggedTeamId] = useState<number[]>([]);
 
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  // const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [openSheets, setOpenSheets] = useState<{ [key: string]: boolean }>({});
+  const [openDialogs, setOpenDialogs] = useState<{ [key: string]: boolean }>(
+    {}
+  );
+
+  // Toggle functions
+  const toggleDropdown = (teamId: string, isOpen: boolean) => {
+    setOpenDropdowns((prev) => ({ ...prev, [teamId]: isOpen }));
+  };
+
+  const toggleSheet = (teamId: string, isOpen: boolean) => {
+    setOpenSheets((prev) => ({ ...prev, [teamId]: isOpen }));
+  };
+
+  const toggleDialog = (teamId: string, isOpen: boolean) => {
+    setOpenDialogs((prev) => ({ ...prev, [teamId]: isOpen }));
+  };
 
   const fetchTeams = async () => {
     if (!spaceId) return;
@@ -332,7 +352,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
       console.log("Team deleted successfully.");
 
       // Additional cleanup actions
-      setTeamNameDialogOpen(false);
+      // setTeamNameDialogOpen(false);
       fetchTeams();
       filterFetchTeams();
       toast({
@@ -373,7 +393,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
       }
 
       // Additional cleanup actions
-      setTeamNameDialogOpen(false);
+      // setTeamNameDialogOpen(false);
       fetchTeams();
       filterFetchTeams();
       toast({
@@ -734,9 +754,12 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                   loggedUserData?.access?.all === true) ||
                                   loggedUserData?.access?.team === true))) && (
                               <>
+                                {/* Dropdown for Each Team */}
                                 <DropdownMenu
-                                  open={dropdownOpen}
-                                  onOpenChange={setDropdownOpen}
+                                  open={openDropdowns[team.id] || false}
+                                  onOpenChange={(isOpen) =>
+                                    toggleDropdown(team.id, isOpen)
+                                  }
                                 >
                                   <DropdownMenuTrigger>
                                     <Ellipsis
@@ -745,22 +768,19 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                     />
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent className="min-w-6 absolute -top-1 -right-2.5 p-0">
-                                    {/* EDIT BUTTON */}
                                     <DropdownMenuItem
                                       onClick={() => {
                                         getTeamData(team.id);
-                                        setTeamNameSheetOpen(true); // Open Sheet
-                                        setDropdownOpen(false); // Close Dropdown
+                                        toggleSheet(team.id, true); // Open only the clicked team's Sheet
+                                        toggleDropdown(team.id, false); // Close dropdown
                                       }}
                                     >
                                       Edit
                                     </DropdownMenuItem>
-
-                                    {/* DELETE BUTTON */}
                                     <DropdownMenuItem
                                       onClick={() => {
-                                        setTeamNameDialogOpen(true); // Open Delete Dialog
-                                        setDropdownOpen(false); // Close Dropdown
+                                        toggleDialog(team.id, true); // Open delete confirmation for this team
+                                        toggleDropdown(team.id, false); // Close dropdown
                                       }}
                                     >
                                       Delete
@@ -768,14 +788,19 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                   </DropdownMenuContent>
                                 </DropdownMenu>
 
+                                {/* Sheet for Editing Team */}
                                 <Sheet
-                                  open={teamNameSheetOpen}
-                                  onOpenChange={setTeamNameSheetOpen}
+                                  open={openSheets[team.id] || false}
+                                  onOpenChange={(isOpen) =>
+                                    toggleSheet(team.id, isOpen)
+                                  }
                                 >
                                   <SheetContent style={{ maxWidth: "500px" }}>
                                     <SheetHeader>
                                       <SheetTitle>Edit Team</SheetTitle>
                                     </SheetHeader>
+
+                                    {/* Team Name Input */}
                                     <div className="mt-2">
                                       <label
                                         htmlFor="name"
@@ -792,201 +817,140 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                           setTeamName(e.target.value)
                                         }
                                       />
+                                    </div>
 
-                                      {/* Matching Users Dropdown */}
-                                      <div className="mt-4 relative">
-                                        {matchingUsers.length > 0 &&
-                                          emailInput.length > 0 &&
-                                          !noUserFound && (
-                                            <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
-                                              <ul>
-                                                {matchingUsers.map(
-                                                  (user, index) => (
-                                                    <li
-                                                      key={user.id}
-                                                      className={`p-2 cursor-pointer ${
-                                                        index ===
-                                                        highlightedIndex
-                                                          ? "bg-gray-200"
-                                                          : "hover:bg-gray-100"
-                                                      }`}
-                                                      onClick={() =>
-                                                        handleUserSelect(user)
-                                                      }
-                                                      onMouseEnter={() =>
-                                                        setHighlightedIndex(
-                                                          index
-                                                        )
-                                                      }
-                                                    >
-                                                      {user.email}
-                                                    </li>
-                                                  )
-                                                )}
-                                              </ul>
-                                            </div>
-                                          )}
+                                    {/* Members Input */}
+                                    <div>
+                                      <label
+                                        htmlFor="members"
+                                        className="text-sm text-[#111928] font-medium"
+                                      >
+                                        Members
+                                      </label>
+                                      <Input
+                                        autoComplete="off"
+                                        id="members"
+                                        placeholder="Add email"
+                                        className="text-gray-500 mt-1.5 h-12 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
+                                        onChange={getUserData}
+                                        value={emailInput}
+                                      />
+                                    </div>
 
-                                        {noUserFound && (
-                                          <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
-                                            <ul>
-                                              <li className="p-2 cursor-pointer hover:bg-gray-100">
-                                                No User Found
-                                              </li>
-                                            </ul>
-                                          </div>
-                                        )}
-                                      </div>
-
-                                      {/* Members Input */}
-                                      <div>
-                                        <label
-                                          htmlFor="members"
-                                          className="text-sm text-[#111928] font-medium"
-                                        >
-                                          Members
-                                        </label>
-                                        <Input
-                                          autoComplete="off"
-                                          id="members"
-                                          placeholder="Add email"
-                                          className="text-gray-500 mt-1.5 h-12 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
-                                          onChange={getUserData}
-                                          value={emailInput}
-                                        />
-                                      </div>
-
-                                      {/* Added Members List */}
-                                      {addedMembers.length > 0 && (
-                                        <div className="mt-2 p-2 flex-wrap items-center gap-2 w-full border border-gray-300 rounded-md min-h-[calc(100vh-290px)] max-h-[calc(100vh-290px)] overflow-y-auto playlist-scroll">
-                                          {addedMembers.map((member, index) => (
-                                            <div
-                                              key={member.id}
-                                              className="flex justify-between items-center gap-2 my-2 py-1 px-2 w-full text-sm text-gray-500"
-                                            >
-                                              <div className="flex items-center gap-1">
-                                                <Image
-                                                  src={member.profile_image}
-                                                  alt="User Image"
-                                                  width={36}
-                                                  height={36}
-                                                  className="w-[32px] h-[32px] rounded-full"
-                                                />
-                                                <span>
-                                                  {member.username ||
-                                                    member.name}
-                                                </span>
-                                              </div>
-
-                                              <span
-                                                className={
-                                                  member.role === "superadmin"
-                                                    ? "text-[#0E9F6E]"
-                                                    : "text-gray-500"
-                                                }
-                                              >
-                                                {member.designation?.length > 25
-                                                  ? `${member.designation.slice(
-                                                      0,
-                                                      26
-                                                    )}...`
-                                                  : member.designation}
-                                              </span>
-
-                                              <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  removeMember(member, index);
-                                                }}
-                                                className="focus:outline-none space_delete_button text-gray-400"
-                                              >
-                                                <Trash2
-                                                  className="text-black"
-                                                  size={18}
-                                                />
-                                              </button>
-                                            </div>
-                                          ))}
+                                    {/* Matching Users Dropdown */}
+                                    {matchingUsers.length > 0 &&
+                                      emailInput.length > 0 &&
+                                      !noUserFound && (
+                                        <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                          <ul>
+                                            {matchingUsers.map(
+                                              (user, index) => (
+                                                <li
+                                                  key={user.id}
+                                                  className={`p-2 cursor-pointer ${
+                                                    index === highlightedIndex
+                                                      ? "bg-gray-200"
+                                                      : "hover:bg-gray-100"
+                                                  }`}
+                                                  onClick={() =>
+                                                    handleUserSelect(user)
+                                                  }
+                                                  onMouseEnter={() =>
+                                                    setHighlightedIndex(index)
+                                                  }
+                                                >
+                                                  {user.email}
+                                                </li>
+                                              )
+                                            )}
+                                          </ul>
                                         </div>
                                       )}
-
-                                      {/* Error Message */}
-                                      {teamNameError && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                          Please fill the field
-                                        </p>
-                                      )}
-
-                                      {/* Buttons */}
-                                      <div className="flex justify-center gap-4 mt-5">
-                                        {/* DELETE TEAM DIALOG */}
-                                        <Dialog
-                                          open={teamNameDialogOpen}
-                                          onOpenChange={setTeamNameDialogOpen}
-                                        >
-                                          <DialogTrigger asChild>
-                                            <Button className="border-none w-1/2 bg-red-600 hover:bg-red-500 text-white">
-                                              Delete
-                                            </Button>
-                                          </DialogTrigger>
-                                          <DialogContent className="sm:max-w-[425px]">
-                                            <DialogHeader>
-                                              <DialogTitle>
-                                                Delete Team
-                                              </DialogTitle>
-                                              <DialogDescription>
-                                                Do you want to delete{" "}
-                                                <span className="font-bold">
-                                                  {team.team_name}?
-                                                </span>
-                                              </DialogDescription>
-                                            </DialogHeader>
-                                            <div className="flex justify-center items-center w-full gap-4">
-                                              <Button
-                                                variant="outline"
-                                                className="w-1/3"
-                                                type="submit"
-                                                onClick={() =>
-                                                  setTeamNameDialogOpen(false)
-                                                }
-                                              >
-                                                Cancel
-                                              </Button>
-                                              <Button
-                                                className="bg-red-600 hover:bg-red-500 w-1/3"
-                                                type="button"
-                                                onClick={() =>
-                                                  handleDeleteTeam(team.id)
-                                                }
-                                              >
-                                                Delete
-                                              </Button>
-                                            </div>
-                                          </DialogContent>
-                                        </Dialog>
-
-                                        {/* SAVE CHANGES BUTTON */}
-                                        <Button
-                                          className="w-1/2"
-                                          onClick={() =>
-                                            handleUpdateTeam(
-                                              team.id,
-                                              spaceId,
-                                              team.team_name
-                                            )
-                                          }
-                                        >
-                                          Save Changes
-                                        </Button>
+                                    {noUserFound && (
+                                      <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                        <ul>
+                                          <li className="p-2 cursor-pointer hover:bg-gray-100">
+                                            No User Found
+                                          </li>
+                                        </ul>
                                       </div>
+                                    )}
+
+                                    {/* Added Members List */}
+                                    {addedMembers.length > 0 && (
+                                      <div className="mt-2 p-2 flex-wrap items-center gap-2 w-full border border-gray-300 rounded-md min-h-[calc(100vh-290px)] max-h-[calc(100vh-290px)] overflow-y-auto playlist-scroll">
+                                        {addedMembers.map((member, index) => (
+                                          <div
+                                            key={member.id}
+                                            className="flex justify-between items-center gap-2 my-2 py-1 px-2 w-full text-sm text-gray-500"
+                                          >
+                                            <div className="flex items-center gap-1">
+                                              <Image
+                                                src={member.profile_image}
+                                                alt="User Image"
+                                                width={36}
+                                                height={36}
+                                                className="w-[32px] h-[32px] rounded-full"
+                                              />
+                                              <span>
+                                                {member.username || member.name}
+                                              </span>
+                                            </div>
+                                            <span
+                                              className={
+                                                member.role === "superadmin"
+                                                  ? "text-[#0E9F6E]"
+                                                  : "text-gray-500"
+                                              }
+                                            >
+                                              {member.designation?.length > 25
+                                                ? `${member.designation.slice(
+                                                    0,
+                                                    26
+                                                  )}...`
+                                                : member.designation}
+                                            </span>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeMember(member, index);
+                                              }}
+                                              className="focus:outline-none space_delete_button text-gray-400"
+                                            >
+                                              <Trash2
+                                                className="text-black"
+                                                size={18}
+                                              />
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    {/* Save Changes Button */}
+                                    <div className="flex justify-center gap-4 mt-5">
+                                      <Button
+                                        className="w-1/2"
+                                        onClick={() =>
+                                          handleUpdateTeam(
+                                            team.id,
+                                            spaceId,
+                                            team.team_name
+                                          )
+                                        }
+                                      >
+                                        Save Changes
+                                      </Button>
                                     </div>
                                   </SheetContent>
                                 </Sheet>
 
                                 {/* DELETE CONFIRMATION DIALOG */}
                                 <Dialog
-                                  open={teamNameDialogOpen}
-                                  onOpenChange={setTeamNameDialogOpen}
+                                  open={openDialogs[team.id] || false}
+                                  onOpenChange={(isOpen) =>
+                                    toggleDialog(team.id, isOpen)
+                                  }
                                 >
                                   <DialogContent className="sm:max-w-[425px]">
                                     <DialogHeader>
@@ -1003,7 +967,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                         variant="outline"
                                         className="w-1/3"
                                         onClick={() =>
-                                          setTeamNameDialogOpen(false)
+                                          toggleDialog(team.id, false)
                                         }
                                       >
                                         Cancel
@@ -1012,7 +976,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                         className="bg-red-600 hover:bg-red-500 w-1/3"
                                         onClick={() => {
                                           handleDeleteTeam(team.id);
-                                          setTeamNameDialogOpen(false);
+                                          toggleDialog(team.id, false);
                                         }}
                                       >
                                         Delete

@@ -99,7 +99,7 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
       setFeedbackTasks(
         data
           .map((task) => task.task_status)
-          .filter((task) => task === "feedback").length
+          .filter((task) => task === "Internal feedback").length
       );
       setTotalTasks(data.length);
     }
@@ -196,7 +196,7 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
                     <p className="text-sm font-bold text-green-500">
                       {
                         taskDetails.filter(
-                          (task) => task.task_status === "feedback"
+                          (task) => task.task_status === "Internal feedback"
                         ).length
                       }
                     </p>

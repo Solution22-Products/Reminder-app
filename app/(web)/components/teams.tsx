@@ -115,7 +115,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   const [taskStatus, setTaskStatus] = useState<string>("todo");
   // const [allTasks, setAllTasks] = useState<any>([]);
   const [teamName, setTeamName] = useState<string>("");
-  const [teamNameDialogOpen, setTeamNameDialogOpen] = useState(false);
+  // const [teamNameDialogOpen, setTeamNameDialogOpen] = useState(false);
   const [teamNameSheetOpen, setTeamNameSheetOpen] = useState(false);
   const [addedMembers, setAddedMembers] = useState<any[]>([]);
   const [matchingUsers, setMatchingUsers] = useState<Tab[]>([]);
@@ -129,6 +129,28 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   const [mentionTrigger, setMentionTrigger] = useState(false);
   const [role, setRole] = useState("");
   const [loggedTeamId, setLoggedTeamId] = useState<number[]>([]);
+
+  // const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [openSheets, setOpenSheets] = useState<{ [key: string]: boolean }>({});
+  const [openDialogs, setOpenDialogs] = useState<{ [key: string]: boolean }>(
+    {}
+  );
+
+  // Toggle functions
+  const toggleDropdown = (teamId: string, isOpen: boolean) => {
+    setOpenDropdowns((prev) => ({ ...prev, [teamId]: isOpen }));
+  };
+
+  const toggleSheet = (teamId: string, isOpen: boolean) => {
+    setOpenSheets((prev) => ({ ...prev, [teamId]: isOpen }));
+  };
+
+  const toggleDialog = (teamId: string, isOpen: boolean) => {
+    setOpenDialogs((prev) => ({ ...prev, [teamId]: isOpen }));
+  };
 
   const fetchTeams = async () => {
     if (!spaceId) return;
@@ -171,7 +193,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     if (error) throw error;
     filterFetchTasks();
     setTaskDeleteOpen(false);
-    setNotificationTrigger((prev : boolean) => !prev);
+    setNotificationTrigger((prev: boolean) => !prev);
     toast({
       title: "Deleted Successfully!",
       description: "Task deleted successfully!",
@@ -198,7 +220,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
       // fetchTasks(); // Refresh the tasks list
       filterFetchTasks();
-      setNotificationTrigger((prev : boolean) => !prev);
+      setNotificationTrigger((prev: boolean) => !prev);
       toast({
         title: "Undo Successful",
         description: "The task has been restored.",
@@ -330,7 +352,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
       console.log("Team deleted successfully.");
 
       // Additional cleanup actions
-      setTeamNameDialogOpen(false);
+      // setTeamNameDialogOpen(false);
       fetchTeams();
       filterFetchTeams();
       toast({
@@ -371,7 +393,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
       }
 
       // Additional cleanup actions
-      setTeamNameDialogOpen(false);
+      // setTeamNameDialogOpen(false);
       fetchTeams();
       filterFetchTeams();
       toast({
@@ -600,6 +622,11 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     getUser();
   }, []);
 
+  useEffect(() => {
+    fetchTeams();
+    filterFetchTeams();
+  }, [spaceId]);
+
   const filterBySearchValue = (items: any[], searchValue: string) => {
     // Validate searchValue and convert to lowercase if it's a string
     const lowercasedSearchValue =
@@ -701,9 +728,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     }
   };
 
-  useEffect(() => {
-
-  }, [mentionTrigger, setMentionTrigger]);
+  useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
 
   return (
     <div className="w-full h-[calc(100vh-142px)]">
@@ -715,7 +740,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                 {filterTeams.map((team: any, index: number) => (
                   <CarouselItem1
                     key={team.id}
-                    className="max-w-[340px] h-[calc(100vh-142px)] basis-[30%] overflow-y-auto relative playlist-scroll"
+                    className="max-w-[370px] h-[calc(100vh-142px)] basis-[30%] overflow-y-auto relative playlist-scroll"
                   >
                     <Card key={index}>
                       <CardContent key={index} className="w-full h-full p-0">
@@ -733,306 +758,248 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                 ((loggedUserData?.access?.team !== true &&
                                   loggedUserData?.access?.all === true) ||
                                   loggedUserData?.access?.team === true))) && (
-                              <DropdownMenu
-                              // open={updateOptionStates}
-                              // onOpenChange={setUpdateOptionStates}
-                              >
-                                <DropdownMenuTrigger>
-                                  <Ellipsis size={18} />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="min-w-6 absolute -top-1 -right-2.5 p-0">
-                                  <p>
-                                    <Sheet
-                                      open={teamNameSheetOpen}
-                                      onOpenChange={setTeamNameSheetOpen}
+                              <>
+                                {/* Dropdown for Each Team */}
+                                <DropdownMenu
+                                  open={openDropdowns[team.id] || false}
+                                  onOpenChange={(isOpen) =>
+                                    toggleDropdown(team.id, isOpen)
+                                  }
+                                >
+                                  <DropdownMenuTrigger>
+                                    <Ellipsis
+                                      size={18}
+                                      className="cursor-pointer"
+                                    />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent className="min-w-6 absolute -top-1 -right-2.5 p-0">
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        getTeamData(team.id);
+                                        toggleSheet(team.id, true); // Open only the clicked team's Sheet
+                                        toggleDropdown(team.id, false); // Close dropdown
+                                      }}
                                     >
-                                      <SheetTrigger
-                                        className="p-0 pr-4"
-                                        asChild
-                                      >
-                                        <Button
-                                          className="border-none w-full"
-                                          variant="outline"
-                                          onClick={() => getTeamData(team.id)}
-                                        >
-                                          Edit
-                                        </Button>
-                                      </SheetTrigger>
-                                      <SheetContent
-                                        className=""
-                                        style={{ maxWidth: "500px" }}
-                                      >
-                                        <SheetHeader>
-                                          <SheetTitle>Edit team</SheetTitle>
-                                        </SheetHeader>
-                                        <div className="mt-2">
-                                          <label
-                                            htmlFor="name"
-                                            className="text-sm text-[#111928] font-medium"
-                                          >
-                                            Team Name
-                                          </label>
-                                          <Input
-                                            className="mb-3 mt-1"
-                                            type="text"
-                                            placeholder="Team Name"
-                                            defaultValue={team.team_name}
-                                            onChange={(e) => {
-                                              setTeamName(e.target.value);
-                                            }}
-                                          />
-                                          <div className="mt-4 relative">
-                                            {matchingUsers.length > 0 &&
-                                              emailInput.length > 0 &&
-                                              !noUserFound && (
-                                                <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
-                                                  {matchingUsers.length > 0 && (
-                                                    <ul>
-                                                      {matchingUsers.map(
-                                                        (user, index) => (
-                                                          <li
-                                                            key={user.id}
-                                                            className={`p-2 cursor-pointer ${
-                                                              index ===
-                                                              highlightedIndex
-                                                                ? "bg-gray-200"
-                                                                : "hover:bg-gray-100"
-                                                            }`}
-                                                            onClick={() => {
-                                                              console.log(
-                                                                "User Selected:",
-                                                                user
-                                                              );
-                                                              handleUserSelect(
-                                                                user
-                                                              );
-                                                            }}
-                                                            onMouseEnter={() =>
-                                                              setHighlightedIndex(
-                                                                index
-                                                              )
-                                                            }
-                                                          >
-                                                            {user.email}
-                                                          </li>
-                                                        )
-                                                      )}
-                                                    </ul>
-                                                  )}
-                                                </div>
-                                              )}
-                                            {noUserFound && (
-                                              <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
-                                                <ul>
-                                                  <li className="p-2 cursor-pointer hover:bg-gray-100">
-                                                    No User Found
-                                                  </li>
-                                                </ul>
-                                              </div>
-                                            )}
-                                          </div>
-                                          <div>
-                                            <label
-                                              htmlFor="members"
-                                              className="text-sm text-[#111928] font-medium"
-                                            >
-                                              Members
-                                            </label>
-                                            <Input
-                                              autoComplete="off"
-                                              id="members"
-                                              placeholder="add email"
-                                              className="text-gray-500 mt-1.5 h-12 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
-                                              onChange={getUserData}
-                                              value={emailInput}
-                                            />
-                                          </div>
-                                          {addedMembers.length > 0 && (
-                                            <div className="mt-2 p-2 flex-wrap items-center gap-2 w-full border border-gray-300 rounded-md min-h-[calc(100vh-290px)] max-h-[calc(100vh-290px)] overflow-y-auto playlist-scroll">
-                                              {addedMembers.map(
-                                                (member, index) => (
-                                                  <div
-                                                    key={member.id}
-                                                    className="flex justify-between items-center gap-2 my-2 py-1 px-2 w-full text-sm text-gray-500"
-                                                  >
-                                                    <div className="flex items-center gap-1">
-                                                      <Image
-                                                        src={
-                                                          member.profile_image
-                                                        }
-                                                        alt="user image"
-                                                        width={36}
-                                                        height={36}
-                                                        className="w-[32px] h-[32px] rounded-full"
-                                                      />
-                                                      <span>
-                                                        {member.username ||
-                                                          member.name}
-                                                      </span>
-                                                    </div>
-                                                    <span
-                                                      className={`${
-                                                        member.role ===
-                                                        "superadmin"
-                                                          ? "text-[#0E9F6E]"
-                                                          : "text-gray-500"
-                                                      }`}
-                                                    >
-                                                      {member.designation
-                                                        ?.length > 25
-                                                        ? `${member.designation?.slice(
-                                                            0,
-                                                            26
-                                                          )}...`
-                                                        : member.designation}
-                                                    </span>
-                                                    <button
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        removeMember(
-                                                          member,
-                                                          index
-                                                        );
-                                                      }}
-                                                      className="focus:outline-none space_delete_button text-gray-400"
-                                                    >
-                                                      <Trash2
-                                                        className="text-black"
-                                                        size={18}
-                                                      />
-                                                    </button>
-                                                  </div>
-                                                )
-                                              )}
-                                            </div>
-                                          )}
-                                        </div>
-                                        {teamNameError && (
-                                          <p className="text-red-500 text-sm mt-1">
-                                            Please fill the field
-                                          </p>
-                                        )}
-                                        <div className="flex justify-center gap-4 mt-5">
-                                          {/* <Button variant='outline' className="w-1/3" onClick={handleClose}>
-                                      Cancel
-                                    </Button> */}
-                                          <Dialog
-                                            open={teamNameDialogOpen}
-                                            onOpenChange={setTeamNameDialogOpen}
-                                          >
-                                            <DialogTrigger asChild>
-                                              <Button
-                                                className="border-none w-1/2 bg-red-600 hover:bg-red-500 hover:text-white text-white"
-                                                variant="outline"
-                                              >
-                                                Delete
-                                              </Button>
-                                            </DialogTrigger>
-                                            <DialogContent className="sm:max-w-[425px]">
-                                              <DialogHeader>
-                                                <DialogTitle>
-                                                  Delete Team
-                                                </DialogTitle>
-                                                <DialogDescription>
-                                                  Do you want to delete{" "}
-                                                  <span className="font-bold">
-                                                    {team.team_name}?
-                                                  </span>
-                                                </DialogDescription>
-                                              </DialogHeader>
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        toggleDialog(team.id, true); // Open delete confirmation for this team
+                                        toggleDropdown(team.id, false); // Close dropdown
+                                      }}
+                                    >
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
 
-                                              <div className="flex justify-center items-center w-full gap-4">
-                                                <Button
-                                                  variant="outline"
-                                                  className="w-1/3"
-                                                  type="submit"
+                                {/* Sheet for Editing Team */}
+                                <Sheet
+                                  open={openSheets[team.id] || false}
+                                  onOpenChange={(isOpen) =>
+                                    toggleSheet(team.id, isOpen)
+                                  }
+                                >
+                                  <SheetContent style={{ maxWidth: "500px" }}>
+                                    <SheetHeader>
+                                      <SheetTitle>Edit Team</SheetTitle>
+                                    </SheetHeader>
+
+                                    {/* Team Name Input */}
+                                    <div className="mt-2">
+                                      <label
+                                        htmlFor="name"
+                                        className="text-sm text-[#111928] font-medium"
+                                      >
+                                        Team Name
+                                      </label>
+                                      <Input
+                                        className="mb-3 mt-1"
+                                        type="text"
+                                        placeholder="Team Name"
+                                        defaultValue={team.team_name}
+                                        onChange={(e) =>
+                                          setTeamName(e.target.value)
+                                        }
+                                      />
+                                    </div>
+
+                                    {/* Members Input */}
+                                    <div>
+                                      <label
+                                        htmlFor="members"
+                                        className="text-sm text-[#111928] font-medium"
+                                      >
+                                        Members
+                                      </label>
+                                      <Input
+                                        autoComplete="off"
+                                        id="members"
+                                        placeholder="Add email"
+                                        className="text-gray-500 mt-1.5 h-12 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
+                                        onChange={getUserData}
+                                        value={emailInput}
+                                      />
+                                    </div>
+
+                                    {/* Matching Users Dropdown */}
+                                    {matchingUsers.length > 0 &&
+                                      emailInput.length > 0 &&
+                                      !noUserFound && (
+                                        <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                          <ul>
+                                            {matchingUsers.map(
+                                              (user, index) => (
+                                                <li
+                                                  key={user.id}
+                                                  className={`p-2 cursor-pointer ${
+                                                    index === highlightedIndex
+                                                      ? "bg-gray-200"
+                                                      : "hover:bg-gray-100"
+                                                  }`}
                                                   onClick={() =>
-                                                    setTeamNameDialogOpen(false)
+                                                    handleUserSelect(user)
+                                                  }
+                                                  onMouseEnter={() =>
+                                                    setHighlightedIndex(index)
                                                   }
                                                 >
-                                                  Cancel
-                                                </Button>
-                                                <Button
-                                                  className="bg-red-600 hover:bg-red-500 w-1/3"
-                                                  type="button"
-                                                  onClick={() =>
-                                                    handleDeleteTeam(team.id)
-                                                  }
-                                                >
-                                                  Delete
-                                                </Button>
-                                              </div>
-                                            </DialogContent>
-                                          </Dialog>
-                                          <Button
-                                            className="w-1/2"
-                                            onClick={() =>
-                                              handleUpdateTeam(
-                                                team.id,
-                                                spaceId,
-                                                team.team_name
+                                                  {user.email}
+                                                </li>
                                               )
-                                            }
-                                          >
-                                            Save changes
-                                          </Button>
+                                            )}
+                                          </ul>
                                         </div>
-                                      </SheetContent>
-                                    </Sheet>
-                                  </p>
-                                  <p>
-                                    <Dialog
-                                      open={teamNameDialogOpen}
-                                      onOpenChange={setTeamNameDialogOpen}
-                                    >
-                                      <DialogTrigger
-                                        className="p-0 px-3"
-                                        asChild
-                                      >
-                                        <Button
-                                          className="border-none w-full"
-                                          variant="outline"
-                                        >
-                                          Delete
-                                        </Button>
-                                      </DialogTrigger>
-                                      <DialogContent className="sm:max-w-[425px]">
-                                        <DialogHeader>
-                                          <DialogTitle>Delete Team</DialogTitle>
-                                          <DialogDescription>
-                                            Do you want to delete{" "}
-                                            <span className="font-bold">
-                                              {team.team_name}?
-                                            </span>
-                                          </DialogDescription>
-                                        </DialogHeader>
+                                      )}
+                                    {noUserFound && (
+                                      <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                        <ul>
+                                          <li className="p-2 cursor-pointer hover:bg-gray-100">
+                                            No User Found
+                                          </li>
+                                        </ul>
+                                      </div>
+                                    )}
 
-                                        <div className="flex justify-center items-center w-full gap-4">
-                                          <Button
-                                            variant="outline"
-                                            className="w-1/3"
-                                            type="submit"
-                                            onClick={() =>
-                                              setTeamNameDialogOpen(false)
-                                            }
+                                    {/* Added Members List */}
+                                    {addedMembers.length > 0 && (
+                                      <div className="mt-2 p-2 flex-wrap items-center gap-2 w-full border border-gray-300 rounded-md min-h-[calc(100vh-290px)] max-h-[calc(100vh-290px)] overflow-y-auto playlist-scroll">
+                                        {addedMembers.map((member, index) => (
+                                          <div
+                                            key={member.id}
+                                            className="flex justify-between items-center gap-2 my-2 py-1 px-2 w-full text-sm text-gray-500"
                                           >
-                                            Cancel
-                                          </Button>
-                                          <Button
-                                            className="bg-red-600 hover:bg-red-500 w-1/3"
-                                            type="button"
-                                            onClick={() =>
-                                              handleDeleteTeam(team.id)
-                                            }
-                                          >
-                                            Delete
-                                          </Button>
-                                        </div>
-                                      </DialogContent>
-                                    </Dialog>
-                                  </p>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                                            <div className="flex items-center gap-1">
+                                              <Image
+                                                src={member.profile_image}
+                                                alt="User Image"
+                                                width={36}
+                                                height={36}
+                                                className="w-[32px] h-[32px] rounded-full"
+                                              />
+                                              <span>
+                                                {member.username || member.name}
+                                              </span>
+                                            </div>
+                                            <span
+                                              className={
+                                                member.role === "superadmin"
+                                                  ? "text-[#0E9F6E]"
+                                                  : "text-gray-500"
+                                              }
+                                            >
+                                              {member.designation?.length > 25
+                                                ? `${member.designation.slice(
+                                                    0,
+                                                    26
+                                                  )}...`
+                                                : member.designation}
+                                            </span>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeMember(member, index);
+                                              }}
+                                              className="focus:outline-none space_delete_button text-gray-400"
+                                            >
+                                              <Trash2
+                                                className="text-black"
+                                                size={18}
+                                              />
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    {/* Save Changes Button */}
+                                    <div className="flex justify-center gap-4 mt-5">
+                                      {/* DELETE BUTTON INSIDE SHEET */}
+                                      <Button
+                                        className="border-none w-1/2 bg-red-600 hover:bg-red-500 hover:text-white text-white"
+                                        variant="outline"
+                                        onClick={() =>
+                                          handleDeleteTeam(team.id)
+                                        }
+                                      >
+                                        Delete
+                                      </Button>
+                                      <Button
+                                        className="w-1/2"
+                                        onClick={() =>
+                                          handleUpdateTeam(
+                                            team.id,
+                                            spaceId,
+                                            team.team_name
+                                          )
+                                        }
+                                      >
+                                        Save Changes
+                                      </Button>
+                                    </div>
+                                  </SheetContent>
+                                </Sheet>
+
+                                {/* DELETE CONFIRMATION DIALOG */}
+                                <Dialog
+                                  open={openDialogs[team.id] || false}
+                                  onOpenChange={(isOpen) =>
+                                    toggleDialog(team.id, isOpen)
+                                  }
+                                >
+                                  <DialogContent className="sm:max-w-[425px]">
+                                    <DialogHeader>
+                                      <DialogTitle>Delete Team</DialogTitle>
+                                      <DialogDescription>
+                                        Do you want to delete{" "}
+                                        <span className="font-bold">
+                                          {team.team_name}?
+                                        </span>
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="flex justify-center items-center w-full gap-4">
+                                      <Button
+                                        variant="outline"
+                                        className="w-1/3"
+                                        onClick={() =>
+                                          toggleDialog(team.id, false)
+                                        }
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        className="bg-red-600 hover:bg-red-500 w-1/3"
+                                        onClick={() => {
+                                          handleDeleteTeam(team.id);
+                                          toggleDialog(team.id, false);
+                                        }}
+                                      >
+                                        Delete
+                                      </Button>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              </>
                             )}
                           </div>
                           {(loggedUserData?.role === "owner" ||
@@ -1226,7 +1193,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             </Button>
                                           ) : loggedUserData?.role === "User" &&
                                             task.task_status === "Completed" ? (
-                                            <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                                            <Button className="w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
                                               Completed
                                             </Button>
                                           ) : (
@@ -1256,14 +1223,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                               }}
                                             >
                                               <SelectTrigger
-                                                className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                                className={`w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                                   task.task_status === "todo"
                                                     ? "text-reddish bg-[#F8DADA]"
                                                     : task.task_status ===
                                                       "In progress"
                                                     ? "text-[#EEA15A] bg-[#F8F0DA]"
                                                     : task.task_status ===
-                                                      "feedback"
+                                                      "Internal feedback"
                                                     ? "text-[#142D57] bg-[#DEE9FC]"
                                                     : "text-[#3FAD51] bg-[#E5F8DA]"
                                                 }`}
@@ -1277,8 +1244,8 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                 <SelectItem value="In progress">
                                                   In Progress
                                                 </SelectItem>
-                                                <SelectItem value="feedback">
-                                                  Feedback
+                                                <SelectItem value="Internal feedback">
+                                                  Internal feedback
                                                 </SelectItem>
                                                 {loggedUserData?.role ===
                                                   "owner" && (
@@ -1448,7 +1415,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                         </Button>
                                       ) : loggedUserData?.role === "User" &&
                                         task.task_status === "Completed" ? (
-                                        <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                                        <Button className="w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
                                           Completed
                                         </Button>
                                       ) : (
@@ -1477,14 +1444,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                           }}
                                         >
                                           <SelectTrigger
-                                            className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                            className={`w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                               task.task_status === "todo"
                                                 ? "text-reddish bg-[#F8DADA]"
                                                 : task.task_status ===
                                                   "In progress"
                                                 ? "text-[#EEA15A] bg-[#F8F0DA]"
                                                 : task.task_status ===
-                                                  "feedback"
+                                                  "Internal feedback"
                                                 ? "text-[#142D57] bg-[#DEE9FC]"
                                                 : "text-[#3FAD51] bg-[#E5F8DA]"
                                             }`}
@@ -1498,8 +1465,8 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             <SelectItem value="In progress">
                                               In Progress
                                             </SelectItem>
-                                            <SelectItem value="feedback">
-                                              Feedback
+                                            <SelectItem value="Internal feedback">
+                                              Internal feedback
                                             </SelectItem>
                                             {loggedUserData?.role ===
                                               "owner" && (
@@ -1536,7 +1503,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                   .map((team: any, index: any) => (
                     <CarouselItem1
                       key={team.id}
-                      className="max-w-[340px] basis-[30%] h-[calc(100vh-142px)] overflow-y-auto relative playlist-scroll"
+                      className="max-w-[370px] basis-[30%] h-[calc(100vh-142px)] overflow-y-auto relative playlist-scroll"
                     >
                       <Card key={index}>
                         <CardContent key={index} className="w-full h-full p-0">
@@ -1555,309 +1522,263 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                     loggedUserData?.access?.all === true) ||
                                     loggedUserData?.access?.team ===
                                       true))) && (
-                                <DropdownMenu
-                                // open={updateOptionStates}
-                                // onOpenChange={setUpdateOptionStates}
-                                >
-                                  <DropdownMenuTrigger>
-                                    <Ellipsis size={18} />
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent className="min-w-6 absolute -top-1 -right-2.5 p-0">
-                                    <p>
-                                      <Sheet
-                                        open={teamNameSheetOpen}
-                                        onOpenChange={setTeamNameSheetOpen}
+                                <>
+                                  <DropdownMenu
+                                    open={openDropdowns[team.id] || false}
+                                    onOpenChange={(isOpen) =>
+                                      toggleDropdown(team.id, isOpen)
+                                    }
+                                  >
+                                    <DropdownMenuTrigger>
+                                      <Ellipsis
+                                        size={18}
+                                        className="cursor-pointer"
+                                      />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="min-w-6 absolute -top-1 -right-2.5 p-0">
+                                      {/* EDIT BUTTON */}
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          getTeamData(team.id);
+                                          toggleSheet(team.id, true); // Open only the clicked team's Sheet
+                                          toggleDropdown(team.id, false); // Close dropdown
+                                        }}
                                       >
-                                        <SheetTrigger
-                                          className="p-0 pr-4"
-                                          asChild
-                                        >
-                                          <Button
-                                            className="border-none w-full"
-                                            variant="outline"
-                                            onClick={() => getTeamData(team.id)}
+                                        Edit
+                                      </DropdownMenuItem>
+
+                                      {/* DELETE BUTTON */}
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          toggleDialog(team.id, true); // Open delete confirmation for this team
+                                          toggleDropdown(team.id, false); // Close dropdown
+                                        }}
+                                      >
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+
+                                    {/* SHEET FOR EDIT */}
+                                    <Sheet
+                                      open={openSheets[team.id] || false}
+                                      onOpenChange={(isOpen) =>
+                                        toggleSheet(team.id, isOpen)
+                                      }
+                                    >
+                                      <SheetContent
+                                        style={{ maxWidth: "500px" }}
+                                      >
+                                        <SheetHeader>
+                                          <SheetTitle>Edit Team</SheetTitle>
+                                        </SheetHeader>
+
+                                        {/* Team Name Input */}
+                                        <div className="mt-2">
+                                          <label
+                                            htmlFor="name"
+                                            className="text-sm text-[#111928] font-medium"
                                           >
-                                            Edit
-                                          </Button>
-                                        </SheetTrigger>
-                                        <SheetContent
-                                          className=""
-                                          style={{ maxWidth: "500px" }}
-                                        >
-                                          <SheetHeader>
-                                            <SheetTitle>Edit team</SheetTitle>
-                                          </SheetHeader>
-                                          <div className="mt-2">
-                                            <label
-                                              htmlFor="name"
-                                              className="text-sm text-[#111928] font-medium"
-                                            >
-                                              Team Name
-                                            </label>
-                                            <Input
-                                              className="mb-3 mt-1"
-                                              type="text"
-                                              placeholder="Team Name"
-                                              defaultValue={team.team_name}
-                                              onChange={(e) => {
-                                                setTeamName(e.target.value);
-                                              }}
-                                            />
-                                            <div className="mt-4 relative">
-                                              {matchingUsers.length > 0 &&
-                                                emailInput.length > 0 &&
-                                                !noUserFound && (
-                                                  <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
-                                                    {matchingUsers.length >
-                                                      0 && (
-                                                      <ul>
-                                                        {matchingUsers.map(
-                                                          (user, index) => (
-                                                            <li
-                                                              key={user.id}
-                                                              className={`p-2 cursor-pointer ${
-                                                                index ===
-                                                                highlightedIndex
-                                                                  ? "bg-gray-200"
-                                                                  : "hover:bg-gray-100"
-                                                              }`}
-                                                              onClick={() =>
-                                                                handleUserSelect(
-                                                                  user
-                                                                )
-                                                              }
-                                                              onMouseEnter={() =>
-                                                                setHighlightedIndex(
-                                                                  index
-                                                                )
-                                                              }
-                                                            >
-                                                              {user.email}
-                                                            </li>
-                                                          )
-                                                        )}
-                                                      </ul>
-                                                    )}
-                                                  </div>
-                                                )}
-                                              {noUserFound && (
-                                                <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
-                                                  <ul>
-                                                    <li className="p-2 cursor-pointer hover:bg-gray-100">
-                                                      No User Found
-                                                    </li>
-                                                  </ul>
-                                                </div>
-                                              )}
-                                            </div>
-                                            <div>
-                                              <label
-                                                htmlFor="members"
-                                                className="text-sm text-[#111928] font-medium"
-                                              >
-                                                Members
-                                              </label>
-                                              <Input
-                                                autoComplete="off"
-                                                id="members"
-                                                placeholder="add email"
-                                                className="text-gray-500 mt-1.5 h-12 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
-                                                onChange={getUserData}
-                                                value={emailInput}
-                                              />
-                                            </div>
-                                            {addedMembers.length > 0 && (
-                                              <div className="mt-2 p-2 flex-wrap items-center gap-2 w-full border border-gray-300 rounded-md min-h-[calc(100vh-290px)] max-h-[calc(100vh-290px)] overflow-y-auto playlist-scroll">
-                                                {addedMembers.map(
-                                                  (member, index) => (
-                                                    <div
-                                                      key={member.id}
-                                                      className="flex justify-between items-center my-2 gap-2 py-1 px-2 w-full text-sm text-gray-500"
+                                            Team Name
+                                          </label>
+                                          <Input
+                                            className="mb-3 mt-1"
+                                            type="text"
+                                            placeholder="Team Name"
+                                            defaultValue={team.team_name}
+                                            onChange={(e) =>
+                                              setTeamName(e.target.value)
+                                            }
+                                          />
+                                        </div>
+
+                                        {/* Members Input */}
+                                        <div>
+                                          <label
+                                            htmlFor="members"
+                                            className="text-sm text-[#111928] font-medium"
+                                          >
+                                            Members
+                                          </label>
+                                          <Input
+                                            autoComplete="off"
+                                            id="members"
+                                            placeholder="Add email"
+                                            className="text-gray-500 mt-1.5 h-12 px-2 bg-gray-50 border border-gray-300 rounded-md focus-visible:ring-transparent"
+                                            onChange={getUserData}
+                                            value={emailInput}
+                                          />
+                                        </div>
+
+                                        {/* Matching Users Dropdown */}
+                                        {matchingUsers.length > 0 &&
+                                          emailInput.length > 0 &&
+                                          !noUserFound && (
+                                            <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                              <ul>
+                                                {matchingUsers.map(
+                                                  (user, index) => (
+                                                    <li
+                                                      key={user.id}
+                                                      className={`p-2 cursor-pointer ${
+                                                        index ===
+                                                        highlightedIndex
+                                                          ? "bg-gray-200"
+                                                          : "hover:bg-gray-100"
+                                                      }`}
+                                                      onClick={() =>
+                                                        handleUserSelect(user)
+                                                      }
+                                                      onMouseEnter={() =>
+                                                        setHighlightedIndex(
+                                                          index
+                                                        )
+                                                      }
                                                     >
-                                                      <div className="flex items-center gap-1">
-                                                        <Image
-                                                          src={
-                                                            member.profile_image
-                                                          }
-                                                          alt="user image"
-                                                          width={36}
-                                                          height={36}
-                                                          className="w-[32px] h-[32px] rounded-full"
-                                                        />
-                                                        <span>
-                                                          {member.username ||
-                                                            member.name}
-                                                        </span>
-                                                      </div>
-                                                      <span
-                                                        className={`${
-                                                          member.role ===
-                                                          "superadmin"
-                                                            ? "text-[#0E9F6E]"
-                                                            : "text-gray-500"
-                                                        }`}
-                                                      >
-                                                        {member.designation
-                                                          ?.length > 25
-                                                          ? `${member.designation?.slice(
-                                                              0,
-                                                              26
-                                                            )}...`
-                                                          : member.designation}
-                                                      </span>
-                                                      <button
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          removeMember(
-                                                            member,
-                                                            index
-                                                          );
-                                                        }}
-                                                        className="focus:outline-none space_delete_button text-gray-400"
-                                                      >
-                                                        <Trash2
-                                                          className="text-black"
-                                                          size={18}
-                                                        />
-                                                      </button>
-                                                    </div>
+                                                      {user.email}
+                                                    </li>
                                                   )
                                                 )}
-                                              </div>
+                                              </ul>
+                                            </div>
+                                          )}
+                                        {noUserFound && (
+                                          <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                            <ul>
+                                              <li className="p-2 cursor-pointer hover:bg-gray-100">
+                                                No User Found
+                                              </li>
+                                            </ul>
+                                          </div>
+                                        )}
+
+                                        {/* Added Members List */}
+                                        {addedMembers.length > 0 && (
+                                          <div className="mt-2 p-2 flex-wrap items-center gap-2 w-full border border-gray-300 rounded-md min-h-[calc(100vh-290px)] max-h-[calc(100vh-290px)] overflow-y-auto playlist-scroll">
+                                            {addedMembers.map(
+                                              (member, index) => (
+                                                <div
+                                                  key={member.id}
+                                                  className="flex justify-between items-center gap-2 my-2 py-1 px-2 w-full text-sm text-gray-500"
+                                                >
+                                                  <div className="flex items-center gap-1">
+                                                    <Image
+                                                      src={member.profile_image}
+                                                      alt="User Image"
+                                                      width={36}
+                                                      height={36}
+                                                      className="w-[32px] h-[32px] rounded-full"
+                                                    />
+                                                    <span>
+                                                      {member.username ||
+                                                        member.name}
+                                                    </span>
+                                                  </div>
+                                                  <span
+                                                    className={
+                                                      member.role ===
+                                                      "superadmin"
+                                                        ? "text-[#0E9F6E]"
+                                                        : "text-gray-500"
+                                                    }
+                                                  >
+                                                    {member.designation
+                                                      ?.length > 25
+                                                      ? `${member.designation.slice(
+                                                          0,
+                                                          26
+                                                        )}...`
+                                                      : member.designation}
+                                                  </span>
+                                                  <button
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      removeMember(
+                                                        member,
+                                                        index
+                                                      );
+                                                    }}
+                                                    className="focus:outline-none space_delete_button text-gray-400"
+                                                  >
+                                                    <Trash2
+                                                      className="text-black"
+                                                      size={18}
+                                                    />
+                                                  </button>
+                                                </div>
+                                              )
                                             )}
                                           </div>
-                                          {teamNameError && (
-                                            <p className="text-red-500 text-sm mt-1">
-                                              Please fill the field
-                                            </p>
-                                          )}
-                                          <div className="flex justify-center gap-4 mt-5">
-                                            {/* <Button variant='outline' className="w-1/3" onClick={handleClose}>
-                                      Cancel
-                                    </Button> */}
-                                            <Dialog
-                                              open={teamNameDialogOpen}
-                                              onOpenChange={
-                                                setTeamNameDialogOpen
-                                              }
-                                            >
-                                              <DialogTrigger asChild>
-                                                <Button
-                                                  className="border-none w-1/2 bg-red-600 hover:bg-red-500 hover:text-white text-white"
-                                                  variant="outline"
-                                                >
-                                                  Delete
-                                                </Button>
-                                              </DialogTrigger>
-                                              <DialogContent className="sm:max-w-[425px]">
-                                                <DialogHeader>
-                                                  <DialogTitle>
-                                                    Delete Team
-                                                  </DialogTitle>
-                                                  <DialogDescription>
-                                                    Do you want to delete{" "}
-                                                    <span className="font-bold">
-                                                      {team.team_name}?
-                                                    </span>
-                                                  </DialogDescription>
-                                                </DialogHeader>
+                                        )}
 
-                                                <div className="flex justify-center items-center w-full gap-4">
-                                                  <Button
-                                                    variant="outline"
-                                                    className="w-1/3"
-                                                    type="submit"
-                                                    onClick={() =>
-                                                      setTeamNameDialogOpen(
-                                                        false
-                                                      )
-                                                    }
-                                                  >
-                                                    Cancel
-                                                  </Button>
-                                                  <Button
-                                                    className="bg-red-600 hover:bg-red-500 w-1/3"
-                                                    type="button"
-                                                    onClick={() =>
-                                                      handleDeleteTeam(team.id)
-                                                    }
-                                                  >
-                                                    Delete
-                                                  </Button>
-                                                </div>
-                                              </DialogContent>
-                                            </Dialog>
-                                            <Button
-                                              className="w-1/2"
-                                              onClick={() =>
-                                                handleUpdateTeam(
-                                                  team.id,
-                                                  spaceId,
-                                                  team.team_name
-                                                )
-                                              }
-                                            >
-                                              Save changes
-                                            </Button>
-                                          </div>
-                                        </SheetContent>
-                                      </Sheet>
-                                    </p>
-                                    <p>
-                                      <Dialog
-                                        open={teamNameDialogOpen}
-                                        onOpenChange={setTeamNameDialogOpen}
-                                      >
-                                        <DialogTrigger
-                                          className="p-0 px-3"
-                                          asChild
-                                        >
+                                        {/* Save Changes Button */}
+                                        <div className="flex justify-center gap-4 mt-5">
+                                          {/* DELETE BUTTON INSIDE SHEET */}
                                           <Button
-                                            className="border-none w-full"
+                                            className="border-none w-1/2 bg-red-600 hover:bg-red-500 hover:text-white text-white"
                                             variant="outline"
+                                            onClick={() =>
+                                              handleDeleteTeam(team.id)
+                                            }
                                           >
                                             Delete
                                           </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="sm:max-w-[425px]">
-                                          <DialogHeader>
-                                            <DialogTitle>
-                                              Delete Team
-                                            </DialogTitle>
-                                            <DialogDescription>
-                                              Do you want to delete{" "}
-                                              <span className="font-bold">
-                                                {team.team_name}?
-                                              </span>
-                                            </DialogDescription>
-                                          </DialogHeader>
+                                          <Button
+                                            className="w-1/2"
+                                            onClick={() =>
+                                              handleUpdateTeam(
+                                                team.id,
+                                                spaceId,
+                                                team.team_name
+                                              )
+                                            }
+                                          >
+                                            Save Changes
+                                          </Button>
+                                        </div>
+                                      </SheetContent>
+                                    </Sheet>
 
-                                          <div className="flex justify-center items-center w-full gap-4">
-                                            <Button
-                                              variant="outline"
-                                              className="w-1/3"
-                                              type="submit"
-                                              onClick={() =>
-                                                setTeamNameDialogOpen(false)
-                                              }
-                                            >
-                                              Cancel
-                                            </Button>
-                                            <Button
-                                              className="bg-red-600 hover:bg-red-500 w-1/3"
-                                              type="button"
-                                              onClick={() =>
-                                                handleDeleteTeam(team.id)
-                                              }
-                                            >
-                                              Delete
-                                            </Button>
-                                          </div>
-                                        </DialogContent>
-                                      </Dialog>
-                                    </p>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                    {/* DELETE CONFIRMATION DIALOG */}
+                                    <Dialog
+                                      open={openDialogs[team.id] || false}
+                                      onOpenChange={(isOpen) =>
+                                        toggleDialog(team.id, isOpen)
+                                      }
+                                    >
+                                      <DialogContent className="sm:max-w-[425px]">
+                                        <DialogHeader>
+                                          <DialogTitle>Delete Team</DialogTitle>
+                                          <DialogDescription>
+                                            Do you want to delete{" "}
+                                            <span className="font-bold">
+                                              {team.team_name}?
+                                            </span>
+                                          </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="flex justify-center items-center w-full gap-4">
+                                          <Button
+                                            variant="outline"
+                                            className="w-1/3"
+                                            onClick={() =>
+                                              toggleDialog(team.id, false)
+                                            }
+                                          >
+                                            Cancel
+                                          </Button>
+                                          <Button
+                                            className="bg-red-600 hover:bg-red-500 w-1/3"
+                                            onClick={() => {
+                                              handleDeleteTeam(team.id);
+                                              toggleDialog(team.id, false);
+                                            }}
+                                          >
+                                            Delete
+                                          </Button>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </DropdownMenu>
+                                </>
                               )}
                             </div>
                             {(loggedUserData?.role === "owner" ||
@@ -2057,7 +1978,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                 "User" &&
                                               task.task_status ===
                                                 "Completed" ? (
-                                              <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                                              <Button className="w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
                                                 Completed
                                               </Button>
                                             ) : (
@@ -2090,14 +2011,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                 }}
                                               >
                                                 <SelectTrigger
-                                                  className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                                  className={`w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                                     task.task_status === "todo"
                                                       ? "text-reddish bg-[#F8DADA]"
                                                       : task.task_status ===
                                                         "In progress"
                                                       ? "text-[#EEA15A] bg-[#F8F0DA]"
                                                       : task.task_status ===
-                                                        "feedback"
+                                                        "Internal feedback"
                                                       ? "text-[#142D57] bg-[#DEE9FC]"
                                                       : "text-[#3FAD51] bg-[#E5F8DA]"
                                                   }`}
@@ -2111,8 +2032,8 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                   <SelectItem value="In progress">
                                                     In Progress
                                                   </SelectItem>
-                                                  <SelectItem value="feedback">
-                                                    Feedback
+                                                  <SelectItem value="Internal feedback">
+                                                    Internal feedback
                                                   </SelectItem>
                                                   {loggedUserData?.role ===
                                                     "owner" && (
@@ -2294,7 +2215,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                           </Button>
                                         ) : loggedUserData?.role === "User" &&
                                           task.task_status === "Completed" ? (
-                                          <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                                          <Button className="w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
                                             Completed
                                           </Button>
                                         ) : (
@@ -2325,14 +2246,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             }}
                                           >
                                             <SelectTrigger
-                                              className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                              className={`w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                                 task.task_status === "todo"
                                                   ? "text-reddish bg-[#F8DADA]"
                                                   : task.task_status ===
                                                     "In progress"
                                                   ? "text-[#EEA15A] bg-[#F8F0DA]"
                                                   : task.task_status ===
-                                                    "feedback"
+                                                    "Internal feedback"
                                                   ? "text-[#142D57] bg-[#DEE9FC]"
                                                   : "text-[#3FAD51] bg-[#E5F8DA]"
                                               }`}
@@ -2346,8 +2267,8 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                               <SelectItem value="In progress">
                                                 In Progress
                                               </SelectItem>
-                                              <SelectItem value="feedback">
-                                                Feedback
+                                              <SelectItem value="Internal feedback">
+                                                Internal feedback
                                               </SelectItem>
                                               {loggedUserData?.role ===
                                                 "owner" && (

@@ -37,13 +37,15 @@ interface ReactProps {
   selectedSpace: any;
   inputValue : any;
   setInputValue : any
+  sendFetchData : any
 }
 
 const AddTaskMentions: React.FC<ReactProps> = ({
   selectedTeam,
   selectedSpace,
   inputValue,
-  setInputValue
+  setInputValue,
+  sendFetchData
 }) => {
   const { userId } = useGlobalContext();
   const [employees, setEmployees] = useState<MentionData[]>([]);
@@ -138,7 +140,7 @@ const AddTaskMentions: React.FC<ReactProps> = ({
           });
 
         if (taskError) throw taskError;
-
+          sendFetchData()
         toast({
           title: "Success",
           description: "Task created successfully.",

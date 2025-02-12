@@ -65,22 +65,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const UsertaskStatusOptions = [
-  {
-    value: "todo",
-    label: "todo",
-  },
-  {
-    value: "In progress",
-    label: "In progress",
-  },
-  {
-    value: "Internal feedback",
-    label: "Internal feedback",
-  },
-];
 
-const adminTaskStatusOptions = [
+
+const StatusOptions = [
   {
     value: "todo",
     label: "todo",
@@ -736,6 +723,7 @@ const Task = () => {
                         onClick={() => {
                           setSelectedSpace(space);
                           setIsSpaceDrawerOpen(false);
+                          setInputValue("");
                         }}
                       >
                         <span>{space.space_name}</span>
@@ -876,6 +864,7 @@ const Task = () => {
                         onClick={() => {
                           setSelectedTeam(team);
                           setIsTeamDrawerOpen(false);
+                          setInputValue("");
                         }}
                       >
                         <span>{team.team_name}</span>
@@ -914,8 +903,7 @@ const Task = () => {
                   <div className="pb-7">
                     {/* <p> {userId?.role}</p> */}
                     <ul className="space-y-2 p-4">
-                      {userId?.role === "owner"
-                        ? adminTaskStatusOptions.map((status) => (
+                      { StatusOptions.map((status:any) => (
                             <li
                               key={status.value}
                               tabIndex={0}
@@ -936,29 +924,7 @@ const Task = () => {
                               )}
                             </li>
                           ))
-                        : UsertaskStatusOptions.filter(
-                            (status) => status.value !== "Completed"
-                          ).map((status) => (
-                            <li
-                              key={status.value}
-                              tabIndex={0}
-                              role="button"
-                              onClick={() => {
-                                setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close drawer on selection
-                              }}
-                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
-                                selectedTaskStatus === status.value
-                                  ? "text-zinc-950 font-semibold"
-                                  : "text-blackish"
-                              }`}
-                            >
-                              <span>{status.label}</span>
-                              {selectedTaskStatus === status.value && (
-                                <Check className="h-4 w-4 text-zinc-950" />
-                              )}
-                            </li>
-                          ))}
+                       }
                     </ul>
                   </div>
                 </div>
@@ -1018,7 +984,7 @@ const Task = () => {
           </div>
         </div>
 
-        <div className="w-full overflow-y-scroll playlist-scroll relative">
+        <div className="w-full overflow-y-scroll playlist-scroll">
           {taskLoading ? (
             <OverdueListSkeleton />
           ) : filteredTasks.length === 0 ? (
@@ -1032,19 +998,23 @@ const Task = () => {
               <div
                 key={task.id}
                 className="relative"
-                {...(userId?.role === "owner" && {
+                {...((userId?.role === "owner" ||
+                  (userId?.role === "User" &&
+                    ((userId?.access?.task !== true &&
+                      userId?.access?.all === true) ||
+                      userId?.access?.task === true))) && {
                   onTouchStart: (e) => {
                     const startX = e.touches[0].clientX;
                     const handleTouchMove = (moveEvent: TouchEvent) => {
                       const endX = moveEvent.touches[0].clientX;
                       if (startX - endX > 50) {
-                        handleSwipe(task.id, "left"); // Swipe left
+                        handleSwipe(task.id, "left");
                         document.removeEventListener(
                           "touchmove",
                           handleTouchMove
                         );
                       } else if (endX - startX > 50) {
-                        handleSwipe(task.id, "right"); // Swipe right
+                        handleSwipe(task.id, "right");
                         document.removeEventListener(
                           "touchmove",
                           handleTouchMove
@@ -1055,17 +1025,24 @@ const Task = () => {
                   },
                 })}
               >
-                {/* Task Card */}
                 <div
                   onClick={() => {
-                    setOpenTaskId(task.id);
-                    setEditTaskInputValue(
-                      task.mentions
-                        .map((mention: string) => `${mention}`)
-                        .join(" ") +
-                        " " +
-                        task.task_content
-                    );
+                    if (
+                      userId?.role === "owner" ||
+                      (userId?.role === "User" &&
+                        ((userId?.access?.task !== true &&
+                          userId?.access?.all === true) ||
+                          userId?.access?.task === true))
+                    ) {
+                      setOpenTaskId(task.id);
+                      setEditTaskInputValue(
+                        task.mentions
+                          .map((mention: string) => `${mention}`)
+                          .join(" ") +
+                          " " +
+                          task.task_content
+                      );
+                    }
                   }}
                   className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
                     swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
@@ -1123,64 +1100,64 @@ const Task = () => {
                   </div>
                 </div>
 
-                {/* Swipe Actions (Only visible when swiped & owner) */}
-                {userId?.role === "owner" && swipedTasks[task.id] && (
-                  <div
-                    className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
-            z-50 transition-all duration-300"
-                  >
-                    <button
-                      className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
-                      onClick={() => handleCompleteTask(task.id)}
-                    >
-                      <Check className="w-6 h-6" />
-                    </button>
-
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                      <DialogTrigger asChild>
-                        <button
-                          className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
-                          onClick={() => setIsDialogOpen(true)}
-                        >
-                          <Trash2 className="w-6 h-6" />
-                        </button>
-                      </DialogTrigger>
-
-                      <DialogContent className="w-[80vw] max-w-sm px-6 py-4">
-                        <DialogHeader className="p-0 text-left">
-                          <DialogTitle className="text-lg font-semibold">
-                            Delete Task
-                          </DialogTitle>
-                          <DialogDescription className="text-sm text-gray-600 leading-6 mt-1">
-                            Do you want to delete this task?
-                          </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="flex justify-start items-center w-full gap-4 mt-4">
-                          <Button
-                            variant="outline"
-                            className="w-1/3"
-                            type="submit"
-                            onClick={() => setIsDialogOpen(false)}
+                {/* Swipe Actions - Only for authorized users */}
+                {(userId?.role === "owner" ||
+                  (userId?.role === "User" &&
+                    ((userId?.access?.task !== true &&
+                      userId?.access?.all === true) ||
+                      userId?.access?.task === true))) &&
+                  swipedTasks[task.id] && (
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 z-50 transition-all duration-300">
+                      <button
+                        className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
+                        onClick={() => handleCompleteTask(task.id)}
+                      >
+                        <Check className="w-6 h-6" />
+                      </button>
+                      <Dialog
+                        open={isDialogOpen}
+                        onOpenChange={setIsDialogOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <button
+                            className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
+                            onClick={() => setIsDialogOpen(true)}
                           >
-                            Cancel
-                          </Button>
-                          <Button
-                            className="bg-red-600 hover:bg-red-500 w-1/3"
-                            type="button"
-                            onClick={() =>
-                              handleDeleteTask(task.id, task.team_id)
-                            }
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                )}
+                            <Trash2 className="w-6 h-6" />
+                          </button>
+                        </DialogTrigger>
 
-                {/* Task Drawer (Edit Task) */}
+                        <DialogContent className="w-[80vw] max-w-sm px-6 py-4">
+                          <DialogHeader className="p-0 text-left">
+                            <DialogTitle className="text-lg font-semibold">
+                              Delete Task
+                            </DialogTitle>
+                            <DialogDescription className="text-sm text-gray-600 leading-6 mt-1">
+                              Do you want to delete this task?
+                            </DialogDescription>
+                          </DialogHeader>
+
+                          <div className="flex justify-start items-center w-full gap-4 mt-4">
+                            <Button
+                              variant="outline"
+                              className="w-1/3"
+                              onClick={() => setIsDialogOpen(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              className="bg-red-600 hover:bg-red-500 w-1/3"
+                              onClick={() =>
+                                handleDeleteTask(task.id, task.team_id)
+                              }
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  )}
                 {openTaskId === task.id && (
                   <Drawer
                     open={openTaskId === null ? false : true}
@@ -1298,6 +1275,7 @@ const Task = () => {
               </div>
             ))
           )}
+
           <div className="flex justify-center items-center py-5 font-geist gap-1">
             <Image
               src={smile}
@@ -1321,6 +1299,7 @@ const Task = () => {
           selectedSpace={selectedSpace}
           inputValue={inputValue}
           setInputValue={setInputValue}
+          sendFetchData={fetchData}
         />
       )}
       <Footer

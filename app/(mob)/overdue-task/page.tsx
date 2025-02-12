@@ -212,24 +212,7 @@ const OverdueTaskPage = () => {
         duration: 3000,
       });
 
-      // Send a success notification
-      // if ("Notification" in window) {
-      //   if (Notification.permission === "granted") {
-      //     new Notification("Overdue Task Update", {
-      //       body: "The overdue task has been updated successfully!",
-      //       icon: "/path/to/icon.png", // Optional
-      //     });
-      //   } else if (Notification.permission !== "denied") {
-      //     Notification.requestPermission().then((permission) => {
-      //       if (permission === "granted") {
-      //         new Notification("Overdue Task Update", {
-      //           body: "The overdue task has been updated successfully!",
-      //           icon: "/path/to/icon.png", // Optional
-      //         });
-      //       }
-      //     });
-      //   }
-      // }
+      
     } catch (err: any) {
       console.error(err);
       toast({
@@ -265,7 +248,7 @@ const OverdueTaskPage = () => {
   return (
     <>
     <main className="p-[18px] pb-0">
-      <Toaster />
+      {/* <Toaster /> */}
       <div className="w-full flex justify-between items-center mb-5">
         <h1 className="text-lg font-semibold">Overdue Task</h1>
         <Select open={selectOpen} onOpenChange={setSelectOpen}>
@@ -472,7 +455,7 @@ const OverdueTaskPage = () => {
                               <SelectItem value="In progress">
                                 In Progress
                               </SelectItem>
-                              <SelectItem value="feedback">Internal feedback</SelectItem>
+                              <SelectItem value="Internal feedback">Internal feedback</SelectItem>
                               {userId?.role === "owner" && (
                                 <SelectItem value="Completed">
                                   Completed

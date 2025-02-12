@@ -112,7 +112,7 @@ const OverDue: React.FC<OverDueProps> = ({ taskTrigger }) => {
                             </p>
                           </div>
                           <p className="text-black mt-2 text-sm">
-                            <span className="font-semibold">{task.mentions || ""}</span>{" "}
+                            <span className="font-semibold ">{task.mentions || ""}</span>{" "}
                             {task.task_content.length > 60
                               ? task.task_content.slice(0, 60) + "..."
                               : task.task_content}

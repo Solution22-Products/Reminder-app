@@ -377,42 +377,54 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
             ) : (
               filteredTasksBySearch.map((task: any, index: number) => (
                 <div
-                  key={task.id}
-                  className="relative"
-                  {...(userIdRole === "owner" && {
-                    onTouchStart: (e) => {
-                      const startX = e.touches[0].clientX;
-                      const handleTouchMove = (moveEvent: TouchEvent) => {
-                        const endX = moveEvent.touches[0].clientX;
-                        if (startX - endX > 50) {
-                            handleSwipe(task.id, "left"); // Swipe left
-                          document.removeEventListener(
-                            "touchmove",
-                            handleTouchMove
-                          );
-                        } else if (endX - startX > 50) {
-                            handleSwipe(task.id, "right"); // Swipe right
-                          document.removeEventListener(
-                            "touchmove",
-                            handleTouchMove
-                          );
-                        }
-                      };
-                      document.addEventListener("touchmove", handleTouchMove);
-                    },
-                  })}
-                >
+                key={task.id}
+                className="relative"
+                {...((userId?.role === "owner" ||
+                  (userId?.role === "User" &&
+                    ((userId?.access?.task !== true &&
+                      userId?.access?.all === true) ||
+                      userId?.access?.task === true))) && {
+                  onTouchStart: (e) => {
+                    const startX = e.touches[0].clientX;
+                    const handleTouchMove = (moveEvent: TouchEvent) => {
+                      const endX = moveEvent.touches[0].clientX;
+                      if (startX - endX > 50) {
+                        handleSwipe(task.id, "left");
+                        document.removeEventListener(
+                          "touchmove",
+                          handleTouchMove
+                        );
+                      } else if (endX - startX > 50) {
+                        handleSwipe(task.id, "right");
+                        document.removeEventListener(
+                          "touchmove",
+                          handleTouchMove
+                        );
+                      }
+                    };
+                    document.addEventListener("touchmove", handleTouchMove);
+                  },
+                })}
+              >
                   {/* Task Card */}
                   <div
                   onClick={() => {
-                    setOpenTaskId(task.id);
-                    setEditTaskInputValue(
-                      task.mentions
-                        .map((mention: string) => `${mention}`)
-                        .join(" ") +
-                        " " +
-                        task.task_content
-                    );
+                    if (
+                      userId?.role === "owner" ||
+                      (userId?.role === "User" &&
+                        ((userId?.access?.task !== true &&
+                          userId?.access?.all === true) ||
+                          userId?.access?.task === true))
+                    ) {
+                      setOpenTaskId(task.id);
+                      setEditTaskInputValue(
+                        task.mentions
+                          .map((mention: string) => `${mention}`)
+                          .join(" ") +
+                          " " +
+                          task.task_content
+                      );
+                    }
                   }}
                   className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
                     swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
@@ -462,59 +474,61 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
                 </div>
 
                   {/* Swipe Actions (Only visible when swiped & owner) */}
-                  {userIdRole === "owner" && swipedTasks[task.id] && (
-                    <div
-                      className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 
-            z-50 transition-all duration-300"
-                    >
+                  {(userId?.role === "owner" ||
+                  (userId?.role === "User" &&
+                    ((userId?.access?.task !== true &&
+                      userId?.access?.all === true) ||
+                      userId?.access?.task === true))) &&
+                  swipedTasks[task.id] && (
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 z-50 transition-all duration-300">
                       <button
                         className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
                         onClick={() => handleCompleteTask(task.id)}
                       >
                         <Check className="w-6 h-6" />
                       </button>
-
-                      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                      <DialogTrigger asChild>
-                        <button
-                          className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
-                          onClick={() => setIsDialogOpen(true)}
-                        >
-                          <Trash2 className="w-6 h-6" />
-                        </button>
-                      </DialogTrigger>
-
-                      <DialogContent className="w-[80vw] max-w-sm px-6 py-4">
-                        <DialogHeader className="p-0 text-left">
-                          <DialogTitle className="text-lg font-semibold">
-                            Delete Task
-                          </DialogTitle>
-                          <DialogDescription className="text-sm text-gray-600 leading-6 mt-1">
-                            Do you want to delete this task?
-                          </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="flex justify-start items-center w-full gap-4 mt-4">
-                          <Button
-                            variant="outline"
-                            className="w-1/3"
-                            type="submit"
-                            onClick={() => setIsDialogOpen(false)}
+                      <Dialog
+                        open={isDialogOpen}
+                        onOpenChange={setIsDialogOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <button
+                            className="bg-red-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center"
+                            onClick={() => setIsDialogOpen(true)}
                           >
-                            Cancel
-                          </Button>
-                          <Button
-                            className="bg-red-600 hover:bg-red-500 w-1/3"
-                            type="button"
-                            onClick={() =>
-                              handleDeleteTask(task.id, task.team_id)
-                            }
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                            <Trash2 className="w-6 h-6" />
+                          </button>
+                        </DialogTrigger>
+
+                        <DialogContent className="w-[80vw] max-w-sm px-6 py-4">
+                          <DialogHeader className="p-0 text-left">
+                            <DialogTitle className="text-lg font-semibold">
+                              Delete Task
+                            </DialogTitle>
+                            <DialogDescription className="text-sm text-gray-600 leading-6 mt-1">
+                              Do you want to delete this task?
+                            </DialogDescription>
+                          </DialogHeader>
+
+                          <div className="flex justify-start items-center w-full gap-4 mt-4">
+                            <Button
+                              variant="outline"
+                              className="w-1/3"
+                              onClick={() => setIsDialogOpen(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              className="bg-red-600 hover:bg-red-500 w-1/3"
+                              onClick={() =>
+                                handleDeleteTask(task.id, task.team_id)
+                              }
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   )}
 

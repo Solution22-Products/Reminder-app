@@ -705,6 +705,11 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
   }, [mentionTrigger, setMentionTrigger]);
 
+  useEffect(() => {
+    fetchTeams();
+    filterFetchTeams();
+  }, [spaceId]);
+
   return (
     <div className="w-full h-[calc(100vh-142px)]">
       {filterTeams.length > 0 ? (

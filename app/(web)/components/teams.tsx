@@ -1557,16 +1557,6 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                           <SheetTitle>Edit Team</SheetTitle>
                                         </SheetHeader>
 
-                                        {/* Close Button */}
-                                        <button
-                                          onClick={() =>
-                                            toggleSheet(team.id, false)
-                                          }
-                                          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 border-none outline-none focus:ring-0"
-                                        >
-                                          ✕
-                                        </button>
-
                                         {/* Team Name Input */}
                                         <div className="mt-2">
                                           <label

@@ -837,132 +837,160 @@ const fetchTeamsForTab = async (tabId : number) => {
       }
     };
 
-  const fetchTasks = async () => {
-    const { data: tasksData, error: tasksError } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("is_deleted", false)
-      .order("created_at", { ascending: true });
-
-    if (tasksError) {
-      console.error("Error fetching tasks:", tasksError);
-      return;
-    }
-
-    if (tasksData) {
-      const includesTrueTasks = tasksData.filter((task) =>
-        task?.mentions?.includes(`@${loggedUserData?.entity_name}`)
-      );
-
-      const { data: spaceData, error: spaceError } = await supabase
-        .from("spaces")
-        .select("*")
-        .eq("is_deleted", false)
-        .in(
-          "id",
-          includesTrueTasks.map((task) => task.space_id)
-        );
-
-      if (spaceError) {
-        console.error("Error fetching spaces:", spaceError);
-        return;
-      }
-
-      const allSpaces = await newFetchSpace();
-      const teamsData = await newFetchTeam();
-
-      if (allSpaces && teamsData) {
-        // Extract space IDs from the teamsData
-        const includedSpaces = teamsData.map((team) => team.space_id);
-
-        // Filter spaces that are not included in the teams table
-        const notIncludedSpaces = allSpaces.filter(
-          (space) => !includedSpaces.includes(space.id)
-        );
-
-        if (spaceData) {
-          // Combine spaceData with spaces not included in teams
-          const combinedData = [
-            ...spaceData,
-            ...notIncludedSpaces.filter(
-              (space) => !spaceData.some((s) => s.id === space.id)
-            ),
-          ];
-
-          // if (combinedData.length > 0) {
-          //   setActiveTab(combinedData[0].id); // Set the first tab as active initially
-          // }
-
-          // Store all combined space IDs
-          setLoggedSpaceId(combinedData.map((space) => space.id));
-          setSpaceLength(combinedData.length);
-        }
-      }
-
-      setAllTasks(tasksData);
-    }
-  };
-  
   // const fetchTasks = async () => {
-  //   try {
-  //     const [{ data: spaces }, { data: teams }, { data: tasks }] =
-  //       await Promise.all([
-  //         supabase.from("spaces").select("*").eq("is_deleted", false),
-  //         supabase.from("teams").select("*").eq("is_deleted", false),
-  //         supabase.from("tasks").select("*").eq("is_deleted", false),
-  //       ]);
+  //   const { data: tasksData, error: tasksError } = await supabase
+  //     .from("tasks")
+  //     .select("*")
+  //     .eq("is_deleted", false)
+  //     .order("created_at", { ascending: true });
 
-  //     if (spaces) setAllSpace(spaces);
-  //     if (teams) setAllTeams(teams);
-  //     if (tasks) setAllTasks(tasks);
+  //   if (tasksError) {
+  //     console.error("Error fetching tasks:", tasksError);
+  //     return;
+  //   }
 
-  //     if (!userId) return;
-
-  //     const matchedTeams =
-  //       teams?.filter((team) =>
-  //         team.members.some(
-  //           (member: any) => member.entity_name === userId.entity_name
-  //         )
-  //       ) || [];
-
-  //       console.log(matchedTeams);
-
-  //     const matchedSpaceIds = new Set(
-  //       matchedTeams.map((team) => team.space_id)
+  //   if (tasksData) {
+  //     const includesTrueTasks = tasksData.filter((task) =>
+  //       task?.mentions?.includes(`@${loggedUserData?.entity_name}`)
   //     );
-  //     const matchedSpaces =
-  //       spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
-  //     // setUserSpace(matchedSpaces);
-  //     console.log(matchedSpaces);
 
-  //     const getUniqueItems = (array: any, key: any) => {
-  //       const seen = new Set();
-  //       return array.filter((item: any) => {
-  //         const value = item[key];
-  //         if (!seen.has(value)) {
-  //           seen.add(value);
-  //           return true;
-  //         }
-  //         return false;
-  //       });
-  //     };
+  //     const { data: spaceData, error: spaceError } = await supabase
+  //       .from("spaces")
+  //       .select("*")
+  //       .eq("is_deleted", false)
+  //       .in(
+  //         "id",
+  //         includesTrueTasks.map((task) => task.space_id)
+  //       );
 
-  //     const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
-  //     // if (sourceData) {
-  //     //   setSpaces(
-  //     //     getUniqueItems(
-  //     //       sourceData.map((space) => ({
-  //     //         id: space.id,
-  //     //         display: space.space_name,
-  //     //       })),
-  //     //       "display"
-  //     //     )
-  //     //   );
-  //     // }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
+  //     if (spaceError) {
+  //       console.error("Error fetching spaces:", spaceError);
+  //       return;
+  //     }
+
+  //     const allSpaces = await newFetchSpace();
+  //     const teamsData = await newFetchTeam();
+
+  //     if (allSpaces && teamsData) {
+  //       // Extract space IDs from the teamsData
+  //       const includedSpaces = teamsData.map((team) => team.space_id);
+
+  //       // Filter spaces that are not included in the teams table
+  //       const notIncludedSpaces = allSpaces.filter(
+  //         (space) => !includedSpaces.includes(space.id)
+  //       );
+
+  //       if (spaceData) {
+  //         // Combine spaceData with spaces not included in teams
+  //         const combinedData = [
+  //           ...spaceData,
+  //           ...notIncludedSpaces.filter(
+  //             (space) => !spaceData.some((s) => s.id === space.id)
+  //           ),
+  //         ];
+
+  //         // if (combinedData.length > 0) {
+  //         //   setActiveTab(combinedData[0].id); // Set the first tab as active initially
+  //         // }
+
+  //         // Store all combined space IDs
+  //         setLoggedSpaceId(combinedData.map((space) => space.id));
+  //         setSpaceLength(combinedData.length);
+  //       }
+  //     }
+
+  //     setAllTasks(tasksData);
   //   }
   // };
+
+  const fetchTasks = async () => {
+    try {
+      const [{ data: spaces }, { data: teams }, { data: tasks }] =
+        await Promise.all([
+          supabase.from("spaces").select("*").eq("is_deleted", false),
+          supabase.from("teams").select("*").eq("is_deleted", false),
+          supabase.from("tasks").select("*").eq("is_deleted", false),
+        ]);
+
+      if (spaces) setAllSpace(spaces);
+      if (teams) setAllTeams(teams);
+      if (tasks) setAllTasks(tasks);
+
+    //   const a = allTasks.filter((task: any) =>
+    //     task?.mentions === null || task?.mentions === undefined || task?.mentions?.includes(`@${userId?.entity_name}`)
+    //   );        
+    // console.log(a, " matched tasks");
+    // setAllTasks(a);
+
+      if (!userId) return;
+
+      const matchedTeams =
+        teams?.filter((team) =>
+          team.members.some(
+            (member: any) => member.entity_name === userId.entity_name
+          )
+        ) || [];
+
+      const matchedSpaceIds = new Set(
+        matchedTeams.map((team) => team.space_id)
+      );
+      const matchedSpaces =
+        spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
+      // setUserSpace(matchedSpaces);
+
+      const getUniqueItems = (array: any, key: any) => {
+        const seen = new Set();
+        return array.filter((item: any) => {
+          const value = item[key];
+          if (!seen.has(value)) {
+            seen.add(value);
+            return true;
+          }
+          return false;
+        });
+      };
+
+      const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
+      // if (sourceData) {
+      //   setSpaces(
+      //     getUniqueItems(
+      //       sourceData.map((space) => ({
+      //         id: space.id,
+      //         display: space.space_name,
+      //       })),
+      //       "display"
+      //     )
+      //   );
+      // }
+
+          const allSpaces = await newFetchSpace();
+          const teamsData = await newFetchTeam();
+
+          if (allSpaces && teamsData) {
+            // Extract space IDs from the teamsData
+            const includedSpaces = teamsData.map((team) => team.space_id);
+
+            // Filter spaces that are not included in the teams table
+            const notIncludedSpaces = allSpaces.filter(
+              (space) => !includedSpaces.includes(space.id)
+            );
+          
+          if(matchedSpaces){
+            const combinedData = [
+              ...matchedSpaces,
+              ...notIncludedSpaces.filter(
+                (space : any) => !matchedSpaces.some((s) => s.id === space.id)
+              ),
+            ];
+            setLoggedSpaceId(combinedData.map((space : any) => space.id));
+            setSpaceLength(combinedData.length);
+          }
+        }
+
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const handleFilterTasksAndTeams = async () => {
     try {

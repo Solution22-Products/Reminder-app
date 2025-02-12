@@ -474,7 +474,14 @@ const Task = (props: Props) => {
       .eq("team_id", teamId)
       .eq("id", taskId);
     if (error) throw error;
-    
+    const fetchData = async () => {
+      const { data: tasks } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("is_deleted", false);
+
+      if (tasks) setAllTasks(tasks);
+    };
     fetchData();
     toast({
       title: "Deleted Successfully!",
@@ -626,7 +633,7 @@ const Task = (props: Props) => {
         (task) =>
           task.team_id === selectedTeam.id &&
           format(new Date(task.time), "yyyy-MM-dd") === selectedDate &&
-          task.mentions.some(
+          task.mentions?.some(
             (mention: any) =>
               mention === "@everyone" || mention === `@${userId?.entity_name}`
           )
@@ -652,7 +659,7 @@ const Task = (props: Props) => {
       filteredTasks = allTasks.filter(
         (task) =>
           task.team_id === selectedTeam.id &&
-          task.mentions.some(
+          task.mentions?.some(
             (mention: any) =>
               mention === "@everyone" || mention === `@${userId?.entity_name}`
           )
@@ -1078,29 +1085,26 @@ const Task = (props: Props) => {
                   },
                 })}
               >
-                <div
-                  onClick={() => {
-                    if (
-                      userId?.role === "owner" ||
-                      (userId?.role === "User" &&
-                        ((userId?.access?.task !== true &&
-                          userId?.access?.all === true) ||
-                          userId?.access?.task === true))
-                    ) {
-                      setOpenTaskId(task.id);
-                      setEditTaskInputValue(
-                        task.mentions
-                          .map((mention: string) => `${mention}`)
-                          .join(" ") +
-                          " " +
-                          task.task_content
-                      );
-                    }
-                  }}
-                  className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
-                    swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
-                  }`}
-                >
+               <div
+          onClick={() => {
+            if (
+              userId?.role === "owner" ||
+              (userId?.role === "User" &&
+                ((userId?.access?.task !== true && userId?.access?.all === true) ||
+                  userId?.access?.task === true))
+            ) {
+              setOpenTaskId(task.id);
+              setEditTaskInputValue(
+                task.mentions.map((mention: string) => `${mention}`).join(" ") +
+                  " " +
+                  task.task_content
+              );
+            }
+          }}
+          className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
+            swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
+          }`}
+        >
                   <div className="w-full">
                     <div className="flex justify-between items-center">
                       <p className="text-[12px] text-[#A6A6A7] font-medium">
@@ -1211,7 +1215,7 @@ const Task = (props: Props) => {
                       </Dialog>
                     </div>
                   )}
-                {openTaskId === task.id && (
+                   {openTaskId === task.id && (
                   <Drawer
                     open={openTaskId === null ? false : true}
                     onOpenChange={() => setOpenTaskId(null)}

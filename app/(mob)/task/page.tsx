@@ -577,7 +577,7 @@ const Task = () => {
         (task) =>
           task.team_id === selectedTeam.id &&
           format(new Date(task.time), "yyyy-MM-dd") === selectedDate &&
-          task.mentions.some(
+          task.mentions?.some(
             (mention: any) =>
               mention === "@everyone" || mention === `@${userId?.entity_name}`
           )
@@ -603,7 +603,7 @@ const Task = () => {
       filteredTasks = allTasks.filter(
         (task) =>
           task.team_id === selectedTeam.id &&
-          task.mentions.some(
+          task.mentions?.some(
             (mention: any) =>
               mention === "@everyone" || mention === `@${userId?.entity_name}`
           )

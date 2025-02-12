@@ -405,7 +405,9 @@ const OverdueTaskPage = () => {
                     </div>
                     <p className="text-black mt-2 text-sm">
                       <span className="font-semibold inline-block">
-                        {task.mentions}
+                        {task.mentions
+                        .map((mention: string) => `${mention}`)
+                        .join(" ")}
                       </span>{" "}
                       {task.task_content}
                     </p>
@@ -449,7 +451,7 @@ const OverdueTaskPage = () => {
                           </Button>
                         ) : (
                           <Select
-                            defaultValue={task.task_status || "todo"}
+                            defaultValue={task.task_status}
                             onValueChange={(value) => setTaskStatus(value)}
                           >
                             <SelectTrigger
@@ -489,7 +491,9 @@ const OverdueTaskPage = () => {
                             @{task.team_name}
                           </span>{" "}
                           <span className="text-[#518A37]">
-                            {task.mentions}
+                            {task.mentions
+                        .map((mention: string) => `${mention}`)
+                        .join(" ")}
                           </span>{" "}
                           {task.task_content}
                         </p>

@@ -715,7 +715,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                 {filterTeams.map((team: any, index: number) => (
                   <CarouselItem1
                     key={team.id}
-                    className="max-w-[340px] h-[calc(100vh-142px)] basis-[30%] overflow-y-auto relative playlist-scroll"
+                    className="max-w-[370px] h-[calc(100vh-142px)] basis-[30%] overflow-y-auto relative playlist-scroll"
                   >
                     <Card key={index}>
                       <CardContent key={index} className="w-full h-full p-0">
@@ -1226,7 +1226,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             </Button>
                                           ) : loggedUserData?.role === "User" &&
                                             task.task_status === "Completed" ? (
-                                            <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                                            <Button className="w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
                                               Completed
                                             </Button>
                                           ) : (
@@ -1256,14 +1256,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                               }}
                                             >
                                               <SelectTrigger
-                                                className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                                className={`w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                                   task.task_status === "todo"
                                                     ? "text-reddish bg-[#F8DADA]"
                                                     : task.task_status ===
                                                       "In progress"
                                                     ? "text-[#EEA15A] bg-[#F8F0DA]"
                                                     : task.task_status ===
-                                                      "feedback"
+                                                      "Internal feedback"
                                                     ? "text-[#142D57] bg-[#DEE9FC]"
                                                     : "text-[#3FAD51] bg-[#E5F8DA]"
                                                 }`}
@@ -1277,8 +1277,8 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                 <SelectItem value="In progress">
                                                   In Progress
                                                 </SelectItem>
-                                                <SelectItem value="feedback">
-                                                  Feedback
+                                                <SelectItem value="Internal feedback">
+                                                  Internal feedback
                                                 </SelectItem>
                                                 {loggedUserData?.role ===
                                                   "owner" && (
@@ -1448,7 +1448,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                         </Button>
                                       ) : loggedUserData?.role === "User" &&
                                         task.task_status === "Completed" ? (
-                                        <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                                        <Button className="w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
                                           Completed
                                         </Button>
                                       ) : (
@@ -1477,14 +1477,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                           }}
                                         >
                                           <SelectTrigger
-                                            className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                            className={`w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                               task.task_status === "todo"
                                                 ? "text-reddish bg-[#F8DADA]"
                                                 : task.task_status ===
                                                   "In progress"
                                                 ? "text-[#EEA15A] bg-[#F8F0DA]"
                                                 : task.task_status ===
-                                                  "feedback"
+                                                  "Internal feedback"
                                                 ? "text-[#142D57] bg-[#DEE9FC]"
                                                 : "text-[#3FAD51] bg-[#E5F8DA]"
                                             }`}
@@ -1498,8 +1498,8 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             <SelectItem value="In progress">
                                               In Progress
                                             </SelectItem>
-                                            <SelectItem value="feedback">
-                                              Feedback
+                                            <SelectItem value="Internal feedback">
+                                              Internal feedback
                                             </SelectItem>
                                             {loggedUserData?.role ===
                                               "owner" && (
@@ -1536,7 +1536,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                   .map((team: any, index: any) => (
                     <CarouselItem1
                       key={team.id}
-                      className="max-w-[340px] basis-[30%] h-[calc(100vh-142px)] overflow-y-auto relative playlist-scroll"
+                      className="max-w-[370px] basis-[30%] h-[calc(100vh-142px)] overflow-y-auto relative playlist-scroll"
                     >
                       <Card key={index}>
                         <CardContent key={index} className="w-full h-full p-0">
@@ -2057,7 +2057,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                 "User" &&
                                               task.task_status ===
                                                 "Completed" ? (
-                                              <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                                              <Button className="w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
                                                 Completed
                                               </Button>
                                             ) : (
@@ -2090,14 +2090,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                 }}
                                               >
                                                 <SelectTrigger
-                                                  className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                                  className={`w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                                     task.task_status === "todo"
                                                       ? "text-reddish bg-[#F8DADA]"
                                                       : task.task_status ===
                                                         "In progress"
                                                       ? "text-[#EEA15A] bg-[#F8F0DA]"
                                                       : task.task_status ===
-                                                        "feedback"
+                                                        "Internal feedback"
                                                       ? "text-[#142D57] bg-[#DEE9FC]"
                                                       : "text-[#3FAD51] bg-[#E5F8DA]"
                                                   }`}
@@ -2111,8 +2111,8 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                   <SelectItem value="In progress">
                                                     In Progress
                                                   </SelectItem>
-                                                  <SelectItem value="feedback">
-                                                    Feedback
+                                                  <SelectItem value="Internal feedback">
+                                                    Internal feedback
                                                   </SelectItem>
                                                   {loggedUserData?.role ===
                                                     "owner" && (
@@ -2294,7 +2294,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                           </Button>
                                         ) : loggedUserData?.role === "User" &&
                                           task.task_status === "Completed" ? (
-                                          <Button className="w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
+                                          <Button className="w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none text-[#3FAD51] bg-[#E5F8DA] hover:bg-[#E5F8DA] hover:text-[#3FAD51]">
                                             Completed
                                           </Button>
                                         ) : (
@@ -2325,14 +2325,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             }}
                                           >
                                             <SelectTrigger
-                                              className={`w-[120px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
+                                              className={`w-[140px] pt-2 pr-[10px] text-center justify-center rounded-[30px] border-none ${
                                                 task.task_status === "todo"
                                                   ? "text-reddish bg-[#F8DADA]"
                                                   : task.task_status ===
                                                     "In progress"
                                                   ? "text-[#EEA15A] bg-[#F8F0DA]"
                                                   : task.task_status ===
-                                                    "feedback"
+                                                    "Internal feedback"
                                                   ? "text-[#142D57] bg-[#DEE9FC]"
                                                   : "text-[#3FAD51] bg-[#E5F8DA]"
                                               }`}
@@ -2346,8 +2346,8 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                               <SelectItem value="In progress">
                                                 In Progress
                                               </SelectItem>
-                                              <SelectItem value="feedback">
-                                                Feedback
+                                              <SelectItem value="Internal feedback">
+                                                Internal feedback
                                               </SelectItem>
                                               {loggedUserData?.role ===
                                                 "owner" && (

@@ -41,6 +41,7 @@ import Image from "next/image";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { supabase } from "@/utils/supabase/supabaseClient";
+import { Toaster } from "@/components/ui/toaster";
 
 interface SearchBarProps {
   spaceId: number;
@@ -271,11 +272,24 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
         resetInputAndFetchUpdates();
         setNotificationTrigger(!notificationTrigger);
-        toast({
-          title: "Task Created or Updated",
-          description: "The task has been created or updated successfully.",
-          duration: 3000,
-        })
+
+        if ("Notification" in window) {
+          if (Notification.permission === "granted") {
+            new Notification("Task created or updated", {
+              body: "Task created or updated successfully!",
+              icon: "/path/to/icon.png", // Optional: Path to a notification icon
+            });
+          } else if (Notification.permission !== "denied") {
+            // Request permission to show notifications
+            Notification.requestPermission().then((permission) => {
+              if (permission === "granted") {
+                new Notification("Task created or updated", {
+                  body: "Task created or updated successfully!",
+                  icon: "/path/to/icon.png", // Optional: Path to a notification icon
+                });
+              }
+            });
+          }}
       }
     } catch (error) {
       console.error("Error in handleUpdateTask:", error);
@@ -288,8 +302,8 @@ useEffect(() => {
     .channel("tasks-updates")
     .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, (payload) => {
       console.log("Task updated!", payload);
-      fetchTasks();
-      filterFetchTasks() // Function to refresh the task list in state
+      // fetchTasks(); // Function to refresh the task list in state
+      filterFetchTasks();
     })
     .subscribe();
 
@@ -643,31 +657,14 @@ useEffect(() => {
   const filteredTasks = filterBySearchValue(allTasks, searchValue as string);
 
   const handleAddTask = async (teamId: any, spaceId: number) => {
-    console.log(loggedUserData?.username, " loggedUserData id");
-    setFilterTeams((prevTeams: any) =>
-      prevTeams.map((team: any) =>
-        team.id === teamId
-          ? {
-              ...team,
-              tasks: [
-                { id: team.tasks.length + 1, inputValue: "" }, // Add the new task at the beginning
-                ...team.tasks,
-              ],
-            }
-          : team
-      )
-    );
-    // fetchTasks();
-    filterFetchTasks();
-
-    // Insert the new task into the database
     try {
+      // Insert the new task into the database
       const addDays = (date: Date, days: number) => {
         const result = new Date(date);
         result.setDate(result.getDate() + days);
         return result;
       };
-
+  
       const { data: insertedTask, error: insertError } = await supabase
         .from("tasks")
         .insert({
@@ -681,40 +678,33 @@ useEffect(() => {
           created_by: loggedUserData?.username,
         })
         .select()
-        .order("id", { ascending: false });
-
+        .order("created_at", { ascending: true });
+  
       if (insertError) {
         throw insertError;
       }
-      console.log(
-        insertedTask.map((task: any) => task.id),
-        " added task id"
-      );
-      console.log(insertedTask, "added task");
-      // setCreateTask({ status: true, taskId: insertedTask[0] });
-
-      // Fetch updated tasks for the team
-      const { data: fetchedTasks, error: fetchError } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("is_deleted", false)
-        .eq("space_id", spaceId)
-        .eq("team_id", teamId);
-
-      if (fetchError) {
-        console.error(fetchError);
-        return;
+  
+      if (insertedTask && insertedTask.length > 0) {
+        setFilterTeams((prevTeams: any) =>
+          prevTeams.map((team: any) =>
+            team.id === teamId
+              ? {
+                  ...team,
+                  tasks: [
+                    { id: insertedTask[0].id, inputValue: "" }, // Newly created task appears first
+                    ...team.tasks,
+                  ],
+                }
+              : team
+          )
+        );
       }
-
-      if (fetchedTasks) {
-        console.log(fetchedTasks, "team data");
-        // fetchTasks();
-        filterFetchTasks();
-      }
+  
+      filterFetchTasks();
     } catch (error) {
       console.error("Error adding or fetching tasks:", error);
     }
-  };
+  };  
 
   // useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
 

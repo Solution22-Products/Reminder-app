@@ -1,6 +1,6 @@
 {
-    "name": "PWA App",
-    "short_name": "App",
+    "name": "Remainder App",
+    "short_name": "S22 Remainder",
     "icons": [
     {
       "src": "windows11/SmallTile.scale-100.png",

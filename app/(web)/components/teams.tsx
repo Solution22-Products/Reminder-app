@@ -600,27 +600,27 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     filterFetchTasks();
   }, []);
 
-  useEffect(() => {
-    const getUser = async () => {
-      const user = await getLoggedInUserData();
-      // console.log(user, " user");
+  // useEffect(() => {
+  //   const getUser = async () => {
+  //     const user = await getLoggedInUserData();
+  //     // console.log(user, " user");
 
-      const { data, error } = await supabase
-        .from("users")
-        .select("role")
-        .eq("userId", user?.id)
-        .single();
+  //     const { data, error } = await supabase
+  //       .from("users")
+  //       .select("role")
+  //       .eq("userId", user?.id)
+  //       .single();
 
-      if (error) {
-        console.log(error);
-        return;
-      }
-      console.log(data.role);
-      setRole(data.role);
-    };
+  //     if (error) {
+  //       console.log(error);
+  //       return;
+  //     }
+  //     console.log(data.role);
+  //     setRole(data.role);
+  //   };
 
-    getUser();
-  }, []);
+  //   getUser();
+  // }, []);
 
   useEffect(() => {
     fetchTeams();

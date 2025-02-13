@@ -528,7 +528,9 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
       // Filter users whose email includes the input value
       const matchingUsers =
-      data?.filter((user) => user.role === "User" && user.email.includes(emailInput)) || [];
+        data?.filter(
+          (user) => user.role === "User" && user.email.includes(emailInput)
+        ) || [];
 
       if (matchingUsers.length > 0 || emailInput === "") {
         setMatchingUsers(matchingUsers);
@@ -630,7 +632,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
         result.setDate(result.getDate() + days);
         return result;
       };
-  
+
       const { data: insertedTask, error: insertError } = await supabase
         .from("tasks")
         .insert({
@@ -645,11 +647,11 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
         })
         .select()
         .order("created_at", { ascending: true });
-  
+
       if (insertError) {
         throw insertError;
       }
-  
+
       if (insertedTask && insertedTask.length > 0) {
         setFilterTeams((prevTeams: any) =>
           prevTeams.map((team: any) =>
@@ -665,45 +667,68 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
           )
         );
       }
-  
+
       filterFetchTasks();
     } catch (error) {
       console.error("Error adding or fetching tasks:", error);
     }
-  };  
+  };
 
   // Real-time subscription to reflect updates
-useEffect(() => {
-  const subscription = supabase
-    .channel("tasks-updates")
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tasks" }, (payload) => {
-      console.log("Task updated!", payload);
-      // fetchTasks(); // Function to refresh the task list in state
-      filterFetchTasks();
-      if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-          new Notification("Task created or updated", {
-            body: "Task created or updated successfully!",
-            icon: "/path/to/icon.png", // Optional: Path to a notification icon
-          });
-        } else if (Notification.permission !== "denied") {
-          // Request permission to show notifications
-          Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
-              new Notification("Task created or updated", {
-                body: "Task created or updated successfully!",
-                icon: "/path/to/icon.png", // Optional: Path to a notification icon
-              });
+  useEffect(() => {
+    const channel = supabase
+      .channel("tasks-updates")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "tasks" },
+        (payload) => {
+          console.log("Task updated!", payload);
+          filterFetchTasks(); // Function to refresh the task list in state
+          if (payload.new.task_created === true || payload.new.is_deleted === null) {
+            if ("Notification" in window) {
+              if (Notification.permission === "granted") {
+                new Notification("Task created or updated", {
+                  body: "Task created or updated successfully!",
+                  icon: "/path/to/icon.png", // Optional: Path to a notification icon
+                });
+              } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then((permission) => {
+                  if (permission === "granted") {
+                    new Notification("Task created or updated", {
+                      body: "Task created or updated successfully!",
+                      icon: "/path/to/icon.png", // Optional: Path to a notification icon
+                    });
+                  }
+                });
+              }
             }
-          });
-        }}
-    })
-    .subscribe();
+          }
 
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
+          // if ("Notification" in window) {
+          //   if (Notification.permission === "granted") {
+          //     new Notification("Task created or updated", {
+          //       body: "Task created or updated successfully!",
+          //       icon: "/path/to/icon.png", // Optional: Path to a notification icon
+          //     });
+          //   } else if (Notification.permission !== "denied") {
+          //     Notification.requestPermission().then((permission) => {
+          //       if (permission === "granted") {
+          //         new Notification("Task created or updated", {
+          //           body: "Task created or updated successfully!",
+          //           icon: "/path/to/icon.png", // Optional: Path to a notification icon
+          //         });
+          //       }
+          //     });
+          //   }
+          // }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, []);
 
   // useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
 

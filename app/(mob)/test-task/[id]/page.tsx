@@ -866,15 +866,19 @@ const Task = (props: Props) => {
           <Drawer open={isTeamDrawerOpen} onOpenChange={setIsTeamDrawerOpen}>
             <DrawerTrigger>
               <div className="bg-white py-3 rounded-xl border h-[40px] w-full border-gray-300 px-[18px] flex items-center">
-                <p>{selectedTeam?.team_name || "select a Team"}</p>
+                <p>{selectedTeam?.team_name || "select a team"}</p>
                 <RiArrowDropDownLine className="w-[18px] h-[18px] text-black ml-auto" />
               </div>
             </DrawerTrigger>
-            <DrawerContent className="h-[70%]">
-              <DrawerTitle className="pt-[18px] px-5">Teams</DrawerTitle>
+            <DrawerContent >
+            <div className="mx-auto w-full max-w-sm">
+            <DrawerHeader className="text-left">
+            <DrawerTitle>Teams</DrawerTitle>
+            </DrawerHeader>
+            <div className="pb-7">
               <Command>
                 <CommandList>
-                  <ul className="mt-4 space-y-3 py-5 px-5 pt-3">
+                  <ul>
                     {userTeams.map((team: any, index: number) => (
                       <li
                         key={index}
@@ -887,7 +891,6 @@ const Task = (props: Props) => {
                           setSelectedTeam(team);
                           setIsTeamDrawerOpen(false);
                           setInputValue("");
-                          console.log(team.id);
                         }}
                       >
                         <span>{team.team_name}</span>
@@ -897,8 +900,11 @@ const Task = (props: Props) => {
                       </li>
                     ))}
                   </ul>
+
                 </CommandList>
               </Command>
+              </div>
+              </div>
             </DrawerContent>
           </Drawer>
           <div className="flex gap-2">
@@ -926,27 +932,28 @@ const Task = (props: Props) => {
                   <div className="pb-7">
                     {/* <p> {userId?.role}</p> */}
                     <ul className="space-y-2 p-4">
-                      {StatusOptions.map((status: any) => (
-                        <li
-                          key={status.value}
-                          tabIndex={0}
-                          role="button"
-                          onClick={() => {
-                            setSelectedTaskStatus(status.value);
-                            setIsFilterDrawerOpen(false); // Close drawer on selection
-                          }}
-                          className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
-                            selectedTaskStatus === status.value
-                              ? "text-zinc-950 font-semibold"
-                              : "text-blackish"
-                          }`}
-                        >
-                          <span>{status.label}</span>
-                          {selectedTaskStatus === status.value && (
-                            <Check className="h-4 w-4 text-zinc-950" />
-                          )}
-                        </li>
-                      ))}
+                      { StatusOptions.map((status:any) => (
+                            <li
+                              key={status.value}
+                              tabIndex={0}
+                              role="button"
+                              onClick={() => {
+                                setSelectedTaskStatus(status.value);
+                                setIsFilterDrawerOpen(false); // Close drawer on selection
+                              }}
+                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
+                                selectedTaskStatus === status.value
+                                  ? "text-zinc-950 font-semibold"
+                                  : "text-blackish"
+                              }`}
+                            >
+                              <span>{status.label}</span>
+                              {selectedTaskStatus === status.value && (
+                                <Check className="h-4 w-4 text-zinc-950" />
+                              )}
+                            </li>
+                          ))
+                       }
                     </ul>
                   </div>
                 </div>
@@ -1046,19 +1053,15 @@ const Task = (props: Props) => {
               >
                <div
           onClick={() => {
-            if (
-              userId?.role === "owner" ||
-              (userId?.role === "User" &&
-                ((userId?.access?.task !== true && userId?.access?.all === true) ||
-                  userId?.access?.task === true))
-            ) {
+
+           
               setOpenTaskId(task.id);
               setEditTaskInputValue(
                 task.mentions.map((mention: string) => `${mention}`).join(" ") +
                   " " +
                   task.task_content
               );
-            }
+            
           }}
           className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
             swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"

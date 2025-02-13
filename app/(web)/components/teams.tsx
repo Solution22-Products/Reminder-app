@@ -286,9 +286,10 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 useEffect(() => {
   const subscription = supabase
     .channel("tasks-updates")
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasks" }, (payload) => {
+    .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, (payload) => {
       console.log("Task updated!", payload);
-      fetchTasks(); // Function to refresh the task list in state
+      fetchTasks();
+      filterFetchTasks() // Function to refresh the task list in state
     })
     .subscribe();
 

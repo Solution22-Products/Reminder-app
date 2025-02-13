@@ -159,9 +159,15 @@ const AddTaskMentions: React.FC<ReactProps> = ({
 useEffect(() => {
   const subscription = supabase
     .channel("tasks-updates")
-    .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, (payload) => {
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasks" }, (payload) => {
       console.log("Task created!", payload);
       sendFetchData();
+      toast({
+        title: "Success",
+        description: "Task created successfully.",
+        variant: "default",
+        duration: 3000,
+      })
       if ("Notification" in window) {
         if (Notification.permission === "granted") {
           new Notification("Task created", {

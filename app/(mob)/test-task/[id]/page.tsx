@@ -709,9 +709,14 @@ const Task = (props: Props) => {
 useEffect(() => {
   const subscription = supabase
     .channel("tasks-updates")
-    .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, (payload) => {
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tasks" }, (payload) => {
       console.log("Task updated!", payload);
       fetchData(); // Function to refresh the task list in state
+      toast({
+        title: "Task Updated",
+        description: "The task has been updated successfully.",
+        duration: 3000,
+      })
       if ("Notification" in window) {
         if (Notification.permission === "granted") {
           new Notification("Task created or updated", {

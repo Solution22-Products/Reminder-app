@@ -572,7 +572,7 @@ const Task = (props: Props) => {
     }
     setSwipedTasks((prev) => ({ ...prev, [id]: false })); // Close swipe
   };
-  
+
   // Function to move date backward
   useEffect(() => {
     if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
@@ -706,41 +706,46 @@ const Task = (props: Props) => {
   };
 
   // Real-time subscription to reflect updates
-useEffect(() => {
-  const subscription = supabase
-    .channel("tasks-updates")
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tasks" }, (payload) => {
-      console.log("Task updated!", payload);
-      fetchData(); // Function to refresh the task list in state
-      toast({
-        title: "Task Updated",
-        description: "The task has been updated successfully.",
-        duration: 3000,
-      })
-      if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-          new Notification("Task created or updated", {
-            body: "Task created or updated successfully!",
-            icon: "/path/to/icon.png", // Optional: Path to a notification icon
+  useEffect(() => {
+    const subscription = supabase
+      .channel("tasks-updates")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "tasks" },
+        (payload) => {
+          console.log("Task updated!", payload);
+          fetchData(); // Function to refresh the task list in state
+          toast({
+            title: "Task Updated",
+            description: "The task has been updated successfully.",
+            duration: 3000,
           });
-        } else if (Notification.permission !== "denied") {
-          // Request permission to show notifications
-          Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
+          if ("Notification" in window) {
+            if (Notification.permission === "granted") {
               new Notification("Task created or updated", {
                 body: "Task created or updated successfully!",
                 icon: "/path/to/icon.png", // Optional: Path to a notification icon
               });
+            } else if (Notification.permission !== "denied") {
+              // Request permission to show notifications
+              Notification.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                  new Notification("Task created or updated", {
+                    body: "Task created or updated successfully!",
+                    icon: "/path/to/icon.png", // Optional: Path to a notification icon
+                  });
+                }
+              });
             }
-          });
-        }}
-    })
-    .subscribe();
+          }
+        }
+      )
+      .subscribe();
 
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <>
@@ -803,13 +808,14 @@ useEffect(() => {
           </div>
           <Select open={selectOpen} onOpenChange={setSelectOpen}>
             <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
-              <Image
-                src={userId?.profile_image || profile}
-                alt="Profile"
-                className="rounded-full max-h-10 max-w-10 object-contain"
-                width={40}
-                height={40}
-              />
+              <div className="relative w-10 h-10 rounded-full">
+                <Image
+                  src={userId?.profile_image || profile}
+                  alt="User Image"
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
             </SelectTrigger>
             <SelectContent className="w-[150px] py-3">
               {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
@@ -907,40 +913,41 @@ useEffect(() => {
                 <RiArrowDropDownLine className="w-[18px] h-[18px] text-black ml-auto" />
               </div>
             </DrawerTrigger>
-            <DrawerContent >
-            <div className="mx-auto w-full max-w-sm">
-            <DrawerHeader className="text-left">
-            <DrawerTitle>Teams</DrawerTitle>
-            </DrawerHeader>
-            <div className="pb-7">
-              <Command>
-                <CommandList>
-                  <ul>
-                    {userTeams.map((team: any, index: number) => (
-                      <li
-                        key={index}
-                        role="button"
-                        tabIndex={0}
-                        className={`flex items-center justify-between text-black py-2 px-4 border-b border-[#D4D4D8] ${
-                          selectedTeam === team.team_name ? "bg-gray-100" : ""
-                        }`}
-                        onClick={() => {
-                          setSelectedTeam(team);
-                          setIsTeamDrawerOpen(false);
-                          setInputValue("");
-                        }}
-                      >
-                        <span>{team.team_name}</span>
-                        {selectedTeam?.team_name === team.team_name && (
-                          <Check className="text-black" size={18} />
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-
-                </CommandList>
-              </Command>
-              </div>
+            <DrawerContent>
+              <div className="mx-auto w-full max-w-sm">
+                <DrawerHeader className="text-left">
+                  <DrawerTitle>Teams</DrawerTitle>
+                </DrawerHeader>
+                <div className="pb-7">
+                  <Command>
+                    <CommandList>
+                      <ul>
+                        {userTeams.map((team: any, index: number) => (
+                          <li
+                            key={index}
+                            role="button"
+                            tabIndex={0}
+                            className={`flex items-center justify-between text-black py-2 px-4 border-b border-[#D4D4D8] ${
+                              selectedTeam === team.team_name
+                                ? "bg-gray-100"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              setSelectedTeam(team);
+                              setIsTeamDrawerOpen(false);
+                              setInputValue("");
+                            }}
+                          >
+                            <span>{team.team_name}</span>
+                            {selectedTeam?.team_name === team.team_name && (
+                              <Check className="text-black" size={18} />
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </CommandList>
+                  </Command>
+                </div>
               </div>
             </DrawerContent>
           </Drawer>
@@ -969,28 +976,27 @@ useEffect(() => {
                   <div className="pb-7">
                     {/* <p> {userId?.role}</p> */}
                     <ul className="space-y-2 p-4">
-                      { StatusOptions.map((status:any) => (
-                            <li
-                              key={status.value}
-                              tabIndex={0}
-                              role="button"
-                              onClick={() => {
-                                setSelectedTaskStatus(status.value);
-                                setIsFilterDrawerOpen(false); // Close drawer on selection
-                              }}
-                              className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
-                                selectedTaskStatus === status.value
-                                  ? "text-zinc-950 font-semibold"
-                                  : "text-blackish"
-                              }`}
-                            >
-                              <span>{status.label}</span>
-                              {selectedTaskStatus === status.value && (
-                                <Check className="h-4 w-4 text-zinc-950" />
-                              )}
-                            </li>
-                          ))
-                       }
+                      {StatusOptions.map((status: any) => (
+                        <li
+                          key={status.value}
+                          tabIndex={0}
+                          role="button"
+                          onClick={() => {
+                            setSelectedTaskStatus(status.value);
+                            setIsFilterDrawerOpen(false); // Close drawer on selection
+                          }}
+                          className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
+                            selectedTaskStatus === status.value
+                              ? "text-zinc-950 font-semibold"
+                              : "text-blackish"
+                          }`}
+                        >
+                          <span>{status.label}</span>
+                          {selectedTaskStatus === status.value && (
+                            <Check className="h-4 w-4 text-zinc-950" />
+                          )}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </div>
@@ -1088,22 +1094,21 @@ useEffect(() => {
                   },
                 })}
               >
-               <div
-          onClick={() => {
-
-           
-              setOpenTaskId(task.id);
-              setEditTaskInputValue(
-                task.mentions.map((mention: string) => `${mention}`).join(" ") +
-                  " " +
-                  task.task_content
-              );
-            
-          }}
-          className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
-            swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
-          }`}
-        >
+                <div
+                  onClick={() => {
+                    setOpenTaskId(task.id);
+                    setEditTaskInputValue(
+                      task.mentions
+                        .map((mention: string) => `${mention}`)
+                        .join(" ") +
+                        " " +
+                        task.task_content
+                    );
+                  }}
+                  className={`p-3 w-full bg-white border border-[#E1E1E1] mb-3 rounded-[10px] cursor-pointer transition-transform duration-300 ${
+                    swipedTasks[task.id] ? "-translate-x-32" : "translate-x-0"
+                  }`}
+                >
                   <div className="w-full">
                     <div className="flex justify-between items-center">
                       <p className="text-[12px] text-[#A6A6A7] font-medium">
@@ -1214,7 +1219,7 @@ useEffect(() => {
                       </Dialog>
                     </div>
                   )}
-                   {openTaskId === task.id && (
+                {openTaskId === task.id && (
                   <Drawer
                     open={openTaskId === null ? false : true}
                     onOpenChange={() => setOpenTaskId(null)}

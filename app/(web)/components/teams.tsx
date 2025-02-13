@@ -673,37 +673,62 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   };  
 
   // Real-time subscription to reflect updates
-useEffect(() => {
-  const subscription = supabase
-    .channel("tasks-updates")
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tasks" }, (payload) => {
-      console.log("Task updated!", payload);
-      // fetchTasks(); // Function to refresh the task list in state
-      filterFetchTasks();
-      if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-          new Notification("Task created or updated", {
-            body: "Task created or updated successfully!",
-            icon: "/path/to/icon.png", // Optional: Path to a notification icon
-          });
-        } else if (Notification.permission !== "denied") {
-          // Request permission to show notifications
-          Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
+  useEffect(() => {
+    const channel = supabase
+      .channel("tasks-updates")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "tasks"},
+        (payload) => {
+          console.log("Task updated!", payload);
+          filterFetchTasks(); // Function to refresh the task list in state
+          if(payload.new.task_created === true || payload.new.is_deleted === null){
+if ("Notification" in window) {
+            if (Notification.permission === "granted") {
               new Notification("Task created or updated", {
                 body: "Task created or updated successfully!",
                 icon: "/path/to/icon.png", // Optional: Path to a notification icon
               });
+            } else if (Notification.permission !== "denied") {
+              Notification.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                  new Notification("Task created or updated", {
+                    body: "Task created or updated successfully!",
+                    icon: "/path/to/icon.png", // Optional: Path to a notification icon
+                  });
+                }
+              });
             }
-          });
-        }}
-    })
-    .subscribe();
+          }
+          }
+  
+          // if ("Notification" in window) {
+          //   if (Notification.permission === "granted") {
+          //     new Notification("Task created or updated", {
+          //       body: "Task created or updated successfully!",
+          //       icon: "/path/to/icon.png", // Optional: Path to a notification icon
+          //     });
+          //   } else if (Notification.permission !== "denied") {
+          //     Notification.requestPermission().then((permission) => {
+          //       if (permission === "granted") {
+          //         new Notification("Task created or updated", {
+          //           body: "Task created or updated successfully!",
+          //           icon: "/path/to/icon.png", // Optional: Path to a notification icon
+          //         });
+          //       }
+          //     });
+          //   }
+          // }
+        }
+      )
+      .subscribe();
+  
+    return () => {
+      channel.unsubscribe();
+    };
+  }, []);
 
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
+
 
   // useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
 

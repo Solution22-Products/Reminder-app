@@ -26,7 +26,7 @@ import Footer from "../footer/page";
 // }
 
 const Notification = () => {
-  const { userId} = useGlobalContext();
+  const { userId } = useGlobalContext();
   const route = useRouter();
   const [unNotifiedTask, setUnNotifiedTask] = useState<any[]>([]);
   const [adminTaskNotify, setAdminTaskNotify] = useState<any[]>([]);
@@ -161,117 +161,120 @@ const Notification = () => {
 
   return (
     <>
-    <div className="w-full h-full p-[18px]">
-      <div className="w-full flex justify-between items-center mb-4">
-        <h1 className="text-lg font-semibold">Notification</h1>
-        <Select open={selectOpen} onOpenChange={setSelectOpen}>
-          <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
-            <div className="flex items-center">
-              <Image
-                src={userId?.profile_image || profile}
-                width={44}
-                height={44}
-                alt="User Image"
-                className="rounded-full max-h-10 max-w-10 object-contain"
-              />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="w-[150px] py-3">
-            {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
-            <p
-              onClick={() => {
-                setProfileLoader(true);
-                setTimeout(() => {
-                  route.push("/profile");
-                  setProfileLoader(false);
-                }, 1000);
-              }}
-              className={`text-sm pb-3 mb-3 pl-3.5 border-b border-gray-300 font-medium cursor-pointer`}
-            >
-              {profileLoader ? (
-                <svg
-                  className="animate-spin h-5 w-5 m-auto"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="#1A56DB"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-100"
-                    fill="#1A56DB"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-              ) : (
-                "Your Profile"
-              )}
-            </p>
-            {/* </div> */}
-            <form onSubmit={handleLogout} className="flex">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div
-                      typeof="submit"
-                      className="rounded bg-button_orange text-white cursor-pointer hover:bg-button_orange relative"
-                      style={isLoggingOut ? { pointerEvents: "none" } : {}}
-                    >
-                      {isLoggingOut ? (
-                        <div className="ml-20 flex items-center justify-center text-center">
-                          <svg
-                            className="animate-spin h-5 w-5"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="#1A56DB"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="#1A56DB"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-[#F05252] px-3 flex items-center gap-2 cursor-pointer">
-                          <LogOut size={20} />
-                          Sign Out
-                        </p>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Logout</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </form>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="w-full  h-[calc(100vh-185px)] overflow-y-scroll playlist-scroll">
-        {loading ? (
-          <OverdueListSkeleton />
-        ) : (
-          <div className="w-full flex flex-col justify-between items-center">
-            {(userId?.role === "owner" ? adminTaskNotify : unNotifiedTask)
-              .length > 0 ? (
-              (userId?.role === "owner" ? adminTaskNotify : unNotifiedTask).map(
-                (item: any) => (
+      <div className="w-full h-full p-[18px]">
+        <div className="w-full flex justify-between items-center mb-4">
+          <h1 className="text-lg font-semibold">Notification</h1>
+          <Select open={selectOpen} onOpenChange={setSelectOpen}>
+            <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
+              <div className="flex items-center">
+                <div className="relative w-10 h-10 rounded-full">
+                  <Image
+                    src={userId?.profile_image || profile}
+                    alt="User Image"
+                    fill
+                    className="rounded-full object-cover"
+                  />
+                </div>
+              </div>
+            </SelectTrigger>
+            <SelectContent className="w-[150px] py-3">
+              {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
+              <p
+                onClick={() => {
+                  setProfileLoader(true);
+                  setTimeout(() => {
+                    route.push("/profile");
+                    setProfileLoader(false);
+                  }, 1000);
+                }}
+                className={`text-sm pb-3 mb-3 pl-3.5 border-b border-gray-300 font-medium cursor-pointer`}
+              >
+                {profileLoader ? (
+                  <svg
+                    className="animate-spin h-5 w-5 m-auto"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="#1A56DB"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-100"
+                      fill="#1A56DB"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Your Profile"
+                )}
+              </p>
+              {/* </div> */}
+              <form onSubmit={handleLogout} className="flex">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <div
+                        typeof="submit"
+                        className="rounded bg-button_orange text-white cursor-pointer hover:bg-button_orange relative"
+                        style={isLoggingOut ? { pointerEvents: "none" } : {}}
+                      >
+                        {isLoggingOut ? (
+                          <div className="ml-20 flex items-center justify-center text-center">
+                            <svg
+                              className="animate-spin h-5 w-5"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="#1A56DB"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="#1A56DB"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-[#F05252] px-3 flex items-center gap-2 cursor-pointer">
+                            <LogOut size={20} />
+                            Sign Out
+                          </p>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Logout</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </form>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-full  h-[calc(100vh-185px)] overflow-y-scroll playlist-scroll">
+          {loading ? (
+            <OverdueListSkeleton />
+          ) : (
+            <div className="w-full flex flex-col justify-between items-center">
+              {(userId?.role === "owner" ? adminTaskNotify : unNotifiedTask)
+                .length > 0 ? (
+                (userId?.role === "owner"
+                  ? adminTaskNotify
+                  : unNotifiedTask
+                ).map((item: any) => (
                   <div
                     key={item.id}
                     className={`w-full flex justify-between items-center mb-2 border rounded-[10px] border-[#E1E1E1] pb-2 transition-all duration-300 px-2.5 bg-white ${
@@ -311,74 +314,71 @@ const Notification = () => {
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                )
-              )
-            ) : (
-              <p className="py-2 text-base text-gray-500 h-[90vh] flex justify-center items-center">
-                No notifications found.
-              </p>
-            )}
-          </div>
-        )}
+                ))
+              ) : (
+                <p className="py-2 text-base text-gray-500 h-[90vh] flex justify-center items-center">
+                  No notifications found.
+                </p>
+              )}
+            </div>
+          )}
 
-        {userId?.role === "User" && unNotifiedTask.length > 0 && (
-          <div className="w-full flex gap-2 pb-4">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p
-                    className="text-sm text-[#1A56DB] ml-auto cursor-pointer underline sticky bottom-0"
-                    onClick={handleClearNotification}
-                  >
-                    Clear all
-                  </p>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Mark as read</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        )}
-        {userId?.role === "owner" && adminTaskNotify.length > 0 && (
-          <div className="w-full flex gap-2 pb-4">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p
-                    className="text-sm text-[#1A56DB] ml-auto cursor-pointer underline sticky bottom-0"
-                    onClick={handleClearNotification}
-                  >
-                    Clear all
-                  </p>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Mark as read</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        )}
+          {userId?.role === "User" && unNotifiedTask.length > 0 && (
+            <div className="w-full flex gap-2 pb-4">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p
+                      className="text-sm text-[#1A56DB] ml-auto cursor-pointer underline sticky bottom-0"
+                      onClick={handleClearNotification}
+                    >
+                      Clear all
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Mark as read</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
+          {userId?.role === "owner" && adminTaskNotify.length > 0 && (
+            <div className="w-full flex gap-2 pb-4">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p
+                      className="text-sm text-[#1A56DB] ml-auto cursor-pointer underline sticky bottom-0"
+                      onClick={handleClearNotification}
+                    >
+                      Clear all
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Mark as read</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
 
-        <div className="flex justify-center items-center py-5 font-geist gap-1">
-          <Image
-            src={smile}
-            alt="smile-img"
-            width={300}
-            height={300}
-            className="w-[42px] h-[42px] grayscale"
-          />
-          <p className="text-[#A7A7AB] text-[12px]">
-            That's all for today !!!!
-          </p>
+          <div className="flex justify-center items-center py-5 font-geist gap-1">
+            <Image
+              src={smile}
+              alt="smile-img"
+              width={300}
+              height={300}
+              className="w-[42px] h-[42px] grayscale"
+            />
+            <p className="text-[#A7A7AB] text-[12px]">
+              That's all for today !!!!
+            </p>
+          </div>
         </div>
       </div>
-
-      
-    </div>
-    <Footer
-        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
-         />
+      <Footer
+      //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+      />
     </>
   );
 };

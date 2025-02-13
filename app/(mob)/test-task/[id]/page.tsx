@@ -37,10 +37,7 @@ import { toast } from "@/hooks/use-toast";
 import { FaEllipsisH } from "react-icons/fa";
 // import { NewTask } from "@/components/newTask";
 import smile from "@/public/images/smile-img.png";
-import { useSwipeable } from "react-swipeable";
 import { Trash2, CheckCircle, X } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
 import { Mention, MentionsInput } from "react-mentions";
 import ReactMentions from "@/components/react-mentions";
 import { logout } from "@/app/(signin-setup)/logout/action";
@@ -117,10 +114,6 @@ const Task = (props: Props) => {
   const [selectedTaskStatus, setSelectedTaskStatus] = useState<string | null>(
     null
   );
-  const [swipedTaskId, setSwipedTaskId] = useState<number | null>(null);
-  const [searchTasks, setSearchTasks] = useState("");
-  const [filteredTasksBySearch, setFilteredTasksBySearch] = useState<any[]>([]);
-  const [taskLoadingSearch, setTaskLoadingSearch] = useState(false);
   const [filterDate, setFilterDate] = useState<Date | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false); // Controls calendar visibility
   const [hasUserSelectedDate, setHasUserSelectedDate] = useState(false);
@@ -458,12 +451,6 @@ const Task = (props: Props) => {
   const filteredTasks = userTasks.filter((task) =>
     selectedTaskStatus ? task.task_status === selectedTaskStatus : true
   );
-  // const handlers = useSwipeable({
-  //   onSwipedLeft: () => setSwipedTaskId(taskId),
-  //   onSwipedRight: () => setSwipedTaskId(null),
-  //   preventScrollOnSwipe: true,
-  //   trackMouse: true,
-  // });
 
   const handleDeleteTask = async (taskId: string, teamId: string) => {
     setSwipedTasks((prev) => ({ ...prev, [taskId]: false })); // Close swipe
@@ -585,35 +572,7 @@ const Task = (props: Props) => {
     }
     setSwipedTasks((prev) => ({ ...prev, [id]: false })); // Close swipe
   };
-  // const handleSearchByTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const value = event.target.value.toLowerCase();
-  //   setSearchTasks(value);
-
-  //   if (!value.trim()) {
-  //     // If input is empty, don't show tasks
-  //     setFilteredTasksBySearch([]);
-  //     return;
-  //   }
-
-  //   // Filter tasks based on role
-  //   const filtered = allTasks.filter((task: any) => {
-  //     const isTeamMatch = selectedTeam?.id === task.team_id;
-  //     const hasMentionMatch = task.mentions.some((mention: string) =>
-  //       mention.toLowerCase().includes(value)
-  //     );
-
-  //     if (userId?.role === "owner") {
-  //       return isTeamMatch && hasMentionMatch; // Owner: all tasks in the team with matching mentions
-  //     } else {
-  //       const isUserMentioned = task.mentions.includes(
-  //         `@${userId?.entity_name}`
-  //       );
-  //       return isTeamMatch && isUserMentioned && hasMentionMatch; // User: Only their own tasks
-  //     }
-  //   });
-
-  //   setFilteredTasksBySearch(filtered);
-  // };
+  
   // Function to move date backward
   useEffect(() => {
     if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
@@ -810,7 +769,7 @@ const Task = (props: Props) => {
               <Image
                 src={userId?.profile_image || profile}
                 alt="Profile"
-                className="rounded-full"
+                className="rounded-full max-h-10 max-w-10 object-contain"
                 width={40}
                 height={40}
               />

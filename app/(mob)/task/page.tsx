@@ -14,7 +14,7 @@ import { supabase } from "@/utils/supabase/supabaseClient";
 import { useGlobalContext } from "@/context/store";
 import { Check, LogOut } from "lucide-react";
 import { Command, CommandList } from "@/components/ui/command";
-import { FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { OverdueListSkeleton } from "@/app/(web)/components/skeleton-ui";
 import { Button } from "@/components/ui/button";
@@ -33,17 +33,12 @@ import {
 import { cn } from "@/lib/utils";
 import { format, subDays, addDays } from "date-fns";
 import { Calendar, Calendar as CustomCalendar } from "@/components/ui/calendar";
-import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 import { FaEllipsisH } from "react-icons/fa";
-// import { NewTask } from "@/components/newTask";
 import smile from "@/public/images/smile-img.png";
-import { useSwipeable } from "react-swipeable";
-import { Trash2, CheckCircle, X } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
+import { Trash2 } from "lucide-react";
 import { Mention, MentionsInput } from "react-mentions";
-import ReactMentions from "@/components/react-mentions";
+
 import { logout } from "@/app/(signin-setup)/logout/action";
 import {
   Tooltip,
@@ -94,7 +89,6 @@ interface MentionData {
 const Task = () => {
   const { userId } = useGlobalContext();
   const router = useRouter();
-
   const [isSpaceDrawerOpen, setIsSpaceDrawerOpen] = useState(false);
   const [allSpace, setAllSpace] = useState<any[]>([]);
   const [allTeams, setAllTeams] = useState<any[]>([]);
@@ -110,13 +104,7 @@ const Task = () => {
   const [taskStatus, setTaskStatus] = useState<string>("");
   const [date, setDate] = useState<Date>();
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [selectedTaskStatus, setSelectedTaskStatus] = useState<string | null>(
-    null
-  );
-  const [swipedTaskId, setSwipedTaskId] = useState<number | null>(null);
-  const [searchTasks, setSearchTasks] = useState("");
-  const [filteredTasksBySearch, setFilteredTasksBySearch] = useState<any[]>([]);
-  const [taskLoadingSearch, setTaskLoadingSearch] = useState(false);
+  const [selectedTaskStatus, setSelectedTaskStatus] = useState<string | null>(null);
   const [filterDate, setFilterDate] = useState<Date | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false); // Controls calendar visibility
   const [hasUserSelectedDate, setHasUserSelectedDate] = useState(false);
@@ -414,17 +402,7 @@ const Task = () => {
       [taskId]: direction === "left", // Swiped left means action buttons appear
     }));
   };
-  // const fetchTaskData = async (teamId:string) => {
-  //   const { data: tasks } = await supabase
-  //     .from("tasks")
-  //     .select("*")
-  //     .eq("is_deleted", false)
-  //     .eq("team_id", teamId)
-     
-  //     console.log("delete done")
-
-  //   // if (tasks) setUserTasks(tasks);
-  // };
+  
 
   const handleDeleteTask = async (taskId: string, teamId: string) => {
     setSwipedTasks((prev) => ({ ...prev, [taskId]: false })); // Close swipe
@@ -529,35 +507,7 @@ const Task = () => {
     }
     setSwipedTasks((prev) => ({ ...prev, [id]: false })); // Close swipe
   };
-  // const handleSearchByTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const value = event.target.value.toLowerCase();
-  //   setSearchTasks(value);
-
-  //   if (!value.trim()) {
-  //     // If input is empty, don't show tasks
-  //     setFilteredTasksBySearch([]);
-  //     return;
-  //   }
-
-  //   // Filter tasks based on role
-  //   const filtered = allTasks.filter((task: any) => {
-  //     const isTeamMatch = selectedTeam?.id === task.team_id;
-  //     const hasMentionMatch = task.mentions.some((mention: string) =>
-  //       mention.toLowerCase().includes(value)
-  //     );
-
-  //     if (userId?.role === "owner") {
-  //       return isTeamMatch && hasMentionMatch; // Owner: all tasks in the team with matching mentions
-  //     } else {
-  //       const isUserMentioned = task.mentions.includes(
-  //         `@${userId?.entity_name}`
-  //       );
-  //       return isTeamMatch && isUserMentioned && hasMentionMatch; // User: Only their own tasks
-  //     }
-  //   });
-
-  //   setFilteredTasksBySearch(filtered);
-  // };
+  
   // Function to move date backward
   useEffect(() => {
     if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
@@ -747,7 +697,7 @@ const Task = () => {
               <Image
                 src={userId?.profile_image || profile}
                 alt="Profile"
-                className="rounded-full"
+              className="rounded-full max-h-10 max-w-10 object-contain"
                 width={40}
                 height={40}
               />

@@ -172,7 +172,7 @@ const Notification = () => {
                 width={44}
                 height={44}
                 alt="User Image"
-                className="rounded"
+                className="rounded-full max-h-10 max-w-10 object-contain"
               />
             </div>
           </SelectTrigger>

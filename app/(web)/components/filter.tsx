@@ -35,22 +35,9 @@ interface FilterProps {
   teamResetFn: () => void;
 }
 
-const taskStatusOptions = [
-  {
-    value: "todo",
-    label: "todo",
-  },
-  {
-    value: "In progress",
-    label: "In progress",
-  },
-  {
-    value: "feedback",
-    label: "feedback",
-  },
-];
 
-const adminTaskStatusOptions = [
+
+const TaskStatusOptions = [
   {
     value: "todo",
     label: "todo",
@@ -60,8 +47,8 @@ const adminTaskStatusOptions = [
     label: "In progress",
   },
   {
-    value: "feedback",
-    label: "feedback",
+    value: "Internal feedback",
+    label: "Internal feedback",
   },
   {
     value: "Completed",
@@ -206,11 +193,11 @@ const FilterComponent: React.FC<FilterProps> = ({
                 </Label>
                 <Select
                   className="w-full mt-1 text-sm"
-                  options={userId?.role === "owner" ? adminTaskStatusOptions : taskStatusOptions}
+                  options={TaskStatusOptions}
                   onChange={handleSelectStatus} // Log selected team to console
                   value={selectedTaskStatus} // Controlled value
                   isClearable
-                  placeholder="All / To Do / In Progress / Feedback"
+                  placeholder="All / To Do / In Progress / Internal Feedback"
                 />
               </div>
               <div>

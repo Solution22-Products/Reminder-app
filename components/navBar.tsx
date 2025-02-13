@@ -38,20 +38,20 @@ export default function NavBar() {
       <header className="flex justify-between items-center bg-navbg p-[18px] ">
         <Select open={selectOpen} onOpenChange={setSelectOpen}>
           <SelectTrigger className="w-[200px] h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
-            <div className="flex items-center">
+            <div className="flex items-center gap-1">
               <Image
                 src={userId?.profile_image || profile}
                 width={44}
                 height={44}
                 alt="User Image"
-                className="rounded"
+                className="rounded-full max-h-10 max-w-10 object-contain"
               />
-              <Image
+              {/* <Image
                 src={activelogo}
                 alt=""
-                className="relative right-3  top-4"
-              />
-              <div className="pr-[2px] text-left">
+                className="relative right-3  top-4 h-6 w-6"
+              /> */}
+              <div className="text-left leading-tight">
                 <h3 className="text-sm  text-black font-bold font-geist">
                   {userId?.username}
                 </h3>

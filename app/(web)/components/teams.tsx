@@ -740,7 +740,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                 {filterTeams.map((team: any, index: number) => (
                   <CarouselItem1
                     key={team.id}
-                    className="max-w-[370px] h-[calc(100vh-142px)] basis-[30%] overflow-y-auto relative playlist-scroll"
+                    className="max-w-[370px] h-[calc(100vh-142px)] basis-[32%] overflow-y-auto relative playlist-scroll"
                   >
                     <Card key={index}>
                       <CardContent key={index} className="w-full h-full p-0">
@@ -1503,7 +1503,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                   .map((team: any, index: any) => (
                     <CarouselItem1
                       key={team.id}
-                      className="max-w-[370px] basis-[30%] h-[calc(100vh-142px)] overflow-y-auto relative playlist-scroll"
+                      className="max-w-[370px] basis-[32%] h-[calc(100vh-142px)] overflow-y-auto relative playlist-scroll"
                     >
                       <Card key={index}>
                         <CardContent key={index} className="w-full h-full p-0">

@@ -99,11 +99,24 @@ const Footer = () => {
     }
   };
 
-  const handleSpaceClick = (spaceId: any) => {
-    setAddLoader((prev: any) => [...prev, spaceId]);
-    (prev: any) => prev.filter((id: any) => id !== spaceId);
-    route.push(`/${spaceId}`);
+  const handleSpaceClick = (spaceId: string) => {
+    const targetPath = `/${spaceId}`;
+    if (pathname === targetPath) return; // Prevent loader if already on the same page
+  
+    if (!addLoader.includes(spaceId)) {
+      setAddLoader((prev) => [...prev, spaceId]);
+      route.push(targetPath);
+      setTimeout(() => {
+        setAddLoader((prev) => prev.filter((id) => id !== spaceId));
+      }, 500);
+    }
   };
+  // const handleSpaceClick = (spaceId: any) => {
+  //   setAddLoader((prev: any) => [...prev, spaceId]);
+  //   (prev: any) => prev.filter((id: any) => id !== spaceId);
+  //   route.push(/${spaceId});
+  // };
+  
 
   useEffect(() => {
     getUnnotifiedTasks();

@@ -634,6 +634,38 @@ const Task = () => {
     fetchTeamsAndTasks();
   };
 
+  // Real-time subscription to reflect updates
+useEffect(() => {
+  const subscription = supabase
+    .channel("tasks-updates")
+    .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, (payload) => {
+      console.log("Task updated!", payload);
+      fetchData(); // Function to refresh the task list in state
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          new Notification("Task updated", {
+            body: "Task updated successfully!",
+            icon: "/path/to/icon.png", // Optional: Path to a notification icon
+          });
+        } else if (Notification.permission !== "denied") {
+          // Request permission to show notifications
+          Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+              new Notification("Task updated", {
+                body: "Task updated successfully!",
+                icon: "/path/to/icon.png", // Optional: Path to a notification icon
+              });
+            }
+          });
+        }}
+    })
+    .subscribe();
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
+
   return (
     <>
       <div

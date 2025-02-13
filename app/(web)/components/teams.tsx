@@ -272,45 +272,11 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
         resetInputAndFetchUpdates();
         setNotificationTrigger(!notificationTrigger);
-
-        if ("Notification" in window) {
-          if (Notification.permission === "granted") {
-            new Notification("Task created or updated", {
-              body: "Task created or updated successfully!",
-              icon: "/path/to/icon.png", // Optional: Path to a notification icon
-            });
-          } else if (Notification.permission !== "denied") {
-            // Request permission to show notifications
-            Notification.requestPermission().then((permission) => {
-              if (permission === "granted") {
-                new Notification("Task created or updated", {
-                  body: "Task created or updated successfully!",
-                  icon: "/path/to/icon.png", // Optional: Path to a notification icon
-                });
-              }
-            });
-          }}
       }
     } catch (error) {
       console.error("Error in handleUpdateTask:", error);
     }
   };
-
-  // Real-time subscription to reflect updates
-useEffect(() => {
-  const subscription = supabase
-    .channel("tasks-updates")
-    .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, (payload) => {
-      console.log("Task updated!", payload);
-      // fetchTasks(); // Function to refresh the task list in state
-      filterFetchTasks();
-    })
-    .subscribe();
-
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
 
   const resetInputAndFetchUpdates = () => {
     setText(""); // Clear the input text
@@ -705,6 +671,39 @@ useEffect(() => {
       console.error("Error adding or fetching tasks:", error);
     }
   };  
+
+  // Real-time subscription to reflect updates
+useEffect(() => {
+  const subscription = supabase
+    .channel("tasks-updates")
+    .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, (payload) => {
+      console.log("Task updated!", payload);
+      // fetchTasks(); // Function to refresh the task list in state
+      filterFetchTasks();
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          new Notification("Task created or updated", {
+            body: "Task created or updated successfully!",
+            icon: "/path/to/icon.png", // Optional: Path to a notification icon
+          });
+        } else if (Notification.permission !== "denied") {
+          // Request permission to show notifications
+          Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+              new Notification("Task created or updated", {
+                body: "Task created or updated successfully!",
+                icon: "/path/to/icon.png", // Optional: Path to a notification icon
+              });
+            }
+          });
+        }}
+    })
+    .subscribe();
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
 
   // useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
 

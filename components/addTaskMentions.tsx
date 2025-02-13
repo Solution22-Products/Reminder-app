@@ -155,6 +155,38 @@ const AddTaskMentions: React.FC<ReactProps> = ({
     }
   };
 
+  // Real-time subscription to reflect updates
+useEffect(() => {
+  const subscription = supabase
+    .channel("tasks-updates")
+    .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, (payload) => {
+      console.log("Task created!", payload);
+      sendFetchData();
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          new Notification("Task created", {
+            body: "Task created successfully!",
+            icon: "/path/to/icon.png", // Optional: Path to a notification icon
+          });
+        } else if (Notification.permission !== "denied") {
+          // Request permission to show notifications
+          Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+              new Notification("Task created", {
+                body: "Task created successfully!",
+                icon: "/path/to/icon.png", // Optional: Path to a notification icon
+              });
+            }
+          });
+        }}
+    })
+    .subscribe();
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
+
   useEffect(() => {
     // fetchTaskData();
   }, [userId, selectedTeam, selectedSpace, inputValue]);

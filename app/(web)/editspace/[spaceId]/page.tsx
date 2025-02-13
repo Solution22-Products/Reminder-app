@@ -430,6 +430,7 @@ const EditSpace = ({ params }: { params: { spaceId: any } }) => {
         teamResetFn={() => {}}
         notificationTrigger=''
         setNotificationTrigger=''
+        allTasks={[]}
       />
 
       {/* <Toaster /> */}

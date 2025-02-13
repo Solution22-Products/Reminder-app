@@ -250,6 +250,7 @@ const EditMember = (props: Props) => {
         teamResetFn = {() => {}}
         notificationTrigger=''
         setNotificationTrigger=''
+        allTasks={[]}
         />
         <div className="hidden">
           <span>{modalPassword}</span>

@@ -285,6 +285,7 @@ const AddMember = () => {
         teamResetFn = {() => {}}
         notificationTrigger=''
         setNotificationTrigger=''
+        allTasks={[]}
         />
       <div
         className="w-full relative"

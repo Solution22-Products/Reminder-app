@@ -107,6 +107,7 @@ const SettingsPage = () => {
         teamResetFn = {() => {}}
         notificationTrigger=''
         setNotificationTrigger=''
+        allTasks={[]}
         />
       <SpaceSetting/> 
     </>

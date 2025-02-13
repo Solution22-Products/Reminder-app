@@ -4,7 +4,7 @@ import {
   EllipsisVertical,
   Trash2,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SpaceTeam from "./teams";
@@ -645,8 +645,7 @@ const fetchTeamsForTab = async (tabId : number) => {
     }
 
     if (data) {
-      setSpaceId(data.id);
-      console.log(data.id,"Space ID") 
+      setSpaceId(data.id); 
     }
     // setUserTabActive(false);
     // setActiveTab(tabSpace);
@@ -664,7 +663,6 @@ const fetchTeamsForTab = async (tabId : number) => {
       .select("*")
       .eq("is_deleted", false)
       .eq("space_id", spaceId);
-      console.log("Fetching Team data")
 
     if (error) {
       console.log(error);
@@ -767,7 +765,6 @@ const fetchTeamsForTab = async (tabId : number) => {
       .select("*")
       .eq("is_deleted", false)
       .eq("space_id", spaceId);
-      console.log(spaceId,"Space ID")
 
     if (error) {
       console.log(error,"error fetch");
@@ -779,7 +776,6 @@ const fetchTeamsForTab = async (tabId : number) => {
         ...team,
         tasks: [], // Initialize each team with an empty tasks array
       }));
-     console.log("Team Data",teamData);
     }
    
   };
@@ -916,12 +912,6 @@ const fetchTeamsForTab = async (tabId : number) => {
       if (teams) setAllTeams(teams);
       if (tasks) setAllTasks(tasks);
 
-    //   const a = allTasks.filter((task: any) =>
-    //     task?.mentions === null || task?.mentions === undefined || task?.mentions?.includes(`@${userId?.entity_name}`)
-    //   );        
-    // console.log(a, " matched tasks");
-    // setAllTasks(a);
-
       if (!userId) return;
 
       const matchedTeams =
@@ -949,19 +939,6 @@ const fetchTeamsForTab = async (tabId : number) => {
           return false;
         });
       };
-
-      const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
-      // if (sourceData) {
-      //   setSpaces(
-      //     getUniqueItems(
-      //       sourceData.map((space) => ({
-      //         id: space.id,
-      //         display: space.space_name,
-      //       })),
-      //       "display"
-      //     )
-      //   );
-      // }
 
           const allSpaces = await newFetchSpace();
           const teamsData = await newFetchTeam();
@@ -1102,26 +1079,25 @@ const fetchTeamsForTab = async (tabId : number) => {
     defaultSpaceData();
     setTeamData(fetchTeamData());
     fetchTeams();
-  }, [activeTab, userActiveTab]);
-
-  useEffect(() => {
-    fetchTasks();
-    filterFetchTeams();
-    fetchTeams();
-  }, [loggedUserData, activeTab, userActiveTab, teamFilterValue, taskStatusFilterValue, dateFilterValue]);
-
-  // Filter the tabs based on the logged space ID
-  const filteredTabs = userTab.filter((tab) => loggedSpaceId.includes(tab.id));
-
+    
+    if (loggedUserData) {
+      fetchTasks();
+      filterFetchTeams();
+    }
+  }, [activeTab, userActiveTab, loggedUserData]);
+  
+  // Memoize filteredTabs to avoid unnecessary re-renders
+  const filteredTabs = useMemo(() => userTab.filter((tab) => loggedSpaceId.includes(tab.id)), [userTab, loggedSpaceId]);
+  
   // Set the first tab as active after filtering
   useEffect(() => {
     if (filteredTabs.length > 0 && userTabActive) {
       fetchTeams();
       setUserActiveTab(filteredTabs[0].id);
       setActiveTabNameUser(filteredTabs[0].space_name);
-  
     }
-  }, [filteredTabs,userTabActive]);
+  }, [filteredTabs, userTabActive]);
+
   return (
     <>
       <WebNavbar
@@ -1142,6 +1118,7 @@ const fetchTeamsForTab = async (tabId : number) => {
         teamResetFn = {() => {filterFetchTeams(); fetchTasks();}}
         notificationTrigger={notificationTrigger}
         setNotificationTrigger={setNotificationTrigger}
+        allTasks = {allTasks}
       />
       <div className="hidden">
         <span>{spaceEditDialogOpen}</span>
@@ -1351,7 +1328,8 @@ const fetchTeamsForTab = async (tabId : number) => {
                     </div>
                   ))
                 ) : (
-                  <DefaultSkeleton />
+                  // <DefaultSkeleton />
+                  null
                 )
               // }
               
@@ -1531,7 +1509,8 @@ const fetchTeamsForTab = async (tabId : number) => {
                     </div>
                   ))
                 ) : (
-                  <DefaultSkeleton />
+                  // <DefaultSkeleton />
+                  null
                 )
                 }
           </div>

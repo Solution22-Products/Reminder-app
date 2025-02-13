@@ -905,7 +905,7 @@ const fetchTeamsForTab = async (tabId : number) => {
         await Promise.all([
           supabase.from("spaces").select("*").eq("is_deleted", false),
           supabase.from("teams").select("*").eq("is_deleted", false),
-          supabase.from("tasks").select("*").eq("is_deleted", false),
+          supabase.from("tasks").select("*").eq("is_deleted", false).order("created_at", { ascending: true }),
         ]);
 
       if (spaces) setAllSpace(spaces);

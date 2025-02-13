@@ -36,8 +36,9 @@ interface loggedUserDataProps {
   filterDialogOpen: any;
   setFilterDialogOpen: any;
   teamResetFn: any;
-  notificationTrigger:any
-  setNotificationTrigger:any
+  notificationTrigger: any;
+  setNotificationTrigger: any;
+  allTasks: any;
 }
 
 const WebNavbar: React.FC<loggedUserDataProps> = ({
@@ -55,7 +56,8 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
   setFilterDialogOpen,
   teamResetFn,
   notificationTrigger,
-  setNotificationTrigger
+  setNotificationTrigger,
+  allTasks,
 }) => {
   const route = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
@@ -64,8 +66,8 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
   const [inprogressTasks, setInProgressTasks] = useState<number>(0);
   const [feedbackTasks, setFeedbackTasks] = useState<number>(0);
   const [taskDetails, setTaskDetails] = useState<any[]>([]);
-  const[settingsLoader, setSettingsLoader] = useState(false);
-  const[profileLoader, setProfileLoader] = useState(false);
+  const [settingsLoader, setSettingsLoader] = useState(false);
+  const [profileLoader, setProfileLoader] = useState(false);
   const entityName = loggedUserData?.entity_name || "Unknown Entity";
 
   const handleLogout = async (event: React.FormEvent) => {
@@ -76,38 +78,35 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
   };
 
   const taskData = async () => {
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("is_deleted", false);
-    if (error) {
-      console.log(error);
-    }
+    const includesTrueTasks = allTasks.filter((task: any) =>
+      task?.mentions?.includes(`@${loggedUserData?.entity_name}`)
+    );
+    setTaskDetails(includesTrueTasks);
 
-    if (data) {
-      const includesTrueTasks = data.filter((task) =>
-        task?.mentions?.includes(`@${loggedUserData?.entity_name}`)
-      );
+    setInProgressTasks(
+      allTasks
+        .map((task: any) => task.task_status)
+        .filter((task: any) => task === "In progress").length
+    );
+    setFeedbackTasks(
+      allTasks
+        .map((task: any) => task.task_status)
+        .filter((task: any) => task === "Internal feedback").length
+    );
 
-      setTaskDetails(includesTrueTasks);
-
-      setInProgressTasks(
-        data
-          .map((task) => task.task_status)
-          .filter((task) => task === "In progress").length
-      );
-      setFeedbackTasks(
-        data
-          .map((task) => task.task_status)
-          .filter((task) => task === "Internal feedback").length
-      );
-      setTotalTasks(data.length);
-    }
+    setTotalTasks(allTasks.length);
   };
 
   useEffect(() => {
     taskData();
-  }, [totalTasks, inprogressTasks, feedbackTasks, entityName, notificationTrigger]);
+  }, [
+    totalTasks,
+    inprogressTasks,
+    feedbackTasks,
+    entityName,
+    notificationTrigger,
+    allTasks,
+  ]);
 
   return (
     <>
@@ -134,11 +133,13 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
                   placeholder="Search"
                   value={searchValue}
                   className="w-[384px] h-[42px] pl-8 pr-7 bg-white shadow-none font-medium justify-start gap-3 rounded-[10px] flex items-center "
-                  onChange={(e)  => {setSearchValue(e.target.value)}}
+                  onChange={(e) => {
+                    setSearchValue(e.target.value);
+                  }}
                   // onFocus={() => setIsFocused(true)} // Set focus state to true
                   // onBlur={() => setIsFocused(false)} // Optional: Handle blur to close the page
                 />
-               
+
                 <X
                   size={14}
                   className="absolute top-3.5 right-2.5 cursor-pointer"
@@ -203,9 +204,7 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
                   )}
                 </div>
               </div>
-              <Notification
-              notificationTrigger={notificationTrigger}
-               />
+              <Notification notificationTrigger={notificationTrigger} />
             </>
           )}
 
@@ -270,29 +269,29 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
                   }`}
                 >
                   {profileLoader ? (
-                <svg
-                className="animate-spin h-5 w-5 m-auto"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="#1A56DB"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-100"
-                  fill="#1A56DB"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              ) : (
-                "Your Profile"
-              )}
+                    <svg
+                      className="animate-spin h-5 w-5 m-auto"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="#1A56DB"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-100"
+                        fill="#1A56DB"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  ) : (
+                    "Your Profile"
+                  )}
                 </p>
                 {loggedUserData?.role === "owner" && (
                   <p
@@ -308,29 +307,29 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
                     // disabled={settingsLoader}
                   >
                     {settingsLoader ? (
-                <svg
-                className="animate-spin h-5 w-5 m-auto"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="#1A56DB"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-100"
-                  fill="#1A56DB"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              ) : (
-                "Settings"
-              )}
+                      <svg
+                        className="animate-spin h-5 w-5 m-auto"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="#1A56DB"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-100"
+                          fill="#1A56DB"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      "Settings"
+                    )}
                   </p>
                 )}
               </div>

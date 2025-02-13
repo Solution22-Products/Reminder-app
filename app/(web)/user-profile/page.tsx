@@ -274,6 +274,7 @@ const UserProfile = () => {
         teamResetFn = {() => {}}
         notificationTrigger=''
         setNotificationTrigger=''
+        allTasks={[]}
       />
       <div className="hidden">
         <span>{modalPassword}</span>

@@ -38,7 +38,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
-import { getLoggedInUserData } from "@/app/(signin-setup)/sign-in/action";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { supabase } from "@/utils/supabase/supabaseClient";
@@ -90,13 +89,6 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   setTeamData,
   loggedUserData,
   searchValue,
-  // setSearchValue,
-  // teamFilterValue,
-  // setTeamFilterValue,
-  // taskStatusFilterValue,
-  // setTaskStatusFilterValue,
-  // dateFilterValue,
-  // setDateFilterValue,
   allTasks,
   filterTeams,
   setFilterTeams,
@@ -104,7 +96,6 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   filterFetchTasks,
   notificationTrigger,
   setNotificationTrigger,
-  newTabTeamTrigger,
 }) => {
   const styledInputRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState<string>("");
@@ -113,9 +104,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     errorId: 0,
   });
   const [taskStatus, setTaskStatus] = useState<string>("todo");
-  // const [allTasks, setAllTasks] = useState<any>([]);
   const [teamName, setTeamName] = useState<string>("");
-  // const [teamNameDialogOpen, setTeamNameDialogOpen] = useState(false);
   const [teamNameSheetOpen, setTeamNameSheetOpen] = useState(false);
   const [addedMembers, setAddedMembers] = useState<any[]>([]);
   const [matchingUsers, setMatchingUsers] = useState<Tab[]>([]);
@@ -127,7 +116,6 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   const [teamNameError, setTeamNameError] = useState(false);
 
   const [mentionTrigger, setMentionTrigger] = useState(false);
-  const [role, setRole] = useState("");
   const [loggedTeamId, setLoggedTeamId] = useState<number[]>([]);
 
   // const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -283,17 +271,37 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
         resetInputAndFetchUpdates();
         setNotificationTrigger(!notificationTrigger);
+        toast({
+          title: "Task Created or Updated",
+          description: "The task has been created or updated successfully.",
+          duration: 3000,
+        })
       }
     } catch (error) {
       console.error("Error in handleUpdateTask:", error);
     }
   };
 
+  // Real-time subscription to reflect updates
+useEffect(() => {
+  const subscription = supabase
+    .channel("tasks-updates")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasks" }, (payload) => {
+      console.log("Task updated!", payload);
+      fetchTasks(); // Function to refresh the task list in state
+    })
+    .subscribe();
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
+
   const resetInputAndFetchUpdates = () => {
     setText(""); // Clear the input text
     fetchTasks(); // Refresh task list
     filterFetchTasks();
-    fetchTeams(); // Refresh team data
+    // fetchTeams(); // Refresh team data
     filterFetchTeams();
     setMentionTrigger(!mentionTrigger);
 
@@ -353,7 +361,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
       // Additional cleanup actions
       // setTeamNameDialogOpen(false);
-      fetchTeams();
+      // fetchTeams();
       filterFetchTeams();
       toast({
         title: "Deleted Successfully!",
@@ -394,7 +402,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
       // Additional cleanup actions
       // setTeamNameDialogOpen(false);
-      fetchTeams();
+      // fetchTeams();
       filterFetchTeams();
       toast({
         title: "Undo Successful",
@@ -439,7 +447,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
         // if (data) {
         console.log("Team name updated successfully:", data);
-        fetchTeams();
+        // fetchTeams();
         filterFetchTeams();
         setTeamNameSheetOpen(false);
         setTeamNameError(false);
@@ -476,6 +484,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
       console.error("Error fetching user data:", error);
     }
   };
+
   const removeMember = (user: any, index: number) => {
     setAddedMembers((prevMembers) =>
       prevMembers.filter(
@@ -588,39 +597,17 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     setUpdateTaskId({ teamId: 0, taskId: 0 });
   };
 
-  useEffect(() => {
-    fetchTeams();
-    // filterFetchTeams();
-    // fetchTasks();
-    recoverTask();
-  }, [spaceId, teamData, setTeamData]);
+  // useEffect(() => {
+  //   // fetchTeams();
+  //   filterFetchTeams();
+  //   // fetchTasks();
+  //   recoverTask();
+  // }, [spaceId, teamData, setTeamData]);
 
   useEffect(() => {
     filterFetchTeams();
     filterFetchTasks();
   }, []);
-
-  // useEffect(() => {
-  //   const getUser = async () => {
-  //     const user = await getLoggedInUserData();
-  //     // console.log(user, " user");
-
-  //     const { data, error } = await supabase
-  //       .from("users")
-  //       .select("role")
-  //       .eq("userId", user?.id)
-  //       .single();
-
-  //     if (error) {
-  //       console.log(error);
-  //       return;
-  //     }
-  //     console.log(data.role);
-  //     setRole(data.role);
-  //   };
-
-  //   getUser();
-  // }, []);
 
   useEffect(() => {
     fetchTeams();
@@ -728,7 +715,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     }
   };
 
-  useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
+  // useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
 
   return (
     <div className="w-full h-[calc(100vh-142px)]">

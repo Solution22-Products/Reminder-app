@@ -11,7 +11,7 @@ const nextConfig = {
         remotePatterns:[
             {
                 protocol:"https",
-                hostname:"localhost",
+                hostname:"reminder-app-rosy-five.vercel.app",
                 pathname:"/images/**"
             },
             {

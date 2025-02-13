@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import Image from "next/image";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { useGlobalContext } from "@/context/store";
 interface Space {
   id: string;
   name: string;
@@ -40,6 +41,7 @@ interface Space {
 }
 
 export default function SpaceSetting({}) {
+  const { userId } = useGlobalContext();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [newSpaceName, setNewSpaceName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -561,7 +563,7 @@ export default function SpaceSetting({}) {
 
                     {/* Created By */}
                     <TableCell className="px-4 py-4 text-sm text-gray-500">
-                      Laxman Sarav
+                      {userId?.username}
                     </TableCell>
 
                     {/* Teams */}

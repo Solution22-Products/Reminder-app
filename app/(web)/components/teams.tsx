@@ -538,7 +538,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
       // Filter users whose email includes the input value
       const matchingUsers =
-        data?.filter((user) => user.email.includes(emailInput)) || [];
+      data?.filter((user) => user.role === "User" && user.email.includes(emailInput)) || [];
 
       if (matchingUsers.length > 0 || emailInput === "") {
         setMatchingUsers(matchingUsers);
@@ -600,27 +600,27 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     filterFetchTasks();
   }, []);
 
-  useEffect(() => {
-    const getUser = async () => {
-      const user = await getLoggedInUserData();
-      // console.log(user, " user");
+  // useEffect(() => {
+  //   const getUser = async () => {
+  //     const user = await getLoggedInUserData();
+  //     // console.log(user, " user");
 
-      const { data, error } = await supabase
-        .from("users")
-        .select("role")
-        .eq("userId", user?.id)
-        .single();
+  //     const { data, error } = await supabase
+  //       .from("users")
+  //       .select("role")
+  //       .eq("userId", user?.id)
+  //       .single();
 
-      if (error) {
-        console.log(error);
-        return;
-      }
-      console.log(data.role);
-      setRole(data.role);
-    };
+  //     if (error) {
+  //       console.log(error);
+  //       return;
+  //     }
+  //     console.log(data.role);
+  //     setRole(data.role);
+  //   };
 
-    getUser();
-  }, []);
+  //   getUser();
+  // }, []);
 
   useEffect(() => {
     fetchTeams();
@@ -846,7 +846,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                     {matchingUsers.length > 0 &&
                                       emailInput.length > 0 &&
                                       !noUserFound && (
-                                        <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                        <div className="absolute top-[121px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
                                           <ul>
                                             {matchingUsers.map(
                                               (user, index) => (
@@ -872,7 +872,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                         </div>
                                       )}
                                     {noUserFound && (
-                                      <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                      <div className="absolute top-[121px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
                                         <ul>
                                           <li className="p-2 cursor-pointer hover:bg-gray-100">
                                             No User Found
@@ -1613,7 +1613,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                         {matchingUsers.length > 0 &&
                                           emailInput.length > 0 &&
                                           !noUserFound && (
-                                            <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                            <div className="absolute top-[121px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
                                               <ul>
                                                 {matchingUsers.map(
                                                   (user, index) => (
@@ -1642,7 +1642,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             </div>
                                           )}
                                         {noUserFound && (
-                                          <div className="absolute bottom-[-28px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
+                                          <div className="absolute top-[121px] max-h-[160px] h-auto overflow-y-auto w-full bg-white border border-gray-300 rounded-md">
                                             <ul>
                                               <li className="p-2 cursor-pointer hover:bg-gray-100">
                                                 No User Found

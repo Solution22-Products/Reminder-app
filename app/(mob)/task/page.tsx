@@ -319,6 +319,7 @@ const Task = () => {
         task_status?: string;
         task_content?: string;
         mentions?: string[];
+        undo_delete?: boolean;
       } = {};
 
       if (date) {
@@ -332,6 +333,8 @@ const Task = () => {
       } else {
         updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
       }
+
+      updatedFields.undo_delete = true;
 
       if (editTaskInputValue) {
         let mentions: string[] = [];
@@ -413,7 +416,7 @@ const Task = () => {
     console.log("task deleted", taskId, teamId);
     const { data, error } = await supabase
       .from("tasks")
-      .update({ is_deleted: true })
+      .update({ is_deleted: true, undo_delete: false })
       .eq("team_id", teamId)
       .eq("id", taskId);
     if (error) throw error;

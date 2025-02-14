@@ -135,68 +135,68 @@ const Task = (props: Props) => {
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [{ data: spaces }, { data: teams }, { data: tasks }] =
-          await Promise.all([
-            supabase.from("spaces").select("*").eq("is_deleted", false),
-            supabase.from("teams").select("*").eq("is_deleted", false),
-            supabase.from("tasks").select("*").eq("is_deleted", false),
-          ]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const [{ data: spaces }, { data: teams }, { data: tasks }] =
+  //         await Promise.all([
+  //           supabase.from("spaces").select("*").eq("is_deleted", false),
+  //           supabase.from("teams").select("*").eq("is_deleted", false),
+  //           supabase.from("tasks").select("*").eq("is_deleted", false),
+  //         ]);
 
-        if (spaces) setAllSpace(spaces);
-        if (teams) setAllTeams(teams);
-        if (tasks) setAllTasks(tasks);
-        // setAdminOverdueTasks(spaces ?? []);
+  //       if (spaces) setAllSpace(spaces);
+  //       if (teams) setAllTeams(teams);
+  //       if (tasks) setAllTasks(tasks);
+  //       // setAdminOverdueTasks(spaces ?? []);
 
-        if (!userId) return;
+  //       if (!userId) return;
 
-        const matchedTeams =
-          teams?.filter((team) =>
-            team.members.some(
-              (member: any) => member.entity_name === userId.entity_name
-            )
-          ) || [];
+  //       const matchedTeams =
+  //         teams?.filter((team) =>
+  //           team.members.some(
+  //             (member: any) => member.entity_name === userId.entity_name
+  //           )
+  //         ) || [];
 
-        const matchedSpaceIds = new Set(
-          matchedTeams.map((team) => team.space_id)
-        );
-        const matchedSpaces =
-          spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
-        setUserSpace(matchedSpaces);
+  //       const matchedSpaceIds = new Set(
+  //         matchedTeams.map((team) => team.space_id)
+  //       );
+  //       const matchedSpaces =
+  //         spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
+  //       setUserSpace(matchedSpaces);
 
-        const getUniqueItems = (array: any, key: any) => {
-          const seen = new Set();
-          return array.filter((item: any) => {
-            const value = item[key];
-            if (!seen.has(value)) {
-              seen.add(value);
-              return true;
-            }
-            return false;
-          });
-        };
+  //       const getUniqueItems = (array: any, key: any) => {
+  //         const seen = new Set();
+  //         return array.filter((item: any) => {
+  //           const value = item[key];
+  //           if (!seen.has(value)) {
+  //             seen.add(value);
+  //             return true;
+  //           }
+  //           return false;
+  //         });
+  //       };
 
-        const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
-        if (sourceData) {
-          setSpaces(
-            getUniqueItems(
-              sourceData.map((space) => ({
-                id: space.id,
-                display: space.space_name,
-              })),
-              "display"
-            )
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  //       const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
+  //       if (sourceData) {
+  //         setSpaces(
+  //           getUniqueItems(
+  //             sourceData.map((space) => ({
+  //               id: space.id,
+  //               display: space.space_name,
+  //             })),
+  //             "display"
+  //           )
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, [userId]);
+  //   fetchData();
+  // }, [userId]);
 
   useEffect(() => {
     if (userId?.role === "owner") {
@@ -231,28 +231,67 @@ const Task = (props: Props) => {
   };
 
   const fetchData = async () => {
-    const { data: spaces } = await supabase
-      .from("spaces")
-      .select("*")
-      .eq("is_deleted", false);
-    const { data: teams } = await supabase
-      .from("teams")
-      .select("*")
-      .eq("is_deleted", false);
-    const { data: tasks } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("is_deleted", false);
+    try {
+      const [{ data: spaces }, { data: teams }, { data: tasks }] =
+        await Promise.all([
+          supabase.from("spaces").select("*").eq("is_deleted", false),
+          supabase.from("teams").select("*").eq("is_deleted", false),
+          supabase.from("tasks").select("*").eq("is_deleted", false),
+        ]);
 
-    if (spaces) setAllSpace(spaces);
-    if (teams) setAllTeams(teams);
-    if (tasks) setAllTasks(tasks);
+      if (spaces) setAllSpace(spaces);
+      if (teams) setAllTeams(teams);
+      if (tasks) setAllTasks(tasks);
+
+      if (!userId) return;
+
+      const matchedTeams =
+        teams?.filter((team) =>
+          team.members.some(
+            (member: any) => member.entity_name === userId.entity_name
+          )
+        ) || [];
+
+      const matchedSpaceIds = new Set(
+        matchedTeams.map((team) => team.space_id)
+      );
+      const matchedSpaces =
+        spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
+      setUserSpace(matchedSpaces);
+
+      const getUniqueItems = (array: any, key: any) => {
+        const seen = new Set();
+        return array.filter((item: any) => {
+          const value = item[key];
+          if (!seen.has(value)) {
+            seen.add(value);
+            return true;
+          }
+          return false;
+        });
+      };
+
+      const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
+      if (sourceData) {
+        setSpaces(
+          getUniqueItems(
+            sourceData.map((space) => ({
+              id: space.id,
+              display: space.space_name,
+            })),
+            "display"
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   useEffect(() => {
     fetchData();
     setTaskLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (userId?.role === "owner") {
@@ -347,6 +386,7 @@ const Task = (props: Props) => {
   // }, [selectedTeam, allTasks]);
 
   const handleUpdateTask = async (id: number) => {
+    console.log("inside content");
     try {
       // Fetch the task data
       const { data: taskData, error: taskError } = await supabase
@@ -1169,12 +1209,17 @@ const Task = (props: Props) => {
                       userId?.access?.task === true))) &&
                   swipedTasks[task.id] && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 z-50 transition-all duration-300">
-                      <button
-                        className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
-                        onClick={() => handleCompleteTask(task.id)}
-                      >
-                        <Check className="w-6 h-6" />
-                      </button>
+                      {/* Complete Button - Disabled if status is completed */}
+                      {task.task_status !== "Completed" && (
+                        <button
+                          className="h-[46px] w-[46px] rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center"
+                          onClick={() => handleCompleteTask(task.id)}
+                        >
+                          <Check className="w-6 h-6" />
+                        </button>
+                      )}
+
+                      {/* Delete Button */}
                       <Dialog
                         open={isDialogOpen}
                         onOpenChange={setIsDialogOpen}
@@ -1302,6 +1347,15 @@ const Task = (props: Props) => {
                                   "w-1/2 justify-center text-left font-normal",
                                   !date && "text-muted-foreground"
                                 )}
+                                disabled={
+                                  !(
+                                    userId?.role === "owner" ||
+                                    (userId?.role === "User" &&
+                                      ((userId?.access?.task !== true &&
+                                        userId?.access?.all === true) ||
+                                        userId?.access?.task === true))
+                                  )
+                                }
                               >
                                 {date ? (
                                   format(date, "PPP")

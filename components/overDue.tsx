@@ -115,7 +115,8 @@ const OverDue: React.FC<OverDueProps> = ({ taskTrigger }) => {
                       <span className="font-semibold inline-block">
                       {Array.isArray(task.mentions) ? task.mentions.map((mention: string) => `${mention}`).join(" ") : task.mentions}
                       </span>{" "}
-                      {task.task_content}
+                      
+                      {task.task_content.length > 30  ? task.task_content.slice(0, 40) + "..." : task.task_content}
                     </p>
                         </div>
                         <div className="flex justify-between items-center mt-2">

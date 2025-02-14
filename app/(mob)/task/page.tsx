@@ -183,7 +183,7 @@ const Task = () => {
     useEffect(() => {
       fetchData();
       setTaskLoading(false);
-    }, []);
+    }, [userId]);
 
   // useEffect(() => {
   //   if (userId?.role === "owner") {
@@ -295,6 +295,7 @@ const Task = () => {
   }, [selectedSpace]);
 
   const handleUpdateTask = async (id: number) => {
+    console.log("inside update ")
     try {
       // Fetch the task data
       const { data: taskData, error: taskError } = await supabase
@@ -1104,20 +1105,14 @@ const Task = () => {
                   swipedTasks[task.id] && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 z-50 transition-all duration-300">
                       {/* Complete Button - Disabled if status is completed */}
-                      <button
-                        className={`h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer ${
-                          task.status === "completed"
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-green-500 hover:bg-green-600 text-white"
-                        }`}
-                        onClick={() =>
-                          task.status !== "completed" &&
-                          handleCompleteTask(task.id)
-                        }
-                        disabled={task.status === "completed"}
-                      >
-                        <Check className="w-6 h-6" />
-                      </button>
+                      {task.task_status !== "Completed" && (
+              <button
+                className="h-[46px] w-[46px] rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center"
+                onClick={() => handleCompleteTask(task.id)}
+              >
+                <Check className="w-6 h-6" />
+              </button>
+            )}
 
                       {/* Delete Button */}
                       <Dialog
@@ -1248,6 +1243,15 @@ const Task = () => {
                                   "w-1/2 justify-center text-left font-normal",
                                   !date && "text-muted-foreground"
                                 )}
+                                disabled={
+                                  !(
+                                    userId?.role === "owner" ||
+                                    (userId?.role === "User" &&
+                                      ((userId?.access?.task !== true &&
+                                        userId?.access?.all === true) ||
+                                        userId?.access?.task === true))
+                                  )
+                                }
                               >
                                 {date ? (
                                   format(date, "PPP")

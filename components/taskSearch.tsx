@@ -481,12 +481,17 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
                       userId?.access?.task === true))) &&
                   swipedTasks[task.id] && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 z-50 transition-all duration-300">
-                      <button
-                        className="bg-green-500 text-white h-[46px] w-[46px] rounded-full flex items-center justify-center cursor-pointer"
-                        onClick={() => handleCompleteTask(task.id)}
-                      >
-                        <Check className="w-6 h-6" />
-                      </button>
+                      {/* Complete Button - Disabled if status is completed */}
+                      {task.task_status !== "Completed" && (
+                        <button
+                          className="h-[46px] w-[46px] rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center"
+                          onClick={() => handleCompleteTask(task.id)}
+                        >
+                          <Check className="w-6 h-6" />
+                        </button>
+                      )}
+
+                      {/* Delete Button */}
                       <Dialog
                         open={isDialogOpen}
                         onOpenChange={setIsDialogOpen}

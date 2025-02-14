@@ -329,7 +329,7 @@ const Task = () => {
         updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
       }
 
-      updatedFields.undo_delete = true;
+      updatedFields.undo_delete = false;
 
       if (editTaskInputValue) {
         let mentions: string[] = [];

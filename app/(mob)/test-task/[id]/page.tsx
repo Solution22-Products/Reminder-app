@@ -425,7 +425,7 @@ const Task = (props: Props) => {
         updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
       }
 
-      updatedFields.undo_delete = true;
+      updatedFields.undo_delete = false;
 
       if (editTaskInputValue) {
         let mentions: string[] = [];
@@ -763,6 +763,7 @@ const Task = (props: Props) => {
             description: "The task has been updated successfully.",
             duration: 3000,
           });
+          if(payload.new.task_created === true && payload.new.is_deleted === false && payload.new.undo_delete === true){
           if ("Notification" in window) {
             if (Notification.permission === "granted") {
               new Notification("Task created or updated", {
@@ -781,6 +782,7 @@ const Task = (props: Props) => {
               });
             }
           }
+        }
         }
       )
       .subscribe();

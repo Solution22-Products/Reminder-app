@@ -169,23 +169,26 @@ useEffect(() => {
         variant: "default",
         duration: 3000,
       })
-      if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-          new Notification("Task created", {
-            body: "Task created successfully!",
-            icon: "/path/to/icon.png", // Optional: Path to a notification icon
-          });
-        } else if (Notification.permission !== "denied") {
-          // Request permission to show notifications
-          Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
-              new Notification("Task created", {
-                body: "Task created successfully!",
-                icon: "/path/to/icon.png", // Optional: Path to a notification icon
-              });
-            }
-          });
-        }}
+      if (payload.new.task_created === true && payload.new.is_deleted === false && payload.new.undo_delete === true) {
+        if ("Notification" in window) {
+          if (Notification.permission === "granted") {
+            new Notification("Task created", {
+              body: "Task created successfully!",
+              icon: "/path/to/icon.png", // Optional: Path to a notification icon
+            });
+          } else if (Notification.permission !== "denied") {
+            // Request permission to show notifications
+            Notification.requestPermission().then((permission) => {
+              if (permission === "granted") {
+                new Notification("Task created", {
+                  body: "Task created successfully!",
+                  icon: "/path/to/icon.png", // Optional: Path to a notification icon
+                });
+              }
+            });
+          }}
+      }
+      
     })
     .subscribe();
 

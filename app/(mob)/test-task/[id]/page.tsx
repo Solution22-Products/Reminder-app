@@ -723,16 +723,16 @@ useEffect(() => {
       if (payload.new.task_created === true && payload.new.is_deleted === false && payload.new.undo_delete === true) {
         if ("Notification" in window) {
           if (Notification.permission === "granted") {
-            new Notification("Task created or updated", {
-              body: "Task created or updated successfully!",
+            new Notification("Task updated", {
+              body: "Task updated successfully!",
               icon: "/path/to/icon.png", // Optional: Path to a notification icon
             });
           } else if (Notification.permission !== "denied") {
             // Request permission to show notifications
             Notification.requestPermission().then((permission) => {
               if (permission === "granted") {
-                new Notification("Task created or updated", {
-                  body: "Task created or updated successfully!",
+                new Notification("Task updated", {
+                  body: "Task updated successfully!",
                   icon: "/path/to/icon.png", // Optional: Path to a notification icon
                 });
               }

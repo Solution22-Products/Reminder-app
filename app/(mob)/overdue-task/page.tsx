@@ -68,37 +68,45 @@ const OverdueTaskPage = () => {
         .from("tasks")
         .select("*, team_name:teams(team_name), space_name:spaces(space_name)")
         .eq("is_deleted", false);
-  
+
       if (taskError) throw taskError;
-  
+
       const now = Date.now();
-  
+
       if (userId?.role === "owner") {
         // Owner sees all overdue tasks
         const ownerOverdueTasks = taskData
-          .map((task: any) => ({ ...task, team_name: task.team_name?.team_name, space_name: task.space_name?.space_name }))
+          .map((task: any) => ({
+            ...task,
+            team_name: task.team_name?.team_name,
+            space_name: task.space_name?.space_name,
+          }))
           .filter((task) => new Date(task.due_date).getTime() < now);
-  
+
         setAdminOverdueTasks(ownerOverdueTasks);
         console.log("ownerOverdueTasks ", ownerOverdueTasks);
       } else {
         // User sees only their assigned overdue tasks
         const userOverdueTasks = taskData
-          .map((task: any) => ({ ...task, team_name: task.team_name?.team_name, space_name: task.space_name?.space_name }))
+          .map((task: any) => ({
+            ...task,
+            team_name: task.team_name?.team_name,
+            space_name: task.space_name?.space_name,
+          }))
           .filter(
             (task) =>
               new Date(task.due_date).getTime() < now &&
               task.mentions?.includes(`@${userId?.entity_name}`)
           );
-  
-          setAdminOverdueTasks(userOverdueTasks);
+
+        setAdminOverdueTasks(userOverdueTasks);
       }
     } catch (err) {
       console.error("Error fetching task data:", err);
     } finally {
       setTaskLoading(false);
     }
-  };  
+  };
 
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
@@ -162,8 +170,6 @@ const OverdueTaskPage = () => {
         variant: "default",
         duration: 3000,
       });
-
-      
     } catch (err: any) {
       console.error(err);
       toast({
@@ -198,122 +204,120 @@ const OverdueTaskPage = () => {
 
   return (
     <>
-    <main className="p-[18px] pb-0">
-      {/* <Toaster /> */}
-      <div className="w-full flex justify-between items-center mb-5">
-        <h1 className="text-lg font-semibold">Overdue Task</h1>
-        <Select open={selectOpen} onOpenChange={setSelectOpen}>
-          <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
-            <div className="flex items-center">
-              <Image
-                src={userId?.profile_image || profile}
-                width={44}
-                height={44}
-                alt="User Image"
-                className="rounded"
-              />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="w-[150px] py-3">
-            {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
-            <p
-              onClick={() => {
-                setProfileLoader(true);
-                setTimeout(() => {
-                  route.push("/profile");
-                  setProfileLoader(false);
-                }, 1000);
-              }}
-              className={`text-sm pb-3 mb-3 pl-3.5 border-b border-gray-300 font-medium cursor-pointer`}
-            >
-              {profileLoader ? (
-                <svg
-                  className="animate-spin h-5 w-5 m-auto"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="#1A56DB"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-100"
-                    fill="#1A56DB"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-              ) : (
-                "Your Profile"
-              )}
-            </p>
-            {/* </div> */}
-            <form onSubmit={handleLogout} className="flex">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div
-                      typeof="submit"
-                      className="rounded bg-button_orange text-white cursor-pointer hover:bg-button_orange relative"
-                      style={isLoggingOut ? { pointerEvents: "none" } : {}}
-                    >
-                      {isLoggingOut ? (
-                        <div className="ml-20 flex items-center justify-center text-center">
-                          <svg
-                            className="animate-spin h-5 w-5"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="#1A56DB"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="#1A56DB"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-[#F05252] px-3 flex items-center gap-2 cursor-pointer">
-                          <LogOut size={20} />
-                          Sign Out
-                        </p>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Logout</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </form>
-          </SelectContent>
-        </Select>
-      </div>
+      <main className="p-[18px] pb-0">
+        {/* <Toaster /> */}
+        <div className="w-full flex justify-between items-center mb-5">
+          <h1 className="text-lg font-semibold">Overdue Task</h1>
+          <Select open={selectOpen} onOpenChange={setSelectOpen}>
+            <SelectTrigger className="w-auto h-[44px] border-none focus-visible:border-none focus-visible:outline-none text-sm font-bold shadow-none pl-2 justify-start gap-1">
+              <div className="relative w-10 h-10 rounded-full">
+                <Image
+                  src={userId?.profile_image || profile}
+                  alt="User Image"
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="w-[150px] py-3">
+              {/* <div className="py-3 my-3 text-gray-700 border-t border-b border-gray-200 px-3 cursor-pointer"> */}
+              <p
+                onClick={() => {
+                  setProfileLoader(true);
+                  setTimeout(() => {
+                    route.push("/profile");
+                    setProfileLoader(false);
+                  }, 1000);
+                }}
+                className={`text-sm pb-3 mb-3 pl-3.5 border-b border-gray-300 font-medium cursor-pointer`}
+              >
+                {profileLoader ? (
+                  <svg
+                    className="animate-spin h-5 w-5 m-auto"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="#1A56DB"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-100"
+                      fill="#1A56DB"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Your Profile"
+                )}
+              </p>
+              {/* </div> */}
+              <form onSubmit={handleLogout} className="flex">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <div
+                        typeof="submit"
+                        className="rounded bg-button_orange text-white cursor-pointer hover:bg-button_orange relative"
+                        style={isLoggingOut ? { pointerEvents: "none" } : {}}
+                      >
+                        {isLoggingOut ? (
+                          <div className="ml-20 flex items-center justify-center text-center">
+                            <svg
+                              className="animate-spin h-5 w-5"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="#1A56DB"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="#1A56DB"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-[#F05252] px-3 flex items-center gap-2 cursor-pointer">
+                            <LogOut size={20} />
+                            Sign Out
+                          </p>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Logout</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </form>
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="w-full h-[calc(100vh-170px)] top-0 block overflow-y-scroll playlist-scroll">
-        {taskLoading ? (
-          <OverdueListSkeleton />
-        ) : adminOverdueTasks.length === 0 ? (
-          <div className="w-full h-full flex justify-center items-center">
-            <p className="text-[#A6A6A7] text-lg font-medium">
-              No Overdue Task
-            </p>
-          </div>
-        ) : (
-          adminOverdueTasks.map(
-            (task: any, index: number) => (
+        <div className="w-full h-[calc(100vh-170px)] top-0 block overflow-y-scroll playlist-scroll">
+          {taskLoading ? (
+            <OverdueListSkeleton />
+          ) : adminOverdueTasks.length === 0 ? (
+            <div className="w-full h-full flex justify-center items-center">
+              <p className="text-[#A6A6A7] text-lg font-medium">
+                No Overdue Task
+              </p>
+            </div>
+          ) : (
+            adminOverdueTasks.map((task: any, index: number) => (
               <div key={index}>
                 <div
                   onClick={() => setOpenTaskId(task.id)}
@@ -340,8 +344,8 @@ const OverdueTaskPage = () => {
                     <p className="text-black mt-2 text-sm">
                       <span className="font-semibold inline-block">
                         {task.mentions
-                        .map((mention: string) => `${mention}`)
-                        .join(" ")}
+                          .map((mention: string) => `${mention}`)
+                          .join(" ")}
                       </span>{" "}
                       {task.task_content}
                     </p>
@@ -406,7 +410,9 @@ const OverdueTaskPage = () => {
                               <SelectItem value="In progress">
                                 In Progress
                               </SelectItem>
-                              <SelectItem value="Internal feedback">Internal feedback</SelectItem>
+                              <SelectItem value="Internal feedback">
+                                Internal feedback
+                              </SelectItem>
                               {userId?.role === "owner" && (
                                 <SelectItem value="Completed">
                                   Completed
@@ -426,8 +432,8 @@ const OverdueTaskPage = () => {
                           </span>{" "}
                           <span className="text-[#518A37]">
                             {task.mentions
-                        .map((mention: string) => `${mention}`)
-                        .join(" ")}
+                              .map((mention: string) => `${mention}`)
+                              .join(" ")}
                           </span>{" "}
                           {task.task_content}
                         </p>
@@ -470,14 +476,13 @@ const OverdueTaskPage = () => {
                   </Drawer>
                 )}
               </div>
-            )
-          )
-        )}
-      </div>
-    </main>
-    <Footer
-        //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
-         />
+            ))
+          )}
+        </div>
+      </main>
+      <Footer
+      //  notifyMobTrigger = {notifyMobTrigger} setNotifyMobTrigger = {setNotifyMobTrigger} test = {''} setTest={''}
+      />
     </>
   );
 };

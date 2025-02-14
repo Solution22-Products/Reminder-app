@@ -136,6 +136,7 @@ const AddTaskMentions: React.FC<ReactProps> = ({
             task_status: taskStatus,
             is_deleted: false,
             notify_read: false,
+            undo_delete: true,
             created_by: userId?.username,
           });
 

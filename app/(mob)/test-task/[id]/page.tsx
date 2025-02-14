@@ -370,6 +370,7 @@ const Task = (props: Props) => {
         task_status?: string;
         task_content?: string;
         mentions?: string[];
+        undo_delete?: boolean;
       } = {};
 
       if (date) {
@@ -383,6 +384,8 @@ const Task = (props: Props) => {
       } else {
         updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
       }
+
+      updatedFields.undo_delete = true;
 
       if (editTaskInputValue) {
         let mentions: string[] = [];
@@ -457,7 +460,7 @@ const Task = (props: Props) => {
     console.log("task deleted", taskId, teamId);
     const { data, error } = await supabase
       .from("tasks")
-      .update({ is_deleted: true })
+      .update({ is_deleted: true, undo_delete: false })
       .eq("team_id", teamId)
       .eq("id", taskId);
     if (error) throw error;
@@ -717,23 +720,26 @@ useEffect(() => {
         description: "The task has been updated successfully.",
         duration: 3000,
       })
-      if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-          new Notification("Task created or updated", {
-            body: "Task created or updated successfully!",
-            icon: "/path/to/icon.png", // Optional: Path to a notification icon
-          });
-        } else if (Notification.permission !== "denied") {
-          // Request permission to show notifications
-          Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
-              new Notification("Task created or updated", {
-                body: "Task created or updated successfully!",
-                icon: "/path/to/icon.png", // Optional: Path to a notification icon
-              });
-            }
-          });
-        }}
+      if (payload.new.task_created === true && payload.new.is_deleted === false && payload.new.undo_delete === true) {
+        if ("Notification" in window) {
+          if (Notification.permission === "granted") {
+            new Notification("Task created or updated", {
+              body: "Task created or updated successfully!",
+              icon: "/path/to/icon.png", // Optional: Path to a notification icon
+            });
+          } else if (Notification.permission !== "denied") {
+            // Request permission to show notifications
+            Notification.requestPermission().then((permission) => {
+              if (permission === "granted") {
+                new Notification("Task created or updated", {
+                  body: "Task created or updated successfully!",
+                  icon: "/path/to/icon.png", // Optional: Path to a notification icon
+                });
+              }
+            });
+          }}
+      }
+      
     })
     .subscribe();
 

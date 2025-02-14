@@ -175,7 +175,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   const handleDeleteTask = async (teamId: number, taskId: number) => {
     const { data, error } = await supabase
       .from("tasks")
-      .update({ is_deleted: true })
+      .update({ is_deleted: true, undo_delete: false })
       .eq("team_id", teamId)
       .eq("id", taskId);
 
@@ -261,6 +261,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
             task_content: content,
             task_created: true,
             task_status: "todo",
+            undo_delete: true,
           })
           .eq("team_id", teamId)
           .eq("id", taskId);
@@ -643,6 +644,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
           due_date: formatDate(addDays(new Date(), 1)),
           is_deleted: false,
           notify_read: false,
+          undo_delete: true,
           created_by: loggedUserData?.username,
         })
         .select()
@@ -684,7 +686,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
         (payload) => {
           console.log("Task updated!", payload);
           filterFetchTasks(); // Function to refresh the task list in state
-          if (payload.new.task_created === true || payload.new.is_deleted === null) {
+          if (payload.new.task_created === true && payload.new.is_deleted === false && payload.new.undo_delete === true) {
             if ("Notification" in window) {
               if (Notification.permission === "granted") {
                 new Notification("Task created or updated", {
@@ -703,24 +705,6 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
               }
             }
           }
-
-          // if ("Notification" in window) {
-          //   if (Notification.permission === "granted") {
-          //     new Notification("Task created or updated", {
-          //       body: "Task created or updated successfully!",
-          //       icon: "/path/to/icon.png", // Optional: Path to a notification icon
-          //     });
-          //   } else if (Notification.permission !== "denied") {
-          //     Notification.requestPermission().then((permission) => {
-          //       if (permission === "granted") {
-          //         new Notification("Task created or updated", {
-          //           body: "Task created or updated successfully!",
-          //           icon: "/path/to/icon.png", // Optional: Path to a notification icon
-          //         });
-          //       }
-          //     });
-          //   }
-          // }
         }
       )
       .subscribe();

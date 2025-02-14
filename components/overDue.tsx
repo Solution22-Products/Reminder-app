@@ -99,7 +99,7 @@ const OverDue: React.FC<OverDueProps> = ({ taskTrigger }) => {
                 >
                   <div className="p-1 w-[260px]">
                     <Card>
-                      <CardContent className="aspect-square p-3 w-full flex flex-col justify-between h-[156px]">
+                      <CardContent className="aspect-square p-3 w-full flex flex-col justify-between h-[186px]">
                         <div className="w-full">
                           <div className="flex justify-between items-center">
                             <p className="text-[#737373] bg-[#F4F4F8] text-sm font-semibold px-3 py-0.5 rounded-full">
@@ -116,7 +116,7 @@ const OverDue: React.FC<OverDueProps> = ({ taskTrigger }) => {
                       {Array.isArray(task.mentions) ? task.mentions.map((mention: string) => `${mention}`).join(" ") : task.mentions}
                       </span>{" "}
                       
-                      {task.task_content.length > 30  ? task.task_content.slice(0, 40) + "..." : task.task_content}
+                      {task.task_content.length > 40  ? task.task_content.slice(0, 40) + "..." : task.task_content}
                     </p>
                         </div>
                         <div className="flex justify-between items-center mt-2">

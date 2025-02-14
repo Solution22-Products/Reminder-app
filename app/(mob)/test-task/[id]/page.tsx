@@ -504,14 +504,14 @@ const Task = (props: Props) => {
       .eq("team_id", teamId)
       .eq("id", taskId);
     if (error) throw error;
-    const fetchData = async () => {
-      const { data: tasks } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("is_deleted", false);
+    // const fetchData = async () => {
+    //   const { data: tasks } = await supabase
+    //     .from("tasks")
+    //     .select("*")
+    //     .eq("is_deleted", false);
 
-      if (tasks) setAllTasks(tasks);
-    };
+    //   if (tasks) setAllTasks(tasks);
+    // };
     fetchData();
     toast({
       title: "Deleted Successfully!",
@@ -749,48 +749,48 @@ const Task = (props: Props) => {
   };
 
   // Real-time subscription to reflect updates
-  useEffect(() => {
-    const subscription = supabase
-      .channel("tasks-updates")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "tasks" },
-        (payload) => {
-          console.log("Task updated!", payload);
-          fetchData(); // Function to refresh the task list in state
-          toast({
-            title: "Task Updated",
-            description: "The task has been updated successfully.",
-            duration: 3000,
-          });
-          if(payload.new.task_created === true && payload.new.is_deleted === false && payload.new.undo_delete === true){
-          if ("Notification" in window) {
-            if (Notification.permission === "granted") {
-              new Notification("Task created or updated", {
-                body: "Task created or updated successfully!",
-                icon: "/path/to/icon.png", // Optional: Path to a notification icon
-              });
-            } else if (Notification.permission !== "denied") {
-              // Request permission to show notifications
-              Notification.requestPermission().then((permission) => {
-                if (permission === "granted") {
-                  new Notification("Task created or updated", {
-                    body: "Task created or updated successfully!",
-                    icon: "/path/to/icon.png", // Optional: Path to a notification icon
-                  });
-                }
-              });
-            }
-          }
-        }
-        }
-      )
-      .subscribe();
+  // useEffect(() => {
+  //   const subscription = supabase
+  //     .channel("tasks-updates")
+  //     .on(
+  //       "postgres_changes",
+  //       { event: "UPDATE", schema: "public", table: "tasks" },
+  //       (payload) => {
+  //         console.log("Task updated!", payload);
+  //         fetchData(); // Function to refresh the task list in state
+  //         toast({
+  //           title: "Task Updated",
+  //           description: "The task has been updated successfully.",
+  //           duration: 3000,
+  //         });
+  //         if(payload.new.task_created === true && payload.new.is_deleted === false && payload.new.undo_delete === true){
+  //         if ("Notification" in window) {
+  //           if (Notification.permission === "granted") {
+  //             new Notification("Task created or updated", {
+  //               body: "Task created or updated successfully!",
+  //               icon: "/path/to/icon.png", // Optional: Path to a notification icon
+  //             });
+  //           } else if (Notification.permission !== "denied") {
+  //             // Request permission to show notifications
+  //             Notification.requestPermission().then((permission) => {
+  //               if (permission === "granted") {
+  //                 new Notification("Task created or updated", {
+  //                   body: "Task created or updated successfully!",
+  //                   icon: "/path/to/icon.png", // Optional: Path to a notification icon
+  //                 });
+  //               }
+  //             });
+  //           }
+  //         }
+  //       }
+  //       }
+  //     )
+  //     .subscribe();
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  //   return () => {
+  //     subscription.unsubscribe();
+  //   };
+  // }, []);
 
   return (
     <>
@@ -800,7 +800,7 @@ const Task = (props: Props) => {
           (userId?.role === "User" &&
             ((userId?.access?.task !== true && userId?.access?.all === true) ||
               userId?.access?.task === true))
-            ? "h-[470px]"
+            ? "h-[560px]"
             : "h-full"
         } space-y-[18px]`}
       >

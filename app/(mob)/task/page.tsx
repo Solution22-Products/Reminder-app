@@ -121,69 +121,68 @@ const Task = () => {
   const [employees, setEmployees] = useState<MentionData[]>([]);
   const [inputValue, setInputValue] = useState("");
 
- 
-    const fetchData = async () => {
-      try {
-        const [{ data: spaces }, { data: teams }, { data: tasks }] =
-          await Promise.all([
-            supabase.from("spaces").select("*").eq("is_deleted", false),
-            supabase.from("teams").select("*").eq("is_deleted", false),
-            supabase.from("tasks").select("*").eq("is_deleted", false),
-          ]);
+  const fetchData = async () => {
+    try {
+      const [{ data: spaces }, { data: teams }, { data: tasks }] =
+        await Promise.all([
+          supabase.from("spaces").select("*").eq("is_deleted", false),
+          supabase.from("teams").select("*").eq("is_deleted", false),
+          supabase.from("tasks").select("*").eq("is_deleted", false),
+        ]);
 
-        if (spaces) setAllSpace(spaces);
-        if (teams) setAllTeams(teams);
-        if (tasks) setAllTasks(tasks);
+      if (spaces) setAllSpace(spaces);
+      if (teams) setAllTeams(teams);
+      if (tasks) setAllTasks(tasks);
 
-        if (!userId) return;
+      if (!userId) return;
 
-        const matchedTeams =
-          teams?.filter((team) =>
-            team.members.some(
-              (member: any) => member.entity_name === userId.entity_name
-            )
-          ) || [];
+      const matchedTeams =
+        teams?.filter((team) =>
+          team.members.some(
+            (member: any) => member.entity_name === userId.entity_name
+          )
+        ) || [];
 
-        const matchedSpaceIds = new Set(
-          matchedTeams.map((team) => team.space_id)
+      const matchedSpaceIds = new Set(
+        matchedTeams.map((team) => team.space_id)
+      );
+      const matchedSpaces =
+        spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
+      setUserSpace(matchedSpaces);
+
+      const getUniqueItems = (array: any, key: any) => {
+        const seen = new Set();
+        return array.filter((item: any) => {
+          const value = item[key];
+          if (!seen.has(value)) {
+            seen.add(value);
+            return true;
+          }
+          return false;
+        });
+      };
+
+      const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
+      if (sourceData) {
+        setSpaces(
+          getUniqueItems(
+            sourceData.map((space) => ({
+              id: space.id,
+              display: space.space_name,
+            })),
+            "display"
+          )
         );
-        const matchedSpaces =
-          spaces?.filter((space) => matchedSpaceIds.has(space.id)) || [];
-        setUserSpace(matchedSpaces);
-
-        const getUniqueItems = (array: any, key: any) => {
-          const seen = new Set();
-          return array.filter((item: any) => {
-            const value = item[key];
-            if (!seen.has(value)) {
-              seen.add(value);
-              return true;
-            }
-            return false;
-          });
-        };
-
-        const sourceData = userId.role === "owner" ? spaces : matchedSpaces;
-        if (sourceData) {
-          setSpaces(
-            getUniqueItems(
-              sourceData.map((space) => ({
-                id: space.id,
-                display: space.space_name,
-              })),
-              "display"
-            )
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
-    useEffect(() => {
-      fetchData();
-      setTaskLoading(false);
-    }, [userId]);
+  useEffect(() => {
+    fetchData();
+    setTaskLoading(false);
+  }, [userId]);
 
   // useEffect(() => {
   //   if (userId?.role === "owner") {
@@ -295,49 +294,30 @@ const Task = () => {
   }, [selectedSpace]);
 
   const handleUpdateTask = async (id: number) => {
-    console.log("inside update ")
+    console.log("Inside update function");
+
     try {
       // Fetch the task data
       const { data: taskData, error: taskError } = await supabase
         .from("tasks")
         .select("*")
         .eq("id", id)
-        .eq("is_deleted", false);
+        .eq("is_deleted", false)
+        .single(); // Fetch only one record
 
-      if (taskError) throw new Error("Failed to fetch task details");
-
-      if (!taskData || taskData.length === 0) {
-        console.error("Task not found");
+      if (taskError || !taskData) {
+        console.error("Failed to fetch task details or task not found");
         return;
       }
 
-      const currentTask = taskData[0];
-
-      // Prepare updated fields
-      const updatedFields: {
-        due_date?: string;
-        task_status?: string;
-        task_content?: string;
-        mentions?: string[];
-        undo_delete?: boolean;
-      } = {};
-
-      if (date) {
-        updatedFields.due_date = formatDate(date as Date);
-      } else {
-        updatedFields.due_date = currentTask.due_date; // Keep the old value if no new date is provided
-      }
-
-      if (taskStatus) {
-        updatedFields.task_status = taskStatus;
-      } else {
-        updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
-      }
-
-      updatedFields.undo_delete = false;
+      const updatedFields: Partial<typeof taskData> = {
+        due_date: date ? formatDate(date as Date) : taskData.due_date,
+        task_status: taskStatus || taskData.task_status,
+        undo_delete: false,
+      };
 
       if (editTaskInputValue) {
-        let mentions: string[] = [];
+        let mentions: any[] = [];
 
         // Extract @mentions
         const mentionPattern = /@\w+(?:_\w+)*\b/g;
@@ -347,27 +327,27 @@ const Task = () => {
 
         // Extract mentions from brackets
         const bracketPattern = /\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g;
-        let match: RegExpExecArray | null;
+        let match;
         while ((match = bracketPattern.exec(editTaskInputValue)) !== null) {
           mentions.push(`@${match[1]}`);
         }
 
         // Remove duplicate mentions
-        mentions = Array.from(new Set(mentions));
+        mentions = mentions.filter(
+          (mention, index) => mentions.indexOf(mention) === index
+        );
 
-        let plainText = editTaskInputValue
-          .replace(/@\w+(?:_\w+)*\b/g, "") // Remove @mentions
-          .replace(/\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g, "") // Remove bracket mentions
-          .replace(/@/g, "") // Remove any remaining '@'
+        const plainText = editTaskInputValue
+          .replace(mentionPattern, "") // Remove @mentions
+          .replace(bracketPattern, "") // Remove bracket mentions
+          .replace(/@/g, "") // Remove stray '@'
           .trim();
 
         updatedFields.task_content = plainText;
         updatedFields.mentions = mentions;
-        console.log("inside new content");
       } else {
-        updatedFields.task_content = currentTask.task_content;
-        updatedFields.mentions = currentTask.mentions;
-        console.log("inside old content");
+        updatedFields.task_content = taskData.task_content;
+        updatedFields.mentions = taskData.mentions;
       }
 
       // Update the task
@@ -375,14 +355,18 @@ const Task = () => {
         .from("tasks")
         .update(updatedFields)
         .eq("id", id);
-
       if (error) throw new Error("Failed to update the task");
 
-      // Refresh task data and reset state
+      // Update local state efficiently
+      setUserTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === id ? { ...task, ...updatedFields } : task
+        )
+      );
 
+      // Reset UI state
       setOpenTaskId(null);
       setDate(undefined);
-      fetchData();
 
       toast({
         title: "Success",
@@ -391,7 +375,7 @@ const Task = () => {
         duration: 3000,
       });
     } catch (err: any) {
-      console.error(err);
+      console.error("Update Error:", err);
       toast({
         title: "Error",
         description: err.message || "Something went wrong. Please try again.",
@@ -411,45 +395,78 @@ const Task = () => {
     }));
   };
 
+  const fetchDeleteTask = async (id : any) => {
+    const {data, error} = await supabase
+    .from("tasks")
+    .select("*")
+    .eq("id", id);
+    if(error){
+      console.log(error);
+    }
+    console.log(data);
+    return data;
+  }
+
   const handleDeleteTask = async (taskId: string, teamId: string) => {
     setSwipedTasks((prev) => ({ ...prev, [taskId]: false })); // Close swipe
-    console.log("task deleted", taskId, teamId);
-    const { data, error } = await supabase
-      .from("tasks")
-      .update({ is_deleted: true, undo_delete: false })
-      .eq("team_id", teamId)
-      .eq("id", taskId);
-    if (error) throw error;
-
-    fetchData();
-    toast({
-      title: "Deleted Successfully!",
-      description: "Task deleted successfully!",
-      action: (
-        <ToastAction
-          altText="Undo"
-          onClick={() => handleTaskUndo(teamId, taskId)}
-        >
-          Undo
-        </ToastAction>
-      ),
-    });
+    console.log("Deleting task:", taskId, "Team:", teamId);
+  
+    try {
+      // Mark task as deleted
+      const { error } = await supabase
+        .from("tasks")
+        .update({ is_deleted: true })
+        .eq("id", taskId);
+  
+      if (error) throw new Error("Failed to delete task");
+  
+      // Update local state efficiently
+      setUserTasks((prevTasks) =>
+        prevTasks.filter((task) => task.id !== taskId)
+      );
+  
+      fetchDeleteTask(taskId); // Optional: If additional cleanup is needed
+  
+      // Show success toast with undo option
+      toast({
+        title: "Deleted Successfully!",
+        description: "Task deleted successfully!",
+        action: (
+          <ToastAction altText="Undo" onClick={() => handleTaskUndo(taskId)}>
+            Undo
+          </ToastAction>
+        ),
+      });
+    } catch (err: any) {
+      console.error("Error deleting task:", err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to delete task. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
-  const handleTaskUndo = async (teamId: string, taskId: string) => {
+  
+  const handleTaskUndo = async (taskId: string) => {
     try {
       const { data, error } = await supabase
         .from("tasks")
         .update({ is_deleted: false })
-        .eq("team_id", teamId)
         .eq("id", taskId);
 
       if (error) throw error;
-      fetchData();
+      // Update local state efficiently
+      // setUserTasks((prevTasks) =>
+      //   prevTasks.filter((task) => task.id !== taskId)
+      // );
+  
+      fetchDeleteTask(taskId);
 
       toast({
         title: "Undo Successful",
         description: "The task has been restored.",
-        duration: 5000,
+        duration: 3000,
       });
     } catch (error) {
       console.error("Error undoing delete:", error);
@@ -461,6 +478,7 @@ const Task = () => {
       });
     }
   };
+  
   const handleCompleteTask = async (id: number) => {
     try {
       // Fetch the task data
@@ -641,49 +659,53 @@ const Task = () => {
     fetchTeamsAndTasks();
   };
 
-  // Real-time subscription to reflect updates
-  useEffect(() => {
-    const subscription = supabase
-      .channel("tasks-updates")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "tasks" },
-        (payload) => {
-          console.log("Task updated!", payload);
-          fetchData(); // Function to refresh the task list in state
-          toast({
-            title: "Task Updated",
-            description: "The task has been updated successfully.",
-            duration: 3000,
-          });
-          if(payload.new.task_created === true && payload.new.is_deleted === false && payload.new.undo_delete === true){
-          if ("Notification" in window) {
-            if (Notification.permission === "granted") {
-              new Notification("Task updated", {
-                body: "Task updated successfully!",
-                icon: "/path/to/icon.png", // Optional: Path to a notification icon
-              });
-            } else if (Notification.permission !== "denied") {
-              // Request permission to show notifications
-              Notification.requestPermission().then((permission) => {
-                if (permission === "granted") {
-                  new Notification("Task updated", {
-                    body: "Task updated successfully!",
-                    icon: "/path/to/icon.png", // Optional: Path to a notification icon
-                  });
-                }
-              });
-            }
-          }
-        }
-        }
-      )
-      .subscribe();
+  // // Real-time subscription to reflect updates
+  // useEffect(() => {
+  //   const subscription = supabase
+  //     .channel("tasks-updates")
+  //     .on(
+  //       "postgres_changes",
+  //       { event: "UPDATE", schema: "public", table: "tasks" },
+  //       (payload) => {
+  //         console.log("Task updated!", payload);
+  //         fetchData(); // Function to refresh the task list in state
+  //         toast({
+  //           title: "Task Updated",
+  //           description: "The task has been updated successfully.",
+  //           duration: 3000,
+  //         });
+  //         if (
+  //           payload.new.task_created === true &&
+  //           payload.new.is_deleted === false &&
+  //           payload.new.undo_delete === true
+  //         ) {
+  //           if ("Notification" in window) {
+  //             if (Notification.permission === "granted") {
+  //               new Notification("Task updated", {
+  //                 body: "Task updated successfully!",
+  //                 icon: "/path/to/icon.png", // Optional: Path to a notification icon
+  //               });
+  //             } else if (Notification.permission !== "denied") {
+  //               // Request permission to show notifications
+  //               Notification.requestPermission().then((permission) => {
+  //                 if (permission === "granted") {
+  //                   new Notification("Task updated", {
+  //                     body: "Task updated successfully!",
+  //                     icon: "/path/to/icon.png", // Optional: Path to a notification icon
+  //                   });
+  //                 }
+  //               });
+  //             }
+  //           }
+  //         }
+  //       }
+  //     )
+  //     .subscribe();
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  //   return () => {
+  //     subscription.unsubscribe();
+  //   };
+  // }, []);
 
   return (
     <>
@@ -693,7 +715,7 @@ const Task = () => {
           (userId?.role === "User" &&
             ((userId?.access?.task !== true && userId?.access?.all === true) ||
               userId?.access?.task === true))
-            ? "h-[470px]"
+            ? "h-[560px]"
             : "h-full"
         } space-y-[18px]`}
       >
@@ -1111,13 +1133,13 @@ const Task = () => {
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center space-x-2 z-50 transition-all duration-300">
                       {/* Complete Button - Disabled if status is completed */}
                       {task.task_status !== "Completed" && (
-              <button
-                className="h-[46px] w-[46px] rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center"
-                onClick={() => handleCompleteTask(task.id)}
-              >
-                <Check className="w-6 h-6" />
-              </button>
-            )}
+                        <button
+                          className="h-[46px] w-[46px] rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center"
+                          onClick={() => handleCompleteTask(task.id)}
+                        >
+                          <Check className="w-6 h-6" />
+                        </button>
+                      )}
 
                       {/* Delete Button */}
                       <Dialog

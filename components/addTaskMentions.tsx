@@ -173,7 +173,7 @@ useEffect(() => {
         if ("Notification" in window) {
           if (Notification.permission === "granted") {
             new Notification("Task created", {
-              body: "Task created successfully!",
+              body: `${payload.new.created_by} assigned task to ${payload.new.mentions} successfully`,
               icon: "/path/to/icon.png", // Optional: Path to a notification icon
             });
           } else if (Notification.permission !== "denied") {
@@ -181,7 +181,7 @@ useEffect(() => {
             Notification.requestPermission().then((permission) => {
               if (permission === "granted") {
                 new Notification("Task created", {
-                  body: "Task created successfully!",
+                  body: `${payload.new.created_by} assigned task to ${payload.new.mentions} successfully`,
                   icon: "/path/to/icon.png", // Optional: Path to a notification icon
                 });
               }

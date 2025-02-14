@@ -690,14 +690,14 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
             if ("Notification" in window) {
               if (Notification.permission === "granted") {
                 new Notification("Task created or updated", {
-                  body: "Task created or updated successfully!",
+                  body: `Task created or updated by ${payload.new.created_by} successfully`,
                   icon: "/path/to/icon.png", // Optional: Path to a notification icon
                 });
               } else if (Notification.permission !== "denied") {
                 Notification.requestPermission().then((permission) => {
                   if (permission === "granted") {
                     new Notification("Task created or updated", {
-                      body: "Task created or updated successfully!",
+                      body: `Task created or updated by ${payload.new.created_by} successfully`,
                       icon: "/path/to/icon.png", // Optional: Path to a notification icon
                     });
                   }

@@ -64,6 +64,7 @@ interface SearchBarProps {
   notificationTrigger: any;
   setNotificationTrigger: any;
   newTabTeamTrigger: any;
+  setAllTasks:any
 }
 
 interface Team {
@@ -95,8 +96,10 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   setFilterTeams,
   filterFetchTeams,
   filterFetchTasks,
+  taskStatusFilterValue,
   notificationTrigger,
   setNotificationTrigger,
+  setAllTasks
 }) => {
   const styledInputRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState<string>("");
@@ -1009,12 +1012,16 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                         </div>
                         {loggedUserData?.role === "owner" ? (
                           (searchValue === "" ? allTasks : filteredTasks)
+                          
                             .length > 0 ? (
                             <div className="w-full px-4 pb-4">
                               {(searchValue === ""
                                 ? allTasks
                                 : filteredTasks
-                              ).map(
+                              ).filter((task: any) =>
+                                taskStatusFilterValue === "Completed"
+                                  ? task.task_status === "Completed" // Show tasks with status "Completed" when filter is "Completed"
+                                  : task.task_status !== "Completed" ) .map(
                                 (task: any) =>
                                   task.team_id === team.id && (
                                     <div
@@ -1201,7 +1208,13 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                                     error
                                                   );
                                                 }
+                                                
                                                 setTaskStatus(value);
+                                                // setAllTasks((prevTasks:any) =>
+                                                //   prevTasks.map((t:any) =>
+                                                //     t.id === task.id ? { ...t, task_status: value } : t
+                                                //   )
+                                                // );
                                                 filterFetchTasks();
                                                 setNotificationTrigger(
                                                   !notificationTrigger
@@ -1267,13 +1280,12 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                           ).length > 0 ? (
                           <div className="w-full px-4 pb-4">
                             {filteredTasks
-                              .filter(
-                                (task: any) =>
-                                  task.team_id === team.id &&
-                                  (task?.mentions?.includes(
-                                    `@${loggedUserData?.entity_name}`
-                                  ) ||
-                                    task?.mentions === null)
+                               .filter((task: any) =>
+                                task.team_id === team.id &&
+                                (task?.mentions?.includes(`@${loggedUserData?.entity_name}`) || task?.mentions === null) &&
+                                (taskStatusFilterValue === "Completed"
+                                  ? task.task_status === "Completed"
+                                  : task.task_status !== "Completed")
                               )
                               .map((task: any) => (
                                 <div
@@ -1793,7 +1805,9 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                 {(searchValue === ""
                                   ? allTasks
                                   : filteredTasks
-                                ).map(
+                                ).filter((task :any)=> taskStatusFilterValue === "Completed"?
+                              task.task_status === "Completed": task.task_status !== "Completed"
+                              ).map(
                                   (task: any) =>
                                     task.team_id === team.id && (
                                       <div
@@ -2055,13 +2069,12 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                             ).length > 0 ? (
                             <div className="w-full px-4 pb-4">
                               {(searchValue === "" ? allTasks : filteredTasks)
-                                .filter(
-                                  (task: any) =>
-                                    task.team_id === team.id &&
-                                    (task?.mentions?.includes(
-                                      `@${loggedUserData?.entity_name}`
-                                    ) ||
-                                      task?.mentions === null)
+                                .filter((task: any) =>
+                                  task.team_id === team.id &&
+                                  (task?.mentions?.includes(`@${loggedUserData?.entity_name}`) || task?.mentions === null) &&
+                                  (taskStatusFilterValue === "Completed"
+                                    ? task.task_status === "Completed"
+                                    : task.task_status !== "Completed")
                                 )
                                 .map((task: any) => (
                                   <div

@@ -40,23 +40,30 @@ const OverDue: React.FC<OverDueProps> = ({ taskTrigger }) => {
         .from("tasks")
         .select("*, team_name:teams(team_name)")
         .eq("is_deleted", false);
-
+  
       if (taskError) throw taskError;
-
+  
       const now = Date.now();
-      
+  
+      // Filter tasks for user (tasks they are mentioned in and overdue, excluding completed ones)
       const filteredTasks = taskData
         .map((task: any) => ({ ...task, team_name: task.team_name?.team_name }))
         .filter(
           (task) =>
-            new Date(task.due_date).getTime() < now &&
+            new Date(task.due_date).getTime() < now && // Overdue
+            task.task_status !== "Completed" && // Exclude completed tasks
             task.mentions?.includes(`@${userId?.entity_name}`)
         );
-
+  
+      // Admin tasks - exclude completed tasks and show overdue ones
       const adminOverdue = taskData
         .map((task: any) => ({ ...task, team_name: task.team_name?.team_name }))
-        .filter((task) => new Date(task.due_date).getTime() < now);
-
+        .filter(
+          (task) =>
+            new Date(task.due_date).getTime() < now && // Overdue
+            task.task_status !== "Completed" // Exclude completed tasks
+        );
+  
       setOverdueTasks(filteredTasks);
       setAdminOverdueTasks(adminOverdue);
     } catch (err) {
@@ -65,6 +72,7 @@ const OverDue: React.FC<OverDueProps> = ({ taskTrigger }) => {
       setTaskLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchTaskData();

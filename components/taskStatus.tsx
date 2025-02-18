@@ -35,10 +35,10 @@ export default function TaskStatus() {
       // Count overdue tasks
       const now = new Date().getTime();
       const overdue = data.filter(
-        (task) => new Date(task.due_date).getTime() < now
+        (task) => new Date(task.due_date).getTime() < now && task.task_status !== "Completed"
       ).length;
       const adminOverdue = includesTrueTasks.filter(
-        (task) => new Date(task.due_date).getTime() < now
+        (task) => new Date(task.due_date).getTime() < now && task.task_status !== "Completed"
       ).length;
       setOverdueTasks(overdue);
       setAdminOverdueTasks(adminOverdue);

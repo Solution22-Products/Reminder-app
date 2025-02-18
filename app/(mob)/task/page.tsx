@@ -293,6 +293,96 @@ const Task = () => {
     setSelectedTeam(filteredTeams[0]);
   }, [selectedSpace]);
 
+  // const handleUpdateTask = async (id: number) => {
+  //   console.log("Inside update function");
+
+  //   try {
+  //     // Fetch the task data
+  //     const { data: taskData, error: taskError } = await supabase
+  //       .from("tasks")
+  //       .select("*")
+  //       .eq("id", id)
+  //       .eq("is_deleted", false)
+  //       .single(); // Fetch only one record
+
+  //     if (taskError || !taskData) {
+  //       console.error("Failed to fetch task details or task not found");
+  //       return;
+  //     }
+
+  //     const updatedFields: Partial<typeof taskData> = {
+  //       due_date: date ? formatDate(date as Date) : taskData.due_date,
+  //       task_status: taskStatus || taskData.task_status,
+  //       undo_delete: false,
+  //     };
+
+  //     if (editTaskInputValue) {
+  //       let mentions: any[] = [];
+
+  //       // Extract @mentions
+  //       const mentionPattern = /@\w+(?:_\w+)*\b/g;
+  //       const extractedMentions =
+  //         editTaskInputValue.match(mentionPattern) || [];
+  //       mentions.push(...extractedMentions);
+
+  //       // Extract mentions from brackets
+  //       const bracketPattern = /\[\s*([^\]]+)\s*\]\(\s*([^)]+)\s*\)/g;
+  //       let match;
+  //       while ((match = bracketPattern.exec(editTaskInputValue)) !== null) {
+  //         mentions.push(`@${match[1]}`);
+  //       }
+
+  //       // Remove duplicate mentions
+  //       mentions = mentions.filter(
+  //         (mention, index) => mentions.indexOf(mention) === index
+  //       );
+
+  //       const plainText = editTaskInputValue
+  //         .replace(mentionPattern, "") // Remove @mentions
+  //         .replace(bracketPattern, "") // Remove bracket mentions
+  //         .replace(/@/g, "") // Remove stray '@'
+  //         .trim();
+
+  //       updatedFields.task_content = plainText;
+  //       updatedFields.mentions = mentions;
+  //     } else {
+  //       updatedFields.task_content = taskData.task_content;
+  //       updatedFields.mentions = taskData.mentions;
+  //     }
+
+  //     // Update the task
+  //     const { error } = await supabase
+  //       .from("tasks")
+  //       .update(updatedFields)
+  //       .eq("id", id);
+  //     if (error) throw new Error("Failed to update the task");
+
+  //     // Update local state efficiently
+  //     setUserTasks((prevTasks) =>
+  //       prevTasks.map((task) =>
+  //         task.id === id ? { ...task, ...updatedFields } : task
+  //       )
+  //     );
+
+  //     // Reset UI state
+  //     setOpenTaskId(null);
+  //     setDate(undefined);
+
+  //     toast({
+  //       title: "Success",
+  //       description: "Task updated successfully.",
+  //       variant: "default",
+  //       duration: 3000,
+  //     });
+  //   } catch (err: any) {
+  //     console.error("Update Error:", err);
+  //     toast({
+  //       title: "Error",
+  //       description: err.message || "Something went wrong. Please try again.",
+  //       duration: 3000,
+  //     });
+  //   }
+  // };
   const handleUpdateTask = async (id: number) => {
     console.log("Inside update function");
 
@@ -350,19 +440,26 @@ const Task = () => {
         updatedFields.mentions = taskData.mentions;
       }
 
-      // Update the task
+      // Update the task in the database
       const { error } = await supabase
         .from("tasks")
         .update(updatedFields)
         .eq("id", id);
       if (error) throw new Error("Failed to update the task");
 
-      // Update local state efficiently
-      setUserTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === id ? { ...task, ...updatedFields } : task
-        )
-      );
+      // If the task status is "Completed", remove it from local state
+      if (updatedFields.task_status === "Completed") {
+        setUserTasks((prevTasks) =>
+          prevTasks.filter((task) => task.id !== id)
+        );
+      } else {
+        // Otherwise, just update the task in the list without removing it
+        setUserTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === id ? { ...task, ...updatedFields } : task
+          )
+        );
+      }
 
       // Reset UI state
       setOpenTaskId(null);
@@ -383,6 +480,7 @@ const Task = () => {
       });
     }
   };
+
 
   // Filter tasks based on selectedTaskStatus
   const filteredTasks = userTasks.filter((task) =>
@@ -486,40 +584,39 @@ const Task = () => {
         .from("tasks")
         .select("*")
         .eq("id", id)
-        .eq("is_deleted", false);
-
+        .eq("is_deleted", false)
+        .single();
+  
       if (taskError) throw new Error("Failed to fetch task details");
-
-      if (!taskData || taskData.length === 0) {
+  
+      if (!taskData) {
         console.error("Task not found");
         return;
       }
-
-      const currentTask = taskData[0];
-
+  
       // Prepare updated fields
-      const updatedFields: { task_status?: string } = {};
-
-      updatedFields.task_status = "Completed";
-
+      const updatedFields = { task_status: "Completed" };
+  
       // Update the task
       const { error } = await supabase
         .from("tasks")
         .update(updatedFields)
         .eq("id", id);
-
+  
       if (error) throw new Error("Failed to update the task");
-
-      // Refresh task data and reset state
-
+  
+      // Update tasks locally to remove the completed task
+      setUserTasks((prevTasks) =>
+        prevTasks.filter((task) => task.id !== id)
+      );
+  
+      // Reset UI state without refreshing the entire data
       setOpenTaskId(null);
-      setDate(undefined);
-      setTaskStatus("");
-      fetchData();
-
+      setSwipedTasks((prev) => ({ ...prev, [id]: false }));
+  
       toast({
         title: "Task Updated",
-        description: "The task has been updated successfully.",
+        description: "The task has been completed successfully.",
         duration: 3000,
       });
     } catch (err: any) {
@@ -530,24 +627,80 @@ const Task = () => {
         duration: 3000,
       });
     }
-    setSwipedTasks((prev) => ({ ...prev, [id]: false })); // Close swipe
   };
-
+  
   // Function to move date backward
+  // useEffect(() => {
+  //   if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
+
+  //   setTaskLoading(true);
+  //   const selectedDate = format(filterDate, "yyyy-MM-dd");
+  //   let filteredTasks = [];
+
+  //   if (userId?.role === "owner") {
+  //     filteredTasks = allTasks.filter(
+  //       (task) =>
+  //         task.team_id === selectedTeam.id &&
+  //         format(new Date(task.time), "yyyy-MM-dd") === selectedDate
+  //     );
+  //   } else {
+  //     filteredTasks = allTasks.filter(
+  //       (task) =>
+  //         task.team_id === selectedTeam.id &&
+  //         format(new Date(task.time), "yyyy-MM-dd") === selectedDate &&
+  //         task.mentions?.some(
+  //           (mention: any) =>
+  //             mention === "@everyone" || mention === `@${userId?.entity_name}`
+  //         )
+  //     );
+  //   }
+
+  //   setUserTasks(filteredTasks);
+  //   setTaskLoading(false);
+  // }, [filterDate, hasUserSelectedDate]); // Only fetch tasks on date change
+
+  // // Fetch tasks immediately when team changes
+  // useEffect(() => {
+  //   if (!selectedTeam) return;
+
+  //   setTaskLoading(true);
+  //   let filteredTasks = [];
+
+  //   if (userId?.role === "owner") {
+  //     filteredTasks = allTasks.filter(
+  //       (task) => task.team_id === selectedTeam.id
+  //     );
+  //   } else {
+  //     filteredTasks = allTasks.filter(
+  //       (task) =>
+  //         task.team_id === selectedTeam.id &&
+  //         task.mentions?.some(
+  //           (mention: any) =>
+  //             mention === "@everyone" || mention === `@${userId?.entity_name}`
+  //         )
+  //     );
+  //   }
+
+  //   setUserTasks(filteredTasks);
+  //   setTaskLoading(false);
+  // }, [selectedTeam]); // Fetch only on team change
   useEffect(() => {
     if (!selectedTeam || !hasUserSelectedDate || !filterDate) return;
-
+  
     setTaskLoading(true);
     const selectedDate = format(filterDate, "yyyy-MM-dd");
     let filteredTasks = [];
-
+  
     if (userId?.role === "owner") {
+      // Filter for owner, excluding completed tasks unless explicitly selected
       filteredTasks = allTasks.filter(
         (task) =>
           task.team_id === selectedTeam.id &&
-          format(new Date(task.time), "yyyy-MM-dd") === selectedDate
+          format(new Date(task.time), "yyyy-MM-dd") === selectedDate &&
+          (selectedTaskStatus === "Completed" || task.task_status !== "Completed") // Exclude completed tasks unless filter is "Completed"
       );
     } else {
+      // Filter for users with @mentions, excluding completed tasks unless explicitly selected
       filteredTasks = allTasks.filter(
         (task) =>
           task.team_id === selectedTeam.id &&
@@ -555,24 +708,27 @@ const Task = () => {
           task.mentions?.some(
             (mention: any) =>
               mention === "@everyone" || mention === `@${userId?.entity_name}`
-          )
+          ) &&
+          (selectedTaskStatus === "Completed" || task.task_status !== "Completed") // Exclude completed tasks unless filter is "Completed"
       );
     }
-
+  
     setUserTasks(filteredTasks);
     setTaskLoading(false);
-  }, [filterDate, hasUserSelectedDate]); // Only fetch tasks on date change
-
-  // Fetch tasks immediately when team changes
+  }, [filterDate, hasUserSelectedDate, selectedTaskStatus, selectedTeam]);
+  
+  
   useEffect(() => {
     if (!selectedTeam) return;
-
+  
     setTaskLoading(true);
     let filteredTasks = [];
-
+  
     if (userId?.role === "owner") {
       filteredTasks = allTasks.filter(
-        (task) => task.team_id === selectedTeam.id
+        (task) =>
+          task.team_id === selectedTeam.id &&
+          (selectedTaskStatus === "Completed" || task.task_status !== "Completed") // Exclude Completed tasks unless status is "Completed"
       );
     } else {
       filteredTasks = allTasks.filter(
@@ -581,13 +737,14 @@ const Task = () => {
           task.mentions?.some(
             (mention: any) =>
               mention === "@everyone" || mention === `@${userId?.entity_name}`
-          )
+          ) &&
+          (selectedTaskStatus === "Completed" || task.task_status !== "Completed") // Exclude Completed tasks unless status is "Completed"
       );
     }
-
+  
     setUserTasks(filteredTasks);
     setTaskLoading(false);
-  }, [selectedTeam]); // Fetch only on team change
+  }, [selectedTeam, selectedTaskStatus]);
 
   // Reset date to today but do not fetch tasks when space/team changes
   useEffect(() => {
@@ -745,6 +902,7 @@ const Task = () => {
                         }`}
                         onClick={() => {
                           setSelectedSpace(space);
+                          setSelectedTaskStatus("")
                           setIsSpaceDrawerOpen(false);
                           setInputValue("");
                         }}
@@ -894,6 +1052,7 @@ const Task = () => {
                             onClick={() => {
                               setSelectedTeam(team);
                               setIsTeamDrawerOpen(false);
+                              setSelectedTaskStatus("");
                               setInputValue("");
                             }}
                           >
@@ -942,7 +1101,10 @@ const Task = () => {
                           role="button"
                           onClick={() => {
                             setSelectedTaskStatus(status.value);
-                            setIsFilterDrawerOpen(false); // Close drawer on selection
+                            setIsFilterDrawerOpen(false);
+                             // Close drawer on selection
+                             
+                             
                           }}
                           className={`flex items-center justify-between border-b border-zinc-300 pb-2 cursor-pointer ${
                             selectedTaskStatus === status.value

@@ -1718,7 +1718,7 @@ const fetchTeamsForTab = async (tabId : number) => {
           allTasks={allTasks as any}
           filterTeams = {FilterTeams as any}
           setFilterTeams = {setFilterTeams as any}
-          // setAllTasks={setAllTasks as any}
+          setAllTasks={setAllTasks as any}
           filterFetchTeams={filterFetchTeams as any}
           filterFetchTasks={fetchTasks as any}
           notificationTrigger={notificationTrigger}

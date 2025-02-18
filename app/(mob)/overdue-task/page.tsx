@@ -68,25 +68,27 @@ const OverdueTaskPage = () => {
         .from("tasks")
         .select("*, team_name:teams(team_name), space_name:spaces(space_name)")
         .eq("is_deleted", false);
-
+  
       if (taskError) throw taskError;
-
+  
       const now = Date.now();
-
+  
       if (userId?.role === "owner") {
-        // Owner sees all overdue tasks
+        // Owner sees all overdue tasks except those marked as "Completed"
         const ownerOverdueTasks = taskData
           .map((task: any) => ({
             ...task,
             team_name: task.team_name?.team_name,
             space_name: task.space_name?.space_name,
           }))
-          .filter((task) => new Date(task.due_date).getTime() < now);
-
+          .filter(
+            (task) =>
+              new Date(task.due_date).getTime() < now && task.task_status !== "Completed"
+          );
+  
         setAdminOverdueTasks(ownerOverdueTasks);
-        console.log("ownerOverdueTasks ", ownerOverdueTasks);
       } else {
-        // User sees only their assigned overdue tasks
+        // User sees only their assigned overdue tasks, excluding "Completed" tasks
         const userOverdueTasks = taskData
           .map((task: any) => ({
             ...task,
@@ -96,9 +98,10 @@ const OverdueTaskPage = () => {
           .filter(
             (task) =>
               new Date(task.due_date).getTime() < now &&
-              task.mentions?.includes(`@${userId?.entity_name}`)
+              task.mentions?.includes(`@${userId?.entity_name}`) &&
+              task.task_status !== "Completed"
           );
-
+  
         setAdminOverdueTasks(userOverdueTasks);
       }
     } catch (err) {
@@ -107,7 +110,7 @@ const OverdueTaskPage = () => {
       setTaskLoading(false);
     }
   };
-
+  
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
@@ -126,44 +129,53 @@ const OverdueTaskPage = () => {
         .select("*")
         .eq("id", id)
         .eq("is_deleted", false);
-
+  
       if (taskError) throw new Error("Failed to fetch task details");
-
+  
       if (!taskData || taskData.length === 0) {
         console.error("Task not found");
         return;
       }
-
+  
       const currentTask = taskData[0];
-
+  
       // Prepare updated fields
       const updatedFields: { due_date?: string; task_status?: string } = {};
-
+  
       if (date) {
         updatedFields.due_date = formatDate(date as Date);
       } else {
         updatedFields.due_date = currentTask.due_date; // Keep the old value if no new date is provided
       }
-
+  
       if (taskStatus) {
         updatedFields.task_status = taskStatus;
       } else {
         updatedFields.task_status = currentTask.task_status; // Keep the old value if no new status is provided
       }
-
+  
       // Update the task
       const { error } = await supabase
         .from("tasks")
         .update(updatedFields)
         .eq("id", id);
-
+  
       if (error) throw new Error("Failed to update the task");
-
-      // Refresh task data and reset state
-      fetchTaskData();
+  
+      // If the task is marked as "Completed", filter it out from the view
+      if (updatedFields.task_status === "Completed") {
+        setAdminOverdueTasks((prevTasks: any) =>
+          prevTasks.filter((task: any) => task.id !== id)
+        );
+      } else {
+        // Refresh task data
+        fetchTaskData();
+      }
+  
+      // Reset state
       setOpenTaskId(null);
       setDate(undefined);
-
+  
       toast({
         title: "Success",
         description: "Task updated successfully.",
@@ -179,7 +191,7 @@ const OverdueTaskPage = () => {
       });
     }
   };
-
+  
   useEffect(() => {
     fetchTaskData();
 

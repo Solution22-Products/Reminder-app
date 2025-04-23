@@ -44,7 +44,6 @@ const AddTeam: React.FC<SearchBarProps> = ({ spaceId, sendDataToParent }) => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [addedMembers, setAddedMembers] = useState<any[]>([]);
   const [teamMemberError, setTeamMemberError] = useState(false);
-  
 
   const fetchTeams = async () => {
     const { data, error } = await supabase
@@ -107,7 +106,9 @@ const AddTeam: React.FC<SearchBarProps> = ({ spaceId, sendDataToParent }) => {
     setAddedMembers(updatedMembers);
   };
   const handleSaveMembers = async () => {
-    if (teamName === "") {
+    const trimmedTeamName = teamName.trim().toLowerCase();
+
+    if (trimmedTeamName === "") {
       setTeamNameError(true);
       return;
     } else if (addedMembers.length === 0) {
@@ -132,27 +133,29 @@ const AddTeam: React.FC<SearchBarProps> = ({ spaceId, sendDataToParent }) => {
       const { data: existingTeam, error: checkError } = await supabase
         .from("teams")
         .select("*")
-        .eq("team_name", teamName)
-        .eq("space_id", spaceId);
+        .eq("space_id", spaceId)
+        .eq("is_deleted", false);
 
       if (checkError) {
         console.error("Error checking existing team:", checkError);
         return;
       }
 
-      if (existingTeam && existingTeam.length > 0) {
-        console.log("Team already exists in this space:", existingTeam);
+      const isDuplicate = existingTeam?.some(
+        (team) => team.team_name.trim().toLowerCase() === trimmedTeamName
+      );
+
+      if (isDuplicate) {
         toast({
-          title: "Team already exists with these members",
-          description: "Please choose a different team name.",
+          title: "Team already exists",
+          description: `A team named "${teamName}" already exists in this space. Please choose a different name.`,
         });
         return;
       }
+
       try {
         // Insert selected user details as array of objects into the `teams` table
-        const { error: insertError } = await supabase
-        .from("teams")
-        .insert({
+        const { error: insertError } = await supabase.from("teams").insert({
           team_name: teamName,
           members: fetchedMembers.map((member) => ({
             id: member.id,
@@ -218,7 +221,6 @@ const AddTeam: React.FC<SearchBarProps> = ({ spaceId, sendDataToParent }) => {
   };
   useEffect(() => {
     fetchTeams();
-    
   }, [spaceId]);
 
   return (
@@ -229,18 +231,17 @@ const AddTeam: React.FC<SearchBarProps> = ({ spaceId, sendDataToParent }) => {
       <Sheet open={memberAddDialogOpen} onOpenChange={setMemberAddDialogOpen}>
         <SheetTrigger asChild>
           <div className="border   flex flex-col justify-between items-center pt-2 pb-2 border-dashed rounded-[12px] w-[170px] h-[450px] max-w-[200px]">
-          <button
-            className=" px-3 bg-white w-[130px] h-[41px] rounded-[8px] border border-gray-300 border-dashed items-center flex justify-center cursor-pointer hover:bg-slate-50"
-            // onClick={toggleDrawer}
-          >
-            
-            <span className="text-gray-600 px-[5px]">
-              <CirclePlus size={16} />
-            </span>
-            <p className="text-gray-500 font-medium text-sm font-inter">
-              Add Team
-            </p>
-          </button>
+            <button
+              className=" px-3 bg-white w-[130px] h-[41px] rounded-[8px] border border-gray-300 border-dashed items-center flex justify-center cursor-pointer hover:bg-slate-50"
+              // onClick={toggleDrawer}
+            >
+              <span className="text-gray-600 px-[5px]">
+                <CirclePlus size={16} />
+              </span>
+              <p className="text-gray-500 font-medium text-sm font-inter">
+                Add Team
+              </p>
+            </button>
           </div>
         </SheetTrigger>
         <SheetContent

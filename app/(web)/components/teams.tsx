@@ -406,44 +406,81 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
     spaceId: number,
     defaultTeamName: string
   ) => {
-    console.log(teamId, spaceId);
-    if (addedMembers.length === 0) {
+    const trimmedTeamName = teamName.trim().toLowerCase();
+  
+    if (trimmedTeamName === "") {
       setTeamNameError(true);
       return;
-    } else if (addedMembers.length > 0) {
-      try {
-        const { data, error } = await supabase
-          .from("teams")
-          .update({
-            team_name: teamName || defaultTeamName,
-            members: addedMembers,
-          })
-          .eq("id", teamId)
-          .eq("space_id", spaceId)
-          .single();
-
-        if (error) {
-          console.error("Error updating team name:", error);
-          return;
-        }
-
-        // if (data) {
-        console.log("Team name updated successfully:", data);
-        // fetchTeams();
-        filterFetchTeams();
-        setTeamNameSheetOpen(false);
-        setTeamNameError(false);
-        toast({
-          title: "Updated Successfully!",
-          description: "Changes updated successfully!",
-          duration: 5000,
-        });
-        // }
-      } catch (error) {
-        console.error("Error updating team name:", error);
-      }
     }
-  };
+  
+    // If no change in team name and no members added, just return
+    if (
+      trimmedTeamName === defaultTeamName.trim().toLowerCase() &&
+      addedMembers.length === 0
+    ) {
+      toast({
+        title: "No Changes Detected",
+        description: "The team name and members are already up to date.",
+      });
+      return;
+    }
+  
+    // Check for duplicate team name in same space (excluding the current team ID)
+    const { data: existingTeam, error: checkError } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("space_id", spaceId)
+      .eq("is_deleted", false)
+      .neq("id", teamId); // Exclude current team from duplicate check
+  
+    if (checkError) {
+      console.error("Error checking existing team:", checkError);
+      return;
+    }
+  
+    const isDuplicate = existingTeam?.some(
+      (team) =>
+        team.team_name.trim().toLowerCase() === trimmedTeamName
+    );
+  
+    if (isDuplicate) {
+      toast({
+        title: "Team already exists",
+        description: `A team named "${teamName}" already exists in this space. Please choose a different name.`,
+      });
+      return;
+    }
+  
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .update({
+          team_name: teamName || defaultTeamName,
+          members: addedMembers,
+        })
+        .eq("id", teamId)
+        .eq("space_id", spaceId)
+        .single();
+  
+      if (error) {
+        console.error("Error updating team name:", error);
+        return;
+      }
+  
+      console.log("Team name updated successfully:", data);
+      filterFetchTeams();
+      setTeamNameSheetOpen(false);
+      setTeamNameError(false);
+      toggleSheet(teamId as any, false);
+      toast({
+        title: "Updated Successfully!",
+        description: "Changes updated successfully!",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error("Error updating team name:", error);
+    }
+  };  
 
   const getTeamData = async (teamId: number) => {
     try {
@@ -717,7 +754,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   // useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
 
   return (
-    <div className="w-full h-[calc(100vh-142px)]">
+    <div className="w-full h-[calc(100vh-150px)]">
       {filterTeams.length > 0 ? (
         <div className="w-full h-full pb-4 px-0">
           <Carousel1 opts={{ align: "start" }} className="w-full max-w-full">
@@ -726,7 +763,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                 {filterTeams.map((team: any, index: number) => (
                   <CarouselItem1
                     key={team.id}
-                    className="max-w-[370px] h-[calc(100vh-142px)] basis-[32%] overflow-y-auto relative playlist-scroll"
+                    className="max-w-[370px] h-[calc(100vh-150px)] basis-[32%] overflow-y-auto relative playlist-scroll"
                   >
                     <Card key={index}>
                       <CardContent key={index} className="w-full h-full p-0">
@@ -1489,7 +1526,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                   .map((team: any, index: any) => (
                     <CarouselItem1
                       key={team.id}
-                      className="max-w-[370px] basis-[32%] h-[calc(100vh-142px)] overflow-y-auto relative playlist-scroll"
+                      className="max-w-[370px] basis-[32%] h-[calc(100vh-150px)] overflow-y-auto relative playlist-scroll"
                     >
                       <Card key={index}>
                         <CardContent key={index} className="w-full h-full p-0">

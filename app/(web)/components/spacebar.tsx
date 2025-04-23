@@ -671,85 +671,98 @@ const fetchTeamsForTab = async (tabId : number) => {
   };
 
   const handleSaveMembers = async () => {
-    if (teamName === "") {
+    const trimmedTeamName = teamName.trim().toLowerCase();
+  
+    if (trimmedTeamName === "") {
       setTeamNameError(true);
       return;
-    } else if (addedMembers.length === 0) {
+    }
+  
+    if (addedMembers.length === 0) {
       setTeamMemberError(true);
       return;
-    } else {
-      // Fetch selected user details based on `id`
-      const { data: fetchedMembers, error: fetchError } = await supabase
-        .from("users")
-        .select("*")
-        .in(
-          "id",
-          addedMembers.map((member) => member.id)
-        );
-
-      if (fetchError) {
-        console.error("Error fetching members:", fetchError);
-        return;
-      }
-
-      // Check if there are any members already in the team
-      const { data: existingTeam, error: checkError } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("team_name", teamName);
-
-      if (checkError) {
-        console.error("Error checking existing team:", checkError);
-        return;
-      }
-
-      if (existingTeam && existingTeam.length > 0) {
-        console.log("Team already exists with these members:", existingTeam);
-        toast({
-          title: "Team already exists with these members",
-          description: "Please choose a different team name.",
-        });
-        return;
-      }
-
-      try {
-        // Insert selected user details as array of objects into the `teams` table
-        const { error: insertError } = await supabase
-          .from("teams")
-          .insert({
-            team_name: teamName,
-            members: fetchedMembers.map((member) => ({
-              id: member.id,
-              name: member.username, // Assuming `name` is a field in your `users` table
-              role: member.role,
-              department: member.department,
-              designation: member.designation,
-              email: member.email, // Assuming `email` is a field in your `users` table
-              entity_name: member.entity_name,
-              profile_image: member.profile_image,
-            })),
-            space_id: activeTab,
-            is_deleted: false,
-          });
-
-        if (insertError) {
-          console.error("Error saving members:", insertError);
-          return;
-        }
-
-        setTeamName("");
-        setAddedMembers([]);
-        setTeamNameError(false);
-        setTeamMemberError(false);
-        setMemberAddDialogOpen(false);
-        fetchTeamData();
-        filterFetchTeams();
-        // notify("Members saved successfully", true);
-      } catch (err) {
-        console.error("Unexpected error:", err);
-      }
     }
-  };
+  
+    // Fetch selected user details
+    const { data: fetchedMembers, error: fetchError } = await supabase
+      .from("users")
+      .select("*")
+      .in(
+        "id",
+        addedMembers.map((member) => member.id)
+      );
+  
+    if (fetchError) {
+      console.error("Error fetching members:", fetchError);
+      return;
+    }
+  
+    // Check if a team with the same normalized name exists in the same space
+    const { data: existingTeams, error: checkError } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("space_id", spaceId)
+      .eq("is_deleted", false);
+  
+    if (checkError) {
+      console.error("Error checking existing teams:", checkError);
+      return;
+    }
+  
+    const isDuplicate = existingTeams?.some(
+      (team) => team.team_name.trim().toLowerCase() === trimmedTeamName
+    );
+  
+    if (isDuplicate) {
+      toast({
+        title: "Team already exists",
+        description: `A team named "${teamName}" already exists in this space. Please choose a different name.`,
+      });
+      return;
+    }
+  
+    try {
+      const { error: insertError } = await supabase
+        .from("teams")
+        .insert({
+          team_name: teamName,
+          members: fetchedMembers.map((member) => ({
+            id: member.id,
+            name: member.username,
+            role: member.role,
+            department: member.department,
+            designation: member.designation,
+            email: member.email,
+            entity_name: member.entity_name,
+            profile_image: member.profile_image,
+          })),
+          space_id: activeTab,
+          is_deleted: false,
+        });
+  
+      if (insertError) {
+        console.error("Error saving members:", insertError);
+        return;
+      }
+  
+      setTeamName("");
+      setAddedMembers([]);
+      setTeamNameError(false);
+      setTeamMemberError(false);
+      setMemberAddDialogOpen(false);
+      fetchTeamData();
+      filterFetchTeams();
+  
+      toast({
+        title: "Team Created Successfully!",
+        description: "Team and members saved successfully.",
+        duration: 5000,
+      });
+  
+    } catch (err) {
+      console.error("Unexpected error:", err);
+    }
+  };  
 
   const handleClose = () => {
     setMemberAddDialogOpen(false);
@@ -1126,7 +1139,7 @@ const fetchTeamsForTab = async (tabId : number) => {
         <span>{loading}</span>
         <span>{loading}</span>
       </div>
-      <div className="px-3 flex justify-start items-center gap-3 h-[calc(100vh-70px)]">
+      <div className="px-3 flex justify-start items-center gap-3 h-[calc(100vh-85px)]">
         <div className="flex flex-col justify-between items-center text-center bg-white px-3 border-none rounded-[12px] overflow-x-auto w-[190px] max-w-[200px] h-full pt-3 pb-3 playlist-scroll">
               <div className="text-sm text-gray-400 flex flex-col gap-2.5 w-full">
           {(loggedUserData?.role === "owner" ||

@@ -6,12 +6,12 @@ export const metadata: Metadata = {
   description: "Reminder App",
   manifest: "/manifest.json",
   icons: {
-    apple: "./favicon.ico",
-    icon: "./favicon.ico", // Favicon added
-    shortcut: "./favicon.ico",
+    apple: "/favicon.ico",
+    icon: "/favicon.ico", // Favicon added
+    shortcut: "/favicon.ico",
     other : {
       rel: "apple-touch-icon-precomposed",
-      url: "./favicon.ico",
+      url: "/favicon.ico",
     }
   },
   // themeColor: "#ffffff",

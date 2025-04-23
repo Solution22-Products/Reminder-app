@@ -368,7 +368,7 @@ const AccessPage = () => {
           </div>
         </div>
 
-        <Table className="block w-[97vw] h-[calc(100vh-228px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] my-5 font-inter">
+        <Table className="block w-full h-[calc(100vh-228px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] my-5 font-inter">
           <TableHeader className="sticky top-0 bg-white">
             <TableRow>
               <TableHead className="text-left w-[18%] pl-4 text-sm font-inter font-semibold text-gray-500 py-5">

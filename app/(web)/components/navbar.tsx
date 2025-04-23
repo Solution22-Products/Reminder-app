@@ -112,11 +112,11 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
     <>
       <div className="flex items-center justify-between w-full py-2 px-3">
         <Image
-          src="/images/menu-top_bar.png"
+          src="/images/s22_remain.png"
           alt="Logo"
           width={84}
           height={44}
-          className="w-[84px] h-[44px] cursor-pointer"
+          className="cursor-pointer bg-white rounded-lg p-[3px]"
           onClick={() => route.push("/dashboard")}
         />
 

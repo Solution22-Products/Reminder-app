@@ -443,7 +443,7 @@ const Members = () => {
           </div>
         </div>
         <div className="pt-[18px] pb-[18px]">
-          <Table className=" block w-[97vw] h-[calc(100vh-226px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] font-inter">
+          <Table className=" block w-full h-[calc(100vh-226px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] font-inter">
             <TableHeader className="sticky top-0 bg-white z-0 ">
               <TableRow>
                 <TableHead className="w-[28%] px-4 py-4 text-sm font-inter font-semibold text-gray-500">

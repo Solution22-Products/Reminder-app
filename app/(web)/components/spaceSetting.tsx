@@ -532,7 +532,7 @@ export default function SpaceSetting({}) {
 
         {/* Table displaying spaces */}
         <div className="pt-[18px] pb-[18px]">
-          <Table className="block w-[97vw] h-fit max-h-[calc(100vh-164px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] font-inter ">
+          <Table className="block w-full h-fit max-h-[calc(100vh-164px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] font-inter ">
             <TableHeader className="sticky top-0 bg-white ">
               <TableRow>
                 <TableHead className="px-4 py-4 w-[28%] text-left text-sm font-inter font-semibold text-gray-500">

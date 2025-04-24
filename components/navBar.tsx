@@ -1,6 +1,5 @@
 import Image from "next/image";
-import logo from "@/public/images/Rectangle 14.png";
-import activelogo from "@/public/images/Ellipse 6.png";
+import logo from "@/public/images/s22_remain.png";
 import { useGlobalContext } from "@/context/store";
 import profile from "@/public/images/img-placeholder.svg";
 import { useRouter } from "next/navigation";
@@ -152,7 +151,9 @@ export default function NavBar() {
           onClick={() => {
             route.push("/home");
           }}
-          className="w-[89.872px] h-11"
+          width="110"
+          height="110"
+          // className="w-[89.872px] h-11"
           alt="Company Logo"
         />
       </header>

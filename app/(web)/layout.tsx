@@ -5,11 +5,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { getLoggedInUserData } from "@/app/(signin-setup)/sign-in/action";
 import { GlobalContextProvider } from "@/context/store";
+import { Sidebar } from "lucide-react";
+import WebSidebar from "@/components/sidebar";
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
   // const [loggedUserData, setLoggedUserData] = useState<any>(null);
   // useEffect(() => {
   //   const getUser = async () => {
@@ -38,7 +41,10 @@ export default function DashboardLayout({
       <main className="w-full">
         <Toaster />
         <div className="w-full flex">
-          <div className="w-full">
+          <div className="w-full h-[100dvh] bg-[#e5ecf5] flex">
+            <div className="w-[200px] h-full border-r border-gray-400 bg-white">
+              <WebSidebar />
+            </div>
             <GlobalContextProvider>{children}</GlobalContextProvider>
           </div>
         </div>

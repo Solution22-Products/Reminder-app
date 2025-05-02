@@ -229,7 +229,7 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
                   <SelectValue
                     className=""
                     placeholder={
-                      loggedUserData?.username.length > 14
+                      loggedUserData?.username?.length > 14
                         ? loggedUserData?.username.slice(0, 14) + "..."
                         : loggedUserData?.username
                     }
@@ -251,12 +251,12 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
                 />
                 <div>
                   <p className="text-sm font-semibold">
-                    {loggedUserData?.username.length > 16
+                    {loggedUserData?.username?.length > 16
                       ? loggedUserData?.username.slice(0, 16) + "..."
                       : loggedUserData?.username}
                   </p>
                   <p className="text-sm font-normal">
-                    {loggedUserData?.email.length > 16
+                    {loggedUserData?.email?.length > 16
                       ? loggedUserData?.email.slice(0, 16) + "..."
                       : loggedUserData?.email}
                   </p>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useGlobalContext } from "@/context/store";
 
-const WebDashboard1 = () => {
+const CanbanDashboard = () => {
   const {userId} = useGlobalContext();
   const route = useRouter();
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ const WebDashboard1 = () => {
       setLoading(false);
       return;
     } else {
-      route.push("/dashboard");
+      route.push("/canban-view");
       setLoading(false);
     }
 
@@ -39,9 +39,11 @@ const WebDashboard1 = () => {
 
   return (
     <>
-      <h1>Dashboard page</h1>
+      <SpaceBar
+       loggedUserData={userId as any}
+        />
     </>
   );
 };
 
-export default WebDashboard1;
+export default CanbanDashboard;

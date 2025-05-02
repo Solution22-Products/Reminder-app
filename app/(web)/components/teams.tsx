@@ -42,6 +42,7 @@ import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { Toaster } from "@/components/ui/toaster";
+import WebNavbar from "./navbar";
 
 interface SearchBarProps {
   spaceId: number;
@@ -754,7 +755,27 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
   // useEffect(() => {}, [mentionTrigger, setMentionTrigger]);
 
   return (
-    <div className="w-full h-[calc(100vh-150px)]">
+    <div className="w-full h-[calc(100dvh-170px)]">
+      <WebNavbar
+              loggedUserData={loggedUserData as any}
+              navbarItems={true}
+              searchValue={searchValue}
+              setSearchValue={''}
+              // teamFilterValue={teamFilterValue as string}
+              setTeamFilterValue={''}
+              // taskStatusFilterValue={taskStatusFilterValue as string}
+              setTaskStatusFilterValue={''}
+              setDateFilterValue={''}
+              filterFn={() => {}}
+              // spaceId={spaceId}
+              // teamData={teamData}
+              filterDialogOpen={''}
+              setFilterDialogOpen={''}
+              teamResetFn = {() => {}}
+              notificationTrigger={notificationTrigger}
+              setNotificationTrigger={setNotificationTrigger}
+              allTasks = {allTasks}
+            />
       {filterTeams.length > 0 ? (
         <div className="w-full h-full pb-4 px-0">
           <Carousel1 opts={{ align: "start" }} className="w-full max-w-full">
@@ -763,7 +784,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                 {filterTeams.map((team: any, index: number) => (
                   <CarouselItem1
                     key={team.id}
-                    className="max-w-[370px] h-[calc(100vh-150px)] basis-[32%] overflow-y-auto relative playlist-scroll"
+                    className="max-w-[370px] h-[calc(100dvh-170px)] basis-[32%] overflow-y-auto relative playlist-scroll"
                   >
                     <Card key={index}>
                       <CardContent key={index} className="w-full h-full p-0">
@@ -1170,7 +1191,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             </DropdownMenu>
                                           )}
                                         </div>
-                                        <WebMentionInput
+                                        {/* <WebMentionInput
                                           text={text}
                                           setText={setText}
                                           taskErrorMessage={taskErrorMessage}
@@ -1183,7 +1204,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                           taskStatus={task.task_created}
                                           mentionTrigger={mentionTrigger}
                                           setMentionTrigger={setMentionTrigger}
-                                        />
+                                        /> */}
                                         <div
                                           className={`flex justify-between items-center`}
                                         >
@@ -1403,7 +1424,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                         </DropdownMenu>
                                       )}
                                     </div>
-                                    <WebMentionInput
+                                    {/* <WebMentionInput
                                       text={text}
                                       setText={setText}
                                       taskErrorMessage={taskErrorMessage}
@@ -1414,7 +1435,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                       taskStatus={task.task_created}
                                       mentionTrigger={mentionTrigger}
                                       setMentionTrigger={setMentionTrigger}
-                                    />
+                                    /> */}
                                     <div className="flex justify-between items-center">
                                       <div className="task.${task.id} === true cursor-not-allowed">
                                         <TaskDateUpdater
@@ -1526,7 +1547,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                   .map((team: any, index: any) => (
                     <CarouselItem1
                       key={team.id}
-                      className="max-w-[370px] basis-[32%] h-[calc(100vh-150px)] overflow-y-auto relative playlist-scroll"
+                      className="max-w-[370px] basis-[32%] h-[calc(100dvh-170px)] overflow-y-auto relative playlist-scroll"
                     >
                       <Card key={index}>
                         <CardContent key={index} className="w-full h-full p-0">
@@ -1951,7 +1972,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                               </DropdownMenu>
                                             )}
                                           </div>
-                                          <WebMentionInput
+                                          {/* <WebMentionInput
                                             text={text}
                                             setText={setText}
                                             taskErrorMessage={taskErrorMessage}
@@ -1966,7 +1987,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                             setMentionTrigger={
                                               setMentionTrigger
                                             }
-                                          />
+                                          /> */}
                                           <div
                                             className={`flex justify-between items-center`}
                                           >
@@ -2198,7 +2219,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                           </DropdownMenu>
                                         )}
                                       </div>
-                                      <WebMentionInput
+                                      {/* <WebMentionInput
                                         text={text}
                                         setText={setText}
                                         taskErrorMessage={taskErrorMessage}
@@ -2211,7 +2232,7 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
                                         taskStatus={task.task_created}
                                         mentionTrigger={mentionTrigger}
                                         setMentionTrigger={setMentionTrigger}
-                                      />
+                                      /> */}
                                       <div className="flex justify-between items-center">
                                         <div className="task.${task.id} === true cursor-not-allowed">
                                           <TaskDateUpdater

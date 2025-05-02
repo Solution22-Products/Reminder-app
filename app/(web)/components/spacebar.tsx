@@ -1113,7 +1113,7 @@ const fetchTeamsForTab = async (tabId : number) => {
 
   return (
     <>
-      <WebNavbar
+      {/* <WebNavbar
         loggedUserData={loggedUserData as any}
         navbarItems={true}
         searchValue={searchValue}
@@ -1132,16 +1132,16 @@ const fetchTeamsForTab = async (tabId : number) => {
         notificationTrigger={notificationTrigger}
         setNotificationTrigger={setNotificationTrigger}
         allTasks = {allTasks}
-      />
+      /> */}
       <div className="hidden">
         <span>{spaceEditDialogOpen}</span>
         <span>{allTasks.length}</span>
         <span>{loading}</span>
         <span>{loading}</span>
       </div>
-      <div className="px-3 flex justify-start items-center gap-3 h-[calc(100vh-85px)]">
-        <div className="flex flex-col justify-between items-center text-center bg-white px-3 border-none rounded-[12px] overflow-x-auto w-[190px] max-w-[200px] h-full pt-3 pb-3 playlist-scroll">
-              <div className="text-sm text-gray-400 flex flex-col gap-2.5 w-full">
+      <div className="px-3 pt-3 flex flex-col justify-start items-center gap-3 w-full h-[calc(100dvh-75px)]">
+        <div className="flex flex-col justify-between items-center text-center bg-white px-3 border-none rounded-[12px] w-full pt-3 pb-3 playlist-scroll">
+              <div className="text-sm text-gray-400 flex gap-2.5 w-full">
           {(loggedUserData?.role === "owner" ||
               (loggedUserData?.role === "User" &&
                 ((loggedUserData?.access?.space !== true &&
@@ -1528,7 +1528,7 @@ const fetchTeamsForTab = async (tabId : number) => {
                 }
           </div>
         </div>
-        <div className="w-[calc(100%-190px)] flex flex-col gap-3 h-[calc(100vh-70px)]">
+        <div className="w-full flex flex-col gap-3 h-[calc(100dvh-70px)]">
           <div className="w-full h-[60px] flex justify-between items-center bg-white rounded-[10px] p-4">
             {
               loggedUserData?.role === "owner" ? (

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { SendHorizontal } from "lucide-react";
+import Notification from "@/app/(web)/components/notificationComp";
 
 interface ChatLeftSpaceProps {
   selectedTeamId: string | null;
@@ -56,6 +57,9 @@ const ChatLeftSpace = ({
 
   return (
     <div className="relative h-[100dvh]">
+      <div className="absolute -left-[162px] bottom-[60px]">
+        <Notification notificationTrigger="" />
+      </div>
       <h1 className="text-2xl font-bold mb-6 pl-6 pt-6">Chat Dashboard</h1>
       {/* Scrollable Content */}
       <div className="p-6 pt-0 pb-20 w-full h-[calc(100dvh-180px)] overflow-y-auto">

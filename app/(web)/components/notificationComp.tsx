@@ -149,7 +149,7 @@ const Notification: React.FC<NotificationProps> = ({ notificationTrigger }) => {
           </SheetTitle>
         </SheetHeader>
         <div className="w-full h-full pt-3">
-          <div className="w-full max-h-[88vh] flex flex-col justify-between items-center overflow-y-scroll playlist-scroll">
+          <div className="w-full max-h-[88vh] flex flex-col justify-between items-center overflow-y-auto playlist-scroll">
             {(userId?.role === "owner" ? adminTaskNotify : unNotifiedTask)
               .length > 0 ? (
               (userId?.role === "owner" ? adminTaskNotify : unNotifiedTask).map(

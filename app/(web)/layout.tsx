@@ -42,7 +42,7 @@ export default function DashboardLayout({
         <Toaster />
         <div className="w-full flex">
           <div className="w-full h-[100dvh] bg-[#e5ecf5] flex">
-            <div className="w-[200px] h-full border-r border-gray-400 bg-white">
+            <div className="w-[200px] h-full border-r border-zinc-300 bg-white">
               <WebSidebar />
             </div>
             <GlobalContextProvider>{children}</GlobalContextProvider>

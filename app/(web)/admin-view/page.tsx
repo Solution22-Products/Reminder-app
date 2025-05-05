@@ -21,6 +21,7 @@ const AdminView = () => {
   const [spaces, setSpaces] = useState<any[]>([])
   const [teams, setTeams] = useState<any[]>([])
   const [members, setMembers] = useState<any[]>([])
+  const [userMembers, setUserMembers] = useState<any[]>([])
 
   // Fetch all data at the parent level
   const fetchAllData = async () => {
@@ -50,6 +51,9 @@ const AdminView = () => {
         } else {
           const userSpaces = spacesData.filter((space) => {
             const teamsInSpace = teamsData.filter((team) => team.space_id === space.id)
+            const userMembers = teamsInSpace.map((team) => team.members.map((member: any) => member.username));
+            setUserMembers(userMembers)
+            console.log("teamsInSpace ", userMembers)
             return teamsInSpace.some((team) =>
               team.members?.some((member: any) => member.entity_name === currentUser?.entity_name)
             )
@@ -149,6 +153,7 @@ const AdminView = () => {
           spaces={spaces}
           teams={teams}
           members={members}
+          userMembers={userMembers}
           isLoading={dataLoading}
         />
       </div>

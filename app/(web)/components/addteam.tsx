@@ -159,7 +159,7 @@ const AddTeam: React.FC<SearchBarProps> = ({ spaceId, sendDataToParent }) => {
           team_name: teamName,
           members: fetchedMembers.map((member) => ({
             id: member.id,
-            name: member.username, // Assuming `name` is a field in your `users` table
+            username: member.username, // Assuming `name` is a field in your `users` table
             role: member.role,
             department: member.department,
             designation: member.designation,

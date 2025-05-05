@@ -58,7 +58,7 @@ const ChatLeftSpace = ({
   return (
     <div className="relative h-[100dvh]">
       <div className="absolute -left-[162px] bottom-[60px]">
-        <Notification notificationTrigger="" />
+        {/* <Notification notificationTrigger="" /> */}
       </div>
       <h1 className="text-2xl font-bold mb-6 pl-6 pt-6">Chat Dashboard</h1>
       {/* Scrollable Content */}

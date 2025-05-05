@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { logout } from "@/app/(signin-setup)/logout/action";
+import SidebarNotification from "@/app/(web)/components/sidebarNotify";
 
 interface ProfileData {
   username: string;
@@ -31,6 +32,7 @@ const WebSidebar = () => {
   const [isPending, startTransition] = useTransition();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+  const [sideNotifyTrigger, setSideNotifyTrigger] = useState(false);
 
   const navItems = [
     {
@@ -129,6 +131,7 @@ const WebSidebar = () => {
 
       <div className="w-full">
         {/* <Notification notificationTrigger="" /> */}
+        <SidebarNotification notifyTrigger={sideNotifyTrigger} />
         <div className="flex items-center justify-between gap-2 px-[14px] mt-2 py-4">
           <div className="flex items-center gap-2">
             {profile?.profile_image && (

@@ -756,26 +756,6 @@ const SpaceTeam: React.FC<SearchBarProps> = ({
 
   return (
     <div className="w-full h-[calc(100dvh-170px)]">
-      <WebNavbar
-              loggedUserData={loggedUserData as any}
-              navbarItems={true}
-              searchValue={searchValue}
-              setSearchValue={''}
-              // teamFilterValue={teamFilterValue as string}
-              setTeamFilterValue={''}
-              // taskStatusFilterValue={taskStatusFilterValue as string}
-              setTaskStatusFilterValue={''}
-              setDateFilterValue={''}
-              filterFn={() => {}}
-              // spaceId={spaceId}
-              // teamData={teamData}
-              filterDialogOpen={''}
-              setFilterDialogOpen={''}
-              teamResetFn = {() => {}}
-              notificationTrigger={notificationTrigger}
-              setNotificationTrigger={setNotificationTrigger}
-              allTasks = {allTasks}
-            />
       {filterTeams.length > 0 ? (
         <div className="w-full h-full pb-4 px-0">
           <Carousel1 opts={{ align: "start" }} className="w-full max-w-full">

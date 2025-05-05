@@ -728,7 +728,7 @@ const fetchTeamsForTab = async (tabId : number) => {
           team_name: teamName,
           members: fetchedMembers.map((member) => ({
             id: member.id,
-            name: member.username,
+            username: member.username,
             role: member.role,
             department: member.department,
             designation: member.designation,
@@ -1112,8 +1112,8 @@ const fetchTeamsForTab = async (tabId : number) => {
   }, [filteredTabs, userTabActive]);
 
   return (
-    <>
-      {/* <WebNavbar
+    <div className="flex flex-col w-full">
+      <WebNavbar
         loggedUserData={loggedUserData as any}
         navbarItems={true}
         searchValue={searchValue}
@@ -1132,7 +1132,7 @@ const fetchTeamsForTab = async (tabId : number) => {
         notificationTrigger={notificationTrigger}
         setNotificationTrigger={setNotificationTrigger}
         allTasks = {allTasks}
-      /> */}
+      />
       <div className="hidden">
         <span>{spaceEditDialogOpen}</span>
         <span>{allTasks.length}</span>
@@ -1740,7 +1740,7 @@ const fetchTeamsForTab = async (tabId : number) => {
         />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

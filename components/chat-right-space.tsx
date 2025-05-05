@@ -16,6 +16,7 @@ interface ChatRightSpaceProps {
   spaces: any[]
   teams: any[]
   members: any[]
+  userMembers: any[]
   isLoading: boolean
 }
 
@@ -29,6 +30,7 @@ const ChatRightSpace = ({
   spaces,
   teams,
   members,
+  userMembers,
   isLoading,
 }: ChatRightSpaceProps) => {
   const { userId: currentUser } = useGlobalContext()
@@ -74,7 +76,11 @@ const ChatRightSpace = ({
   };
 
   const filteredMembers = members.filter((member) =>
-    member.username.toLowerCase().includes(searchTerm.toLowerCase())
+    member?.username?.toLowerCase()?.includes(searchTerm.toLowerCase())
+  );
+
+  const filteredUserMembers = userMembers.filter((member) =>
+    member?.username?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -178,12 +184,12 @@ const ChatRightSpace = ({
         </div>
       ))}
     </div>
-  ) : filteredMembers.length === 0 ? (
+  ) : currentUser?.role === "owner" ? filteredMembers : filteredUserMembers.length === 0 ? (
     <p className="text-sm text-gray-500">No members found</p>
   ) : (
     <>
       <ul className="space-y-2">
-        {filteredMembers.slice(0, visibleCount).map((member) => (
+        {currentUser?.role === "owner" ? filteredMembers : filteredUserMembers.slice(0, visibleCount).map((member) => (
           <li
             key={member.id}
             className={`flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-gray-100 cursor-pointer ${
@@ -201,13 +207,34 @@ const ChatRightSpace = ({
         ))}
       </ul>
 
-      {filteredMembers.length > 8 && (
+      {currentUser?.role === "owner" ? filteredMembers : filteredUserMembers.length > 8 && (
         <div className="mt-3 text-center">
           <Button variant="outline" size="sm" onClick={toggleVisible} className="text-sm">
             {isShowingAll ? "Show Less" : "Show More"}
           </Button>
         </div>
       )}
+
+      {filteredUserMembers.length}
+
+      {
+        filteredUserMembers.map((member) => (
+          <li
+            key={member.id}
+            className={`flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-gray-100 cursor-pointer ${
+              selectedUserId === member.id ? "bg-blue-50 ring-1 ring-blue-200" : ""
+            }`}
+            onClick={() => handleUserClick(member.id)}
+          >
+            <img
+              src={member.profile_image || "/placeholder.svg?height=32&width=32&query=user"}
+              alt={member.username}
+              className="w-8 h-8 rounded-full object-cover border"
+            />
+            <span className="text-sm font-medium text-gray-800">{member.username}</span>
+          </li>
+        ))
+      }
     </>
   )}
 </section>

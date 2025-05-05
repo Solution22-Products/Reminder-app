@@ -153,23 +153,18 @@ const AddMember = () => {
         const { error: memberError } = await supabase
           .from("users")
           .insert({
+            id : data.id,
             username: data.name,
             designation: data.Designation,
             role: data.role,
             department: data.department,
             email: data.email,
-            mobile: data.mobile,
+            // mobile: data.mobile,
             profile_image: imageUrl,
-            userId: signUpResponse?.data?.user?.id,
+            // userId: signUpResponse?.data?.user?.id,
             entity_name: entityName,
-            password: data.password,
-            is_deleted: false,
-            access : {
-              "all" : false,
-              "task" : false,
-              "team" : false,
-              "space" : false
-            }
+            // password: data.password,
+            // is_deleted: false,
           });
 
         if (memberError) {

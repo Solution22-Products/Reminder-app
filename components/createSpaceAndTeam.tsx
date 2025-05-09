@@ -16,11 +16,20 @@ import { BadgePlus, CircleX, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
-const CreateSpaceAndTeam = () => {
+interface spaceTrigger {
+  spaceTrigger: boolean;
+  setSpaceTrigger: (value: boolean) => void;
+}
+
+const CreateSpaceAndTeam = ({
+  spaceTrigger,
+  setSpaceTrigger,
+}: spaceTrigger) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [spaceName, setSpaceName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [teamTags, setTeamTags] = useState<string[]>([]);
+  const [saveLoader, setSaveLoader] = useState(false);
 
   const handleKeyDown = (e: any) => {
     if (e.key === "Enter" && teamName.trim()) {
@@ -40,26 +49,7 @@ const CreateSpaceAndTeam = () => {
     setTeamTags(teamTags.filter((_, i) => i !== index));
   };
 
-  const fetchSpaces = async () => {
-    try {
-      const { data, error } = await supabase
-      .from("spaces")
-      .select("*")
-      .order("created_at", { ascending: false });
-      if (error) {
-        console.error("Error fetching spaces:", error);
-        return;
-      }
-      console.log(data, "data");
-    } catch (err) {
-      console.error("Error fetching spaces:", err);
-    }
-  }
-
   const handleCreateSpace = async () => {
-    console.log("Space Name:", spaceName);
-    console.log("Team Name:", teamName);
-    console.log("Team Tags:", teamTags);
     if (!spaceName) {
       toast({
         title: "Error",
@@ -69,10 +59,12 @@ const CreateSpaceAndTeam = () => {
       return;
     }
     try {
-      const { data, error } = await supabase
+      setSaveLoader(true);
+      const { data: spaceData, error } = await supabase
         .from("spaces")
         .insert({ space_name: spaceName, is_deleted: false })
-        .select();
+        .select("id")
+        .single();
 
       // Handle errors from the insertion
       if (error) {
@@ -84,18 +76,50 @@ const CreateSpaceAndTeam = () => {
         });
         return;
       }
-      console.log(data, "data");
-      toast({
-        title: "Success",
-        description: "New space created successfully.",
-      });
-    } catch(err) {
-        console.error("Unexpected error:", err);
+
+      const spaceId = spaceData.id; // ✅ ensure you're using the correct key name
+      console.log("Space created with ID:", spaceId);
+
+      for (const tag of teamTags) {
+        const { error: teamError } = await supabase.from("teams").insert({
+          team_name: tag,
+          space_id: spaceId,
+          is_deleted: false,
+        });
+
+        if (teamError) {
+          console.error(`Error inserting team for tag "${tag}":`, teamError);
+          toast({
+            title: "Error",
+            description: `Failed to create team: ${tag}`,
+            variant: "destructive",
+          });
+          // Optionally continue or break here
+        }
+      }
+
+      setSpaceTrigger(!spaceTrigger);
+      if (teamTags.length === 0) {
+        toast({
+          title: "Success",
+          description: "New space created successfully.",
+        });
+        setSaveLoader(false);
+      } else {
+        toast({
+          title: "Success",
+          description: "New space and team created successfully.",
+        });
+        setSaveLoader(false);
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setSaveLoader(true);
     } finally {
-        setIsDialogOpen(false);
-        setSpaceName("");
-        setTeamTags([]);
-        setTeamName("");
+      setIsDialogOpen(false);
+      setSpaceName("");
+      setTeamTags([]);
+      setTeamName("");
     }
   };
 
@@ -105,26 +129,6 @@ const CreateSpaceAndTeam = () => {
     setTeamTags([]);
     setTeamName("");
   };
-
-  useEffect(() => {
-    fetchSpaces(); // Initial fetch
-
-    const channel = supabase
-      .channel("realtime-spaces")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "spaces" },
-        (payload) => {
-          console.log("Realtime payload:", payload);
-          fetchSpaces(); // Refresh the list on any change
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   return (
     <>
@@ -207,8 +211,32 @@ const CreateSpaceAndTeam = () => {
               className="w-1/2 bg-[#1A56DB] text-sm hover:bg-[#1A56DB]"
               type="button"
               onClick={() => handleCreateSpace()}
+              disabled={saveLoader}
             >
-              Create
+              {saveLoader ? (
+                <svg
+                  className="animate-spin h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="#fff"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="#fff"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : (
+                "Create"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

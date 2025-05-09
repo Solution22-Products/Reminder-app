@@ -151,9 +151,9 @@ const AdminView = () => {
     try {
       const [{ data: spacesData }, { data: teamsData }, { data: membersData }] =
         await Promise.all([
-          supabase.from("spaces").select("*").eq("is_deleted", false),
-          supabase.from("teams").select("*").eq("is_deleted", false),
-          supabase.from("users").select("*").eq("is_deleted", false),
+          supabase.from("spaces").select("*").eq("is_deleted", false).order("space_name", { ascending: false }),
+          supabase.from("teams").select("*").eq("is_deleted", false).order("team_name", { ascending: false }),
+          supabase.from("users").select("*").eq("is_deleted", false).eq("role", "User").order("entity_name", { ascending: false }),
         ]);
   
       if (spacesData) setSpaces(spacesData);
@@ -259,15 +259,17 @@ const AdminView = () => {
   // Handlers for selection
   const handleSelectSpace = (spaceId: string) => {
     setSelectedSpaceId(spaceId)
-
-    // When space changes, update team selection to first team in that space
+  
+    // When space changes, select any random team from that space
     const teamsForSpace = teams.filter((team) => team.space_id === spaceId)
+    
     if (teamsForSpace.length > 0) {
-      setSelectedTeamId(teamsForSpace[0].id)
+      const randomTeam = teamsForSpace[Math.floor(Math.random() * teamsForSpace.length)]
+      setSelectedTeamId(randomTeam.id)
     } else {
       setSelectedTeamId(null)
     }
-  }
+  }  
 
   const handleSelectTeam = (teamId: string) => {
     setSelectedTeamId(teamId)
@@ -294,7 +296,7 @@ const AdminView = () => {
           isLoading={dataLoading}
         />
       </div>
-      <div className="w-[25%] h-[100dvh] overflow-y-auto flex flex-col space-y-5 justify-start border-l border-gray-300">
+      <div className="w-[25%] h-[100dvh] overflow-y-auto bg-white flex flex-col space-y-5 justify-start border-l border-gray-300">
         <ChatRightSpace
           onSelectSpace={handleSelectSpace}
           onSelectTeam={handleSelectTeam}
@@ -307,6 +309,7 @@ const AdminView = () => {
           members={userMembers}
           // userMembers={userMembers}
           isLoading={dataLoading}
+          fetchData={fetchData}
         />
       </div>
     </div>

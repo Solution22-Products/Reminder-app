@@ -16,6 +16,7 @@ import {
 } from "./ui/tooltip";
 import { logout } from "@/app/(signin-setup)/logout/action";
 import SidebarNotification from "@/app/(web)/components/sidebarNotify";
+import { Button } from "./ui/button";
 
 interface ProfileData {
   username: string;
@@ -132,7 +133,7 @@ const WebSidebar = () => {
       <div className="w-full">
         {/* <Notification notificationTrigger="" /> */}
         <SidebarNotification notifyTrigger={sideNotifyTrigger} />
-        <div className="flex items-center justify-between gap-2 px-[14px] mt-2 py-4">
+        <div className="flex items-center justify-between gap-2 px-[12px] mt-2 py-4">
           <div className="flex items-center gap-2">
             {profile?.profile_image && (
               <Image
@@ -144,13 +145,29 @@ const WebSidebar = () => {
               />
             )}
             <div>
-              <p className="text-md font-bold m-0 p-0">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" className="p-0 border-none m-0 text-md font-bold hover:bg-transparent h-fit shadow-none">
+                      {profile?.username
+                        ? profile.username.length > 8
+                          ? profile.username.slice(0, 6) + "..."
+                          : profile.username
+                        : "Guest"}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{profile?.username}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              {/* <p className="text-md font-bold m-0 p-0">
                 {profile?.username
-                  ? profile.username.length > 16
-                    ? profile.username.slice(0, 16) + "..."
+                  ? profile.username.length > 8
+                    ? profile.username.slice(0, 6) + "..."
                     : profile.username
                   : "Guest"}
-              </p>
+              </p> */}
               <p className="text-sm font-medium text-zinc-500 -mt-1 p-0 capitalize">
                 {profile?.role}
               </p>

@@ -1,32 +1,42 @@
-"use client";
+"use client"
 
-import type React from "react";
-
-import { ListFilter, Search } from "lucide-react";
-import { useGlobalContext } from "@/context/store";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Button } from "./ui/button";
+import type React from "react"
+import { Check, ListFilter, Search, Filter, X } from "lucide-react"
+import { useGlobalContext } from "@/context/store"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { Button } from "./ui/button"
+import TaskFilter from "./task-filter"
+import { useState } from "react"
 
 interface NavbarProps {
-  selectedTeamId: string | null;
-  selectedSpaceId: string | null;
-  selectedUserId: string | null;
-  selectedTeam: any;
-  selectedMember: any;
+  selectedTeamId: string | null
+  selectedSpaceId: string | null
+  selectedUserId: string | null
+  selectedTeam: any
+  selectedMember: any
 }
 
-const NewNavbar = ({
-  selectedTeamId,
-  selectedSpaceId,
-  selectedUserId,
-  selectedTeam,
-  selectedMember,
-}: NavbarProps) => {
-  const { searchTerm, searchTasks } = useGlobalContext();
+const NewNavbar = ({ selectedTeamId, selectedSpaceId, selectedUserId, selectedTeam, selectedMember }: NavbarProps) => {
+  const { searchTerm, searchTasks, sortOption, setSortOption } = useGlobalContext()
+
+  const [sortOpen, setSortOpen] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    searchTasks(e.target.value);
-  };
+    searchTasks(e.target.value)
+  }
+
+  const handleSortChange = (value: string) => {
+    const [field, direction] = value.split(":")
+    setSortOption({ field, direction: direction as "asc" | "desc" })
+    setSortOpen(false)
+  }
+
+  // Sort options with descriptions
+  const sortOptions = [
+    { label: "Created date: Ascending", value: "time:asc", description: "Oldest first" },
+    { label: "Created date: Descending", value: "time:desc", description: "Newest first" },
+  ]
 
   return (
     <div className="w-full flex justify-between items-center p-3 bg-white border-b border-zinc-300 h-[69px]">
@@ -34,36 +44,68 @@ const NewNavbar = ({
         {(selectedSpaceId || selectedTeamId) && (
           <>
             <h3 className="text-xl font-bold">{selectedTeam?.team_name}</h3>
-            <span className="text-sm text-zinc-400">
-              {selectedTeam?.members?.length} Members
-            </span>
+            <span className="text-sm text-zinc-400">{selectedTeam?.members?.length} Members</span>
           </>
         )}
-        {selectedUserId && (
-          <h3 className="text-xl font-bold">{selectedMember?.username}</h3>
-        )}
+        {selectedUserId && <h3 className="text-xl font-bold">{selectedMember?.username}</h3>}
       </div>
 
       <div className="flex justify-start items-center gap-2">
         <div>
-          <Popover>
+          <Popover open={filterOpen} onOpenChange={setFilterOpen}>
             <PopoverTrigger asChild>
-              <Button className="w-[40px] h-auto" variant="outline"><ListFilter className="text-zinc-300" size={20} /></Button>
+              <Button className={`w-[40px] h-auto ${filterOpen ? "bg-zinc-100" : ""}`} variant="outline">
+                <Filter className={`${filterOpen ? "text-zinc-900" : "text-zinc-300"}`} size={20} />
+              </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-fit">
-                <h2 className="text-base font-bold border-b border-zinc-300 p-2">Sorting</h2>
-                <ul className="pt-2 text-sm space-y-1">
-                    <li>Created date : Ascending</li>
-                    <li>Created date : Descending</li>
-                </ul>
+            <PopoverContent className="w-[317px]" align="end">
+              <div className="flex flex-col">
+                <div className="flex justify-between border-b border-zinc-300">
+                <h2 className="text-base font-bold p-2 font-inter">Filter Task</h2>
+                <X className="text-zinc-500 cursor-pointer" size={20} onClick={() => setFilterOpen(false)} />
+                </div>
+                <TaskFilter />
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div>
+          <Popover open={sortOpen} onOpenChange={setSortOpen}>
+            <PopoverTrigger asChild>
+              <Button className={`w-[40px] h-auto ${sortOpen ? "bg-zinc-100" : ""}`} variant="outline">
+                <ListFilter className={`${sortOpen ? "text-zinc-900" : "text-zinc-300"}`} size={20} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[280px]" align="end">
+              <div className="flex flex-col gap-4">
+                <div>
+                  <h2 className="text-base font-bold border-b border-zinc-300 p-2">Sorting</h2>
+                  <div className="pt-2 flex flex-col gap-1">
+                    {sortOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        onClick={() => handleSortChange(option.value)}
+                        className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer hover:bg-zinc-100 ${
+                          `${sortOption.field}:${sortOption.direction}` === option.value ? "bg-zinc-50" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {`${sortOption.field}:${sortOption.direction}` === option.value && (
+                            <Check size={16} className="text-zinc-950" />
+                          )}
+                          <span className="text-sm font-medium">{option.label}</span>
+                        </div>
+                        {/* <span className="text-xs text-zinc-500">{option.description}</span> */}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
         <div className="relative">
-          <Search
-            size={18}
-            className="absolute mt-5 left-3 transform -translate-y-1/2 text-zinc-500"
-          />
+          <Search size={18} className="absolute mt-5 left-3 transform -translate-y-1/2 text-zinc-500" />
           <input
             type="text"
             placeholder="Search for task"
@@ -74,7 +116,7 @@ const NewNavbar = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default NewNavbar;
+export default NewNavbar

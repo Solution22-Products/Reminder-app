@@ -54,7 +54,7 @@ const AddTaskMentions: React.FC<ReactProps> = ({
   //   { id: number; name: string }[]
   // >([]);
   const [memberData, setMemberData] = useState<string[]>([]);
-  const [date, setDate] = React.useState<Date>();
+  const [date, setDate] = useState<Date>();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [taskStatus, setTaskStatus] = useState<string>("todo");
 

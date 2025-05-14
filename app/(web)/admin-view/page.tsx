@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { supabase } from "@/utils/supabase/supabaseClient"
 import { useGlobalContext } from "@/context/store"
+import './style.css'
 
 const AdminView = () => {
   const router = useRouter()
@@ -24,127 +25,6 @@ const AdminView = () => {
   const [userMembers, setUserMembers] = useState<any[]>([])
   const [userSpace, setUserSpace] = useState<any[]>([])
   const [userTeams, setUserTeams] = useState<any[]>([])
-
-  // Fetch all data at the parent level
-  // const fetchAllData = async () => {
-  //   setDataLoading(true)
-  //   try {
-  //     const [spacesResponse, teamsResponse, membersResponse] = await Promise.all([
-  //       supabase.from("spaces").select("*").eq("is_deleted", false),
-  //       supabase.from("teams").select("*").eq("is_deleted", false),
-  //       supabase.from("users").select("*").eq("is_deleted", false),
-  //     ])
-  
-  //     const spacesData = spacesResponse.data || []
-  //     const teamsData = teamsResponse.data || []
-  //     const membersData = membersResponse.data || []
-  
-  //     setSpaces(spacesData)
-  //     setTeams(teamsData)
-  //     setMembers(membersData)
-  
-  //     // Set default selections
-  //     let defaultSpace : any = null
-  
-  //     if (spacesData.length > 0) {
-  //       if (currentUser?.role === "owner") {
-  //         defaultSpace = spacesData[0]
-  //         setSelectedSpaceId(defaultSpace.id)
-  //       } else {
-  //         const userSpaces = spacesData.filter((space) => {
-  //           const teamsInSpace = teamsData.filter((team) => team.space_id === space.id)
-  //           const userMembers = teamsInSpace.map((team) => team.members.map((member: any) => member.username));
-  //           setUserMembers(userMembers)
-  //           console.log("teamsInSpace ", userMembers)
-  //           return teamsInSpace.some((team) =>
-  //             team.members?.some((member: any) => member.entity_name === currentUser?.entity_name)
-  //           )
-  //         })
-  
-  //         if (userSpaces.length > 0) {
-  //           defaultSpace = userSpaces[0]
-  //           setSelectedSpaceId(defaultSpace.id)
-  //         }
-  //       }
-  
-  //       if (defaultSpace) {
-  //         const teamsForSpace = teamsData.filter((team) => team.space_id === defaultSpace.id)
-  //         if (teamsForSpace.length > 0) {
-  //           setSelectedTeamId(teamsForSpace[0].id)
-  //         }
-  //       }
-  //     }
-  
-  //     if (membersData.length > 0) {
-  //       setSelectedUserId(membersData[0].id)
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error)
-  //   } finally {
-  //     setDataLoading(false)
-  //   }
-  // }
-
-  // const fetchAllData = async () => {
-  //   setDataLoading(true)
-  //   try {
-  //     const [spacesResponse, teamsResponse, membersResponse] = await Promise.all([
-  //       supabase.from("spaces").select("*").eq("is_deleted", false),
-  //       supabase.from("teams").select("*").eq("is_deleted", false),
-  //       supabase.from("users").select("*").eq("is_deleted", false),
-  //     ])
-  
-  //     const spacesData = spacesResponse.data || []
-  //     const teamsData = teamsResponse.data || []
-  //     const membersData = membersResponse.data || []
-  
-  //     setSpaces(spacesData)
-  //     setTeams(teamsData)
-  //     setMembers(membersData)
-  
-  //     // Set default selections
-  //     let defaultSpace : any = null
-  
-  //     if (spacesData.length > 0) {
-  //       if (currentUser?.role === "owner") {
-  //         defaultSpace = spacesData[0]
-  //         setSelectedSpaceId(defaultSpace.id)
-  //       } else {
-  //         const userSpaces = spacesData.filter((space) => {
-  //           const teamsInSpace = teamsData.filter((team) => team.space_id === space.id)
-  //           const a = teamsInSpace.filter((team) =>
-  //             team.members?.filter((member: any) => member.entity_name === currentUser?.entity_name)
-  //           );
-  //           console.log(teamsInSpace)
-  //           console.log("teamsInSpace ", a)
-  //           return teamsInSpace.some((team) =>
-  //             team.members?.some((member: any) => member.entity_name === currentUser?.entity_name)
-  //           )
-  //         })
-  
-  //         if (userSpaces.length > 0) {
-  //           defaultSpace = userSpaces[0]
-  //           setSelectedSpaceId(defaultSpace.id)
-  //         }
-  //       }
-  
-  //       if (defaultSpace) {
-  //         const teamsForSpace = teamsData.filter((team) => team.space_id === defaultSpace.id)
-  //         if (teamsForSpace.length > 0) {
-  //           setSelectedTeamId(teamsForSpace[0].id)
-  //         }
-  //       }
-  //     }
-  
-  //     if (membersData.length > 0) {
-  //       setSelectedUserId(membersData[0].id)
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error)
-  //   } finally {
-  //     setDataLoading(false)
-  //   }
-  // }
 
   const fetchData = async () => {
     setDataLoading(true)
@@ -279,9 +159,9 @@ const AdminView = () => {
     setSelectedUserId(userId)
   }
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>
-  }
+  // if (loading) {
+  //   return <div className="flex items-center justify-center h-screen">Loading...</div>
+  // }
 
   return (
     <div className="w-full min-h-[100dvh] h-full flex">

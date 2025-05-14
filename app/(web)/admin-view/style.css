@@ -1,0 +1,48 @@
+.input_mention.mentions-input{
+    /* min-height: 50px !important; */
+    height: 20px !important;
+    /* max-height: fit-content !important; */
+    padding: 20px !important;
+    border: 1px solid #CECECE;
+    cursor: pointer !important;
+  }
+  .input_mention .mentions-input__input{
+    padding: 5px;
+  }
+  .input_mention .mentions-input__suggestions{
+    padding: 10px;
+    min-height: 50px !important;
+    max-height: 110px !important;
+    overflow-y: auto !important;
+    position: absolute !important;
+    left: 20px !important;
+    top: 30px !important;
+    text-align: left !important;
+    border: 1px solid #CECECE;
+    border-radius: 6px;
+  }
+
+
+.create_task_mention.mentions-input{
+    /* min-height: 50px !important; */
+    height: 20px !important;
+    /* max-height: fit-content !important; */
+    padding: 20px !important;
+    border: 1px solid #CECECE;
+    cursor: pointer !important;
+  }
+  .create_task_mention .mentions-input__input{
+    padding: 5px;
+  }
+  .create_task_mention .mentions-input__suggestions{
+    padding: 10px;
+    min-height: 50px !important;
+    max-height: 110px !important;
+    overflow-y: auto !important;
+    position: absolute !important;
+    left: 20px !important;
+    top: -125px !important;
+    text-align: left !important;
+    border: 1px solid #CECECE;
+    border-radius: 6px;
+  }

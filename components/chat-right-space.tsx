@@ -358,6 +358,7 @@ const ChatRightSpace = ({
                 teams={getTeamsBySpaceId(currentDeleteSpace.id)}
                 onUpdate={fetchData}
                 deleteTeam={false}
+                deleteTask={false}
               />
             )}
             {currentEditTeam && (
@@ -380,6 +381,7 @@ const ChatRightSpace = ({
                 teams={getTeamsBySpaceId(currentDeleteTeam.id)}
                 onUpdate={fetchData}
                 deleteTeam={true}
+                deleteTask={false}
               />
             )}
           </>

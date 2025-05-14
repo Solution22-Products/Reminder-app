@@ -22,6 +22,7 @@ interface EditSpaceDialogProps {
   teams: any[];
   onUpdate: () => Promise<void>;
   deleteTeam: boolean;
+  deleteTask: boolean;
 }
 
 const DeleteSpaceDialog = ({
@@ -31,15 +32,15 @@ const DeleteSpaceDialog = ({
   teams,
   onUpdate,
   deleteTeam,
+  deleteTask,
 }: EditSpaceDialogProps) => {
-
-    const [deleteLoader, setDeleteLoader] = useState(false);
+  const [deleteLoader, setDeleteLoader] = useState(false);
 
   useEffect(() => {}, [space, teams, open]);
 
   const handleDeleteSpace = async () => {
     try {
-        setDeleteLoader(true);
+      setDeleteLoader(true);
       const { data: teamData, error: teamError } = await supabase
         .from("teams")
         .update({ is_deleted: true })
@@ -65,7 +66,7 @@ const DeleteSpaceDialog = ({
 
   const handleDeleteTeam = async () => {
     try {
-        setDeleteLoader(true);
+      setDeleteLoader(true);
       const { data: teamData, error: teamError } = await supabase
         .from("teams")
         .update({ is_deleted: true })
@@ -84,6 +85,26 @@ const DeleteSpaceDialog = ({
     }
   };
 
+  const handleDeleteTask = async () => {
+    try {
+      const { data: taskData, error: taskError } = await supabase
+        .from("tasks")
+        .update({ is_deleted: true })
+        .eq("id", space.id);
+      if (taskError) throw taskError;
+      onOpenChange(false);
+      setDeleteLoader(false);
+      onUpdate();
+      toast({
+        title: "Success",
+        description: "Task deleted successfully.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,12 +112,17 @@ const DeleteSpaceDialog = ({
           <DialogHeader>
             {deleteTeam ? (
               <DialogTitle className="pb-1">Delete Team</DialogTitle>
+            ) : deleteTask ? (
+              <DialogTitle className="pb-1">Delete Task</DialogTitle>
             ) : (
               <DialogTitle className="pb-1">Delete Space</DialogTitle>
             )}
+
             <DialogDescription>
               {deleteTeam ? (
                 <span>Are you sure you want to delete this team?</span>
+              ) : deleteTask ? (
+                <span>Are you sure you want to delete this task?</span>
               ) : (
                 <span>Are you sure you want to delete this space?</span>
               )}
@@ -105,44 +131,46 @@ const DeleteSpaceDialog = ({
           <div className="grid gap-4"></div>
           <DialogFooter className="w-full">
             <DialogClose asChild>
-              <Button
-                variant="outline"
-                className="w-1/2"
-                type="button"
-              >
+              <Button variant="outline" className="w-1/2" type="button">
                 Cancel
               </Button>
             </DialogClose>
             <Button
               className="w-1/2 bg-red-500 text-sm hover:bg-red-500 hover:opacity-85"
               type="button"
-              onClick={deleteTeam ? handleDeleteTeam : handleDeleteSpace}
+              onClick={
+                deleteTeam
+                  ? handleDeleteTeam
+                  : deleteTask
+                  ? handleDeleteTask
+                  : handleDeleteSpace
+              }
               disabled={deleteLoader}
             >
               {deleteLoader ? (
-              <svg
-                className="animate-spin h-5 w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="#fff"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="#fff"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            ) : (
-              "Delete"
-            )}
+                <svg
+                  className="animate-spin h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="#fff"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="#fff"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : (
+                "Delete"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

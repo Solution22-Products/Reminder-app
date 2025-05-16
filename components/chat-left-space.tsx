@@ -35,6 +35,11 @@ interface ChatLeftSpaceProps {
   isLoading: boolean;
 }
 
+type TeamSpaceInfo = {
+  teamId: string;
+  spaceId: string | null;
+};
+
 const ChatLeftSpace = ({
   selectedTeamId,
   selectedSpaceId,
@@ -57,8 +62,13 @@ const ChatLeftSpace = ({
   });
   const [currentTask, setCurrentTask] = useState<any>(null);
 
-  const { filteredTasks, fetchAllTasks, searchTerm, searchTasks, userId } =
-    useGlobalContext();
+  const {
+    filteredTasks,
+    fetchAllTasks,
+    searchTerm,
+    searchTasks,
+    userId: loggedUserData,
+  } = useGlobalContext();
 
   // Update search with current space and team whenever they change
   useEffect(() => {
@@ -89,6 +99,7 @@ const ChatLeftSpace = ({
     e.stopPropagation();
     setCurrentTask(task);
     setIsEditTask({ id: task.id, isEditTask: true });
+    console.log(selectedUserId ? selectedUserId : null);
   };
 
   const handleDeleteTask = async (task: any, e: React.MouseEvent) => {
@@ -97,11 +108,27 @@ const ChatLeftSpace = ({
     setDeleteTaskModalOpen(true);
   };
 
-  const getDaysOverdue = (dueDate : string) => {
+  const getDaysOverdue = (dueDate: string) => {
     const today = new Date();
     const due = new Date(dueDate);
     const diff = differenceInCalendarDays(today, due);
     return diff > 0 ? diff : 0;
+  };
+
+  const formatDate = (date: Date): string => {
+    // Validate if the date is valid
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      return "Invalid Date"; // Fallback value instead of throwing an error
+    }
+
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    };
+
+    // 'en-US' gives format like "Aug 23, 2024"
+    return date.toLocaleDateString("en-US", options).replace(",", "");
   };
 
   useEffect(() => {
@@ -116,10 +143,23 @@ const ChatLeftSpace = ({
         selectedUserId={selectedUserId}
         selectedTeam={selectedTeam}
         selectedMember={selectedMember}
+        name={{ name: "Kanban View", kanban: false }}
+        spaces={spaces}
       />
 
       {/* Scrollable Content */}
-      <div className="p-3.5 pb-20 w-full h-[calc(100dvh-155px)] overflow-y-auto">
+      <div
+        className={`p-3.5 w-full ${
+          loggedUserData?.role === "owner" ||
+          (loggedUserData?.role === "User" &&
+            ((loggedUserData?.access?.task !== true &&
+              loggedUserData?.access?.all === true) ||
+              loggedUserData?.access?.task === true))
+            ? "h-[calc(100dvh-155px)] pb-20 overflow-y-auto"
+            : "h-[calc(100dvh-70px)] pb-0 overflow-y-auto"
+        } 
+         overflow-y-auto`}
+      >
         <div className="">
           <div className="">
             {isLoading ? (
@@ -166,39 +206,45 @@ const ChatLeftSpace = ({
                             >
                               {task.priority}
                             </p>
-                            <div className="flex items-center gap-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger
-                                  asChild
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
+                            {(loggedUserData?.role === "owner" ||
+                              (loggedUserData?.role === "User" &&
+                                ((loggedUserData?.access?.task !== true &&
+                                  loggedUserData?.access?.all === true) ||
+                                  loggedUserData?.access?.task === true))) && (
+                              <div className="flex items-center gap-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger
+                                    asChild
+                                    onClick={(e) => e.stopPropagation()}
                                   >
-                                    <Ellipsis size={16} />
-                                    <span className="sr-only">
-                                      More options
-                                    </span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={(e) => handleEditTask(task, e)}
-                                  >
-                                    <Pencil size={16} className="mr-2" />
-                                    Edit Task
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={(e) => handleDeleteTask(task, e)}
-                                  >
-                                    <Trash2 size={16} className="mr-2" />
-                                    Delete Task
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                    >
+                                      <Ellipsis size={16} />
+                                      <span className="sr-only">
+                                        More options
+                                      </span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={(e) => handleEditTask(task, e)}
+                                    >
+                                      <Pencil size={16} className="mr-2" />
+                                      Edit Task
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => handleDeleteTask(task, e)}
+                                    >
+                                      <Trash2 size={16} className="mr-2" />
+                                      Delete Task
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            )}
                             {currentDeleteTask && (
                               <DeleteSpaceDialog
                                 open={deleteTaskModalOpen}
@@ -223,6 +269,13 @@ const ChatLeftSpace = ({
                             setIsEditTask={setIsEditTask}
                             currentTask={currentTask}
                             classname="input_mention"
+                            // memberId={memberId}
+                            // memberTeamsAndSpaces={memberTeamsAndSpaces}
+                            spaces={spaces}
+                            teams={teams}
+                            members={members}
+                            selectedUserId={selectedUserId}
+                            selectedMember={selectedMember}
                           />
                         ) : (
                           <p className="text-sm font-medium text-zinc-950 mt-1">
@@ -234,23 +287,34 @@ const ChatLeftSpace = ({
                             {task.task_content}
                           </p>
                         )}
-                        {!isEditTask.isEditTask && (
+                        {(!isEditTask.isEditTask ||
+                          isEditTask.id !== task.id) && (
                           <div className="flex justify-between items-center gap-1">
                             <div className="flex justify-between items-center gap-1 mt-2 text-sm text-zinc-400">
                               <Timer className="text-zinc-400" size={18} />
                               {task.due_date && (
-                                <p className="capitalize">
-                                  Due: {task.due_date}
+                                <span className="">
+                                  Due:{" "}
+                                  {new Date(task.due_date)
+                                    .toDateString()
+                                    .slice(4, 15) +
+                                    " " +
+                                    new Date(task.due_date).toLocaleTimeString(
+                                      [],
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      }
+                                    )}
+                                </span>
+                              )}
+                              {getDaysOverdue(task.due_date || "") > 0 && (
+                                <p className="text-xs font-bold px-2 py-0.5 my-auto rounded-full w-auto border-none text-white bg-[#F05252]">
+                                  {getDaysOverdue(task.due_date || "")} days
+                                  overdue
                                 </p>
                               )}
-                              {
-                                getDaysOverdue(task.due_date || "") > 0 && (
-                                  <p className="capitalize text-xs font-bold px-2 py-0.5 my-auto rounded-full w-auto border-none text-white bg-[#F05252]">
-                                    {getDaysOverdue(task.due_date || "")}{" "}
-                                    days overdue
-                                  </p>
-                                )
-                              }
                             </div>
                             <Select
                               defaultValue={task.task_status}
@@ -291,7 +355,7 @@ const ChatLeftSpace = ({
                                 <SelectItem value="Internal feedback">
                                   Internal feedback
                                 </SelectItem>
-                                {userId?.role === "owner" && (
+                                {loggedUserData?.role === "owner" && (
                                   <SelectItem value="Completed">
                                     Completed
                                   </SelectItem>
@@ -304,14 +368,29 @@ const ChatLeftSpace = ({
                     ))}
                   </div>
                 ) : (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-gray-400 italic">
-                      {selectedSpaceId && selectedTeamId
-                        ? `No tasks found for this team`
-                        : selectedUserId
-                        ? `No tasks assigned to this user`
-                        : `No tasks found`}
-                    </p>
+                  <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm text-center h-[60dvh]">
+                    <div className="flex flex-col h-full items-center justify-center space-y-3">
+                      <svg
+                        className="w-10 h-10 text-gray-300"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9.75 9.75h.008v.008H9.75V9.75zm4.5 0h.008v.008h-.008V9.75zm-4.5 4.5h.008v.008H9.75v-.008zm4.5 0h.008v.008h-.008v-.008zM12 3c4.97 0 9 4.03 9 9s-4.03 9-9 9-9-4.03-9-9 4.03-9 9-9z"
+                        />
+                      </svg>
+                      <p className="text-gray-500 text-sm font-medium">
+                        {selectedSpaceId && selectedTeamId
+                          ? "No tasks found for this team"
+                          : selectedUserId
+                          ? "No tasks assigned to this user"
+                          : "No tasks found"}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -319,18 +398,30 @@ const ChatLeftSpace = ({
           </div>
         </div>
       </div>
-
-      <div className="pt-4">
-        <NewReactMentions
-          selectedTeam={selectedTeam}
-          selectedSpaceId={selectedSpaceId}
-          selectedTeamId={selectedTeamId}
-          editTask={false}
-          isEditTask={false}
-          setIsEditTask={setIsEditTask}
-          classname="create_task_mention"
-        />
-      </div>
+      {(loggedUserData?.role === "owner" ||
+        (loggedUserData?.role === "User" &&
+          ((loggedUserData?.access?.task !== true &&
+            loggedUserData?.access?.all === true) ||
+            loggedUserData?.access?.task === true))) && (
+        <div className="pt-4">
+          <NewReactMentions
+            selectedTeam={selectedTeam}
+            selectedSpaceId={selectedSpaceId}
+            selectedTeamId={selectedTeamId}
+            editTask={false}
+            isEditTask={false}
+            setIsEditTask={setIsEditTask}
+            classname="create_task_mention"
+            // memberId={memberId}
+            // memberTeamsAndSpaces={memberTeamsAndSpaces}
+            spaces={spaces}
+            teams={teams}
+            members={members}
+            selectedUserId={selectedUserId}
+            selectedMember={selectedMember}
+          />
+        </div>
+      )}
     </div>
   );
 };

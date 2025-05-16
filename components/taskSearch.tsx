@@ -326,7 +326,7 @@ const TaskSearch: React.FC<TasksSearchProps> = ({ userTasks, userIdRole, teamId 
           day: "2-digit",
         };
     
-        return date.toLocaleDateString("en-GB", options); // 'en-GB' gives the format "23 Aug 2024"
+        return date.toLocaleDateString("en-GB", options).replace(",", ""); // 'en-GB' gives the format "23 Aug 2024"
       };
       useEffect(() => {
         fetchData();

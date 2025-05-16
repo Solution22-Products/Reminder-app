@@ -15,6 +15,7 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  X,
 } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import CreateSpaceAndTeam from "./createSpaceAndTeam";
@@ -57,18 +58,7 @@ const ChatRightSpace = ({
   // userMembers,
   isLoading,
 }: ChatRightSpaceProps) => {
-  const { resetSearch } = useGlobalContext();
-
-  // Filter spaces based on user role
-  // const spaces =
-  //   currentUser?.role === "owner"
-  //     ? spaces
-  //     : spaces.filter((space) => {
-  //         const teamsInSpace = teams.filter((team) => team.space_id === space.id)
-  //         return teamsInSpace.some((team) =>
-  //           team.members?.some((member: any) => member.entity_name === currentUser?.entity_name),
-  //         )
-  //       })
+  const { resetSearch, userId: loggedUserData } = useGlobalContext();
 
   const [visibleCount, setVisibleCount] = useState(5);
   const isShowingAll = visibleCount >= members.length;
@@ -80,8 +70,8 @@ const ChatRightSpace = ({
   const [currentDeleteSpace, setCurrentDeleteSpace] = useState<any>(null);
 
   const [currentDeleteTeam, setCurrentDeleteTeam] = useState<any>(null);
-  const [deleteTeamDialogOpen, setDeleteTeamDialogOpen] = useState(false); 
-  
+  const [deleteTeamDialogOpen, setDeleteTeamDialogOpen] = useState(false);
+
   const [editTeamDialogOpen, setEditTeamDialogOpen] = useState(false);
   const [currentEditTeam, setCurrentEditTeam] = useState<any>(null);
 
@@ -98,21 +88,21 @@ const ChatRightSpace = ({
   const handleSpaceClick = (spaceId: string) => {
     onSelectSpace(spaceId);
     onSelectUser("");
-    resetSearch() 
+    resetSearch();
   };
 
   const handleTeamClick = (teamId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent triggering the accordion
     onSelectTeam(teamId);
     onSelectUser("");
-    resetSearch() 
+    resetSearch();
   };
 
   const handleUserClick = (userId: string) => {
     onSelectUser(userId);
     onSelectSpace("");
     onSelectTeam("");
-    resetSearch() 
+    resetSearch();
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,31 +120,31 @@ const ChatRightSpace = ({
   };
 
   const getTeamData = async (teamId: number) => {
-      try {
-        const { data, error } = await supabase
-          .from("teams")
-          .select("*")
-          .eq("id", teamId)
-          .single();
-        if (error) {
-          console.error("Error fetching user data:", error);
-          return;
-        }
-  
-        if (data) {
-          setAddedMembers(data.members);
-          return data;
-        }
-      } catch (error) {
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", teamId)
+        .single();
+      if (error) {
         console.error("Error fetching user data:", error);
+        return;
       }
-    };
+
+      if (data) {
+        setAddedMembers(data.members);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
 
   const handleEditTeam = (team: any, e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentEditTeam(team);
     setEditTeamDialogOpen(true);
-    setAddedMembers([])
+    setAddedMembers([]);
     getTeamData(team.id);
   };
 
@@ -198,10 +188,16 @@ const ChatRightSpace = ({
             <Layers size={20} className="text-blue-500 mr-2" />
             <h2 className="text-lg font-bold">Spaces & Teams</h2>
           </div>
-          <CreateSpaceAndTeam
-            spaceTrigger={spaceTrigger}
-            setSpaceTrigger={setSpaceTrigger}
-          />
+          {(loggedUserData?.role === "owner" ||
+            (loggedUserData?.role === "User" &&
+              ((loggedUserData?.access?.space !== true &&
+                loggedUserData?.access?.all === true) ||
+                loggedUserData?.access?.space === true))) && (
+            <CreateSpaceAndTeam
+              spaceTrigger={spaceTrigger}
+              setSpaceTrigger={setSpaceTrigger}
+            />
+          )}
         </div>
 
         {isLoading ? (
@@ -249,37 +245,43 @@ const ChatRightSpace = ({
                           ? `${space.space_name.slice(0, 20)}...`
                           : space.space_name}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            asChild
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
+                      {(loggedUserData?.role === "owner" ||
+                        (loggedUserData?.role === "User" &&
+                          ((loggedUserData?.access?.space !== true &&
+                            loggedUserData?.access?.all === true) ||
+                            loggedUserData?.access?.space === true))) && (
+                        <div className="flex items-center gap-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              asChild
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              <MoreVertical size={16} />
-                              <span className="sr-only">More options</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={(e) => handleEditSpace(space, e)}
-                            >
-                              <Pencil size={16} className="mr-2" />
-                              Edit Space
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) => handleDeleteSpace(space, e)}
-                            >
-                              <Trash2 size={16} className="mr-2" />
-                              Delete Space
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                              >
+                                <MoreVertical size={16} />
+                                <span className="sr-only">More options</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={(e) => handleEditSpace(space, e)}
+                              >
+                                <Pencil size={16} className="mr-2" />
+                                Edit Space
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => handleDeleteSpace(space, e)}
+                              >
+                                <Trash2 size={16} className="mr-2" />
+                                Delete Space
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      )}
                     </AccordionTrigger>
                     <AccordionContent className="px-2 py-2">
                       {getTeamsBySpaceId(space.id).length === 0 && (
@@ -297,39 +299,45 @@ const ChatRightSpace = ({
                             onClick={(e) => handleTeamClick(team.id, e)}
                           >
                             {team.team_name}
-                            <div className="flex items-center gap-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger
-                                  asChild
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
+                            {(loggedUserData?.role === "owner" ||
+                              (loggedUserData?.role === "User" &&
+                                ((loggedUserData?.access?.team !== true &&
+                                  loggedUserData?.access?.all === true) ||
+                                  loggedUserData?.access?.team === true))) && (
+                              <div className="flex items-center gap-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger
+                                    asChild
+                                    onClick={(e) => e.stopPropagation()}
                                   >
-                                    <MoreVertical size={16} />
-                                    <span className="sr-only">
-                                      More options
-                                    </span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={(e) => handleEditTeam(team, e)}
-                                  >
-                                    <Pencil size={16} className="mr-2" />
-                                    Edit Team
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={(e) => handleDeleteTeam(team, e)}
-                                  >
-                                    <Trash2 size={16} className="mr-2" />
-                                    Delete Team
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                    >
+                                      <MoreVertical size={16} />
+                                      <span className="sr-only">
+                                        More options
+                                      </span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={(e) => handleEditTeam(team, e)}
+                                    >
+                                      <Pencil size={16} className="mr-2" />
+                                      Edit Team
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => handleDeleteTeam(team, e)}
+                                    >
+                                      <Trash2 size={16} className="mr-2" />
+                                      Delete Team
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -400,6 +408,16 @@ const ChatRightSpace = ({
               size={18}
               className="absolute mt-5 left-3 transform -translate-y-1/2 text-zinc-500"
             />
+            {searchMember && (
+              <X
+                size={16}
+                className="absolute mt-5 top-0 right-2 transform -translate-y-1/2 text-zinc-500 cursor-pointer bg-white h-[30px]"
+                onClick={() => {
+                  setSearchMember("");
+                  resetSearch();
+                }}
+              />
+            )}
             <input
               type="text"
               placeholder="search for member"

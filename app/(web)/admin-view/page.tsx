@@ -44,11 +44,16 @@ const AdminView = () => {
   
       // Filter matched teams for current user
       const matchedTeams =
-        teamsData?.filter((team) =>
-          team.members?.some(
-            (member: any) => member.entity_name === currentUser.entity_name
-          )
-        ) || [];
+        teamsData?.filter((team) => {
+          // Include team if no members (length === 0 or undefined), or if it contains currentUser
+          return (
+            !team.members ||
+            team.members.length === 0 ||
+            team.members.some(
+              (member: any) => member.entity_name === currentUser.entity_name
+            )
+          );
+        }) || [];
         
         setUserTeams(matchedTeams);
         const uniqueMembers = Array.from(

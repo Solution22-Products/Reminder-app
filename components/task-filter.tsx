@@ -69,12 +69,14 @@ const TaskFilter = () => {
   };
 
   // 'en-US' gives format like "Aug 23, 2024"
-  return date.toLocaleDateString("en-US", options);
+  return date.toLocaleDateString("en-US", options).replace(",", "");
 };
 
   const handleDateChange = (selectedDate: Date | undefined) => {
+    console.log("Selected Date:", selectedDate);
   if (selectedDate) {
-    const formattedDate = formatDate(selectedDate);
+    console.log("Selected Date inside if: ", selectedDate);
+    const formattedDate = formatDate(selectedDate).toLocaleLowerCase();
     console.log("Selected Date:", formattedDate);
     setDate(selectedDate);
     setFilterOptions((prev) => ({
@@ -189,7 +191,7 @@ const TaskFilter = () => {
         </div>
       </div>
 
-      {/* <div className="p-2">
+      <div className="p-2">
         <div className="flex items-center space-x-2">
           <input
             type="checkbox"
@@ -200,7 +202,7 @@ const TaskFilter = () => {
           />
           <Label htmlFor="overdue">Show Overdue Only</Label>
         </div>
-      </div> */}
+      </div>
 
       <div className="flex flex-col gap-2 p-2">
         {/* <Button onClick={applyFilters} className="w-full">

@@ -1,68 +1,79 @@
-"use client"
+"use client";
 
-import { getLoggedInUserData } from "@/app/(signin-setup)/sign-in/action"
-import { supabase } from "@/utils/supabase/supabaseClient"
-import type React from "react"
-import { createContext, useContext, useState, useEffect, type Dispatch, type SetStateAction } from "react"
+import { getLoggedInUserData } from "@/app/(signin-setup)/sign-in/action";
+import { supabase } from "@/utils/supabase/supabaseClient";
+import type React from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 interface UserData {
-  id: string
-  username: string
-  email: string
-  role: string
-  mobile: string
-  password: string
-  profile_image: string
-  entity_name: string
-  access: { space: boolean; team: boolean; task: boolean; all: boolean }
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  mobile: string;
+  password: string;
+  profile_image: string;
+  entity_name: string;
+  access: { space: boolean; team: boolean; task: boolean; all: boolean };
 }
 
 interface Task {
-  id: string
-  task_content: string
-  space_id: string | null
-  team_id: string | null
-  mentions: string | null
-  time: string
-  due_date?: string
-  is_deleted: boolean
-  entity_name?: string
-  task_status?: string
-  priority?: string
-  [key: string]: any // For any additional properties
+  id: string;
+  task_content: string;
+  space_id: string | null;
+  team_id: string | null;
+  mentions: string | null;
+  time: string;
+  due_date?: string;
+  is_deleted: boolean;
+  entity_name?: string;
+  task_status?: string;
+  priority?: string;
+  [key: string]: any; // For any additional properties
 }
 
 interface FilterOptions {
-  status: string[]
-  priority: string[]
-  dueDate: string | null
-  showOverdueOnly: boolean
+  status: string[];
+  priority: string[];
+  dueDate: string | null;
+  showOverdueOnly: boolean;
 }
 
 interface SortOption {
-  field: string
-  direction: "asc" | "desc"
+  field: string;
+  direction: "asc" | "desc";
 }
 
 interface ContextProps {
-  userId: UserData | null
-  setUserId: Dispatch<SetStateAction<UserData | null>>
-  selectedActiveTab: string | number | null
-  setSelectedActiveTab: Dispatch<SetStateAction<string | number | null>>
-  allTasks: Task[]
-  filteredTasks: Task[]
-  setAllTasks: Dispatch<SetStateAction<Task[]>>
-  fetchAllTasks: () => Promise<void>
-  searchTasks: (searchTerm: string, spaceId?: string | null, teamId?: string | null) => void
-  searchTerm: string
-  setSearchTerm: Dispatch<SetStateAction<string>>
-  resetSearch: () => void
-  filterOptions: FilterOptions
-  setFilterOptions: Dispatch<SetStateAction<FilterOptions>>
-  applyFilters: () => void
-  clearAllFilters: () => void
-  sortOption: SortOption
-  setSortOption: Dispatch<SetStateAction<SortOption>>
+  userId: UserData | null;
+  setUserId: Dispatch<SetStateAction<UserData | null>>;
+  selectedActiveTab: string | number | null;
+  setSelectedActiveTab: Dispatch<SetStateAction<string | number | null>>;
+  allTasks: Task[];
+  filteredTasks: Task[];
+  setAllTasks: Dispatch<SetStateAction<Task[]>>;
+  fetchAllTasks: () => Promise<void>;
+  searchTasks: (
+    searchTerm: string,
+    spaceId?: string | null,
+    teamId?: string | null
+  ) => void;
+  searchTerm: string;
+  setSearchTerm: Dispatch<SetStateAction<string>>;
+  resetSearch: () => void;
+  filterOptions: FilterOptions;
+  setFilterOptions: Dispatch<SetStateAction<FilterOptions>>;
+  applyFilters: () => void;
+  clearAllFilters: () => void;
+  sortOption: SortOption;
+  setSortOption: Dispatch<SetStateAction<SortOption>>;
 }
 
 const GlobalContext = createContext<ContextProps>({
@@ -78,47 +89,69 @@ const GlobalContext = createContext<ContextProps>({
   searchTerm: "",
   setSearchTerm: () => null,
   resetSearch: () => null,
-  filterOptions: { status: [], priority: [], dueDate: null, showOverdueOnly: false },
+  filterOptions: {
+    status: [],
+    priority: [],
+    dueDate: null,
+    showOverdueOnly: false,
+  },
   setFilterOptions: () => null,
   applyFilters: () => null,
   clearAllFilters: () => null,
   sortOption: { field: "time", direction: "desc" },
   setSortOption: () => null,
-})
+});
 
-export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userId, setUserId] = useState<UserData | null>(null)
-  const [selectedActiveTab, setSelectedActiveTab] = useState<number | string | null>(null)
-  const [allTasks, setAllTasks] = useState<Task[]>([])
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
-  const [searchTerm, setSearchTerm] = useState<string>("")
-  const [currentSpaceId, setCurrentSpaceId] = useState<string | null>(null)
-  const [currentTeamId, setCurrentTeamId] = useState<string | null>(null)
+export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [userId, setUserId] = useState<UserData | null>(null);
+  const [selectedActiveTab, setSelectedActiveTab] = useState<
+    number | string | null
+  >(null);
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentSpaceId, setCurrentSpaceId] = useState<string | null>(null);
+  const [currentTeamId, setCurrentTeamId] = useState<string | null>(null);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     status: [],
     priority: [],
     dueDate: null,
     showOverdueOnly: false,
-  })
-  const [sortOption, setSortOption] = useState<SortOption>({ field: "time", direction: "desc" })
+  });
+  const [sortOption, setSortOption] = useState<SortOption>({
+    field: "time",
+    direction: "desc",
+  });
 
   const fetchAllTasks = async () => {
     try {
-      const { data, error } = await supabase.from("tasks").select("*").eq("is_deleted", false)
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("is_deleted", false);
 
       if (error) {
-        console.error("Error fetching tasks:", error)
-        return
+        console.error("Error fetching tasks:", error);
+        return;
       }
 
-      setAllTasks(data || [])
+      setAllTasks(data || []);
 
       // Apply initial filtering based on current space and team
-      filterAndSortTasks(data || [], currentSpaceId, currentTeamId, searchTerm, filterOptions, sortOption)
+      filterAndSortTasks(
+        data || [],
+        currentSpaceId,
+        currentTeamId,
+        searchTerm,
+        filterOptions,
+        sortOption
+      );
     } catch (error) {
-      console.error("Unexpected error fetching tasks:", error)
+      console.error("Unexpected error fetching tasks:", error);
     }
-  }
+  };
 
   // Helper function to filter tasks by space, team, search term, and filter options
   const filterAndSortTasks = (
@@ -127,109 +160,154 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
     teamId: string | null,
     term: string,
     filters: FilterOptions,
-    sort: SortOption,
+    sort: SortOption
   ) => {
     // First filter by space and team if they are selected
-    let filtered = [...tasks] // Create a copy to avoid mutating the original array
+    let filtered = [...tasks]; // Create a copy to avoid mutating the original array
 
     if (spaceId && teamId) {
-      filtered = filtered.filter((task) => task.space_id === spaceId && task.team_id === teamId)
+      filtered = filtered.filter(
+        (task) => task.space_id === spaceId && task.team_id === teamId
+      );
     } else if (spaceId) {
-      filtered = filtered.filter((task) => task.space_id === spaceId)
+      filtered = filtered.filter((task) => task.space_id === spaceId);
     } else if (teamId) {
-      filtered = filtered.filter((task) => task.team_id === teamId)
+      filtered = filtered.filter((task) => task.team_id === teamId);
     }
 
     // Then apply search term if it exists
     if (term && term.trim() !== "") {
-      const lowerTerm = term.toLowerCase()
+      const lowerTerm = term.toLowerCase();
 
       filtered = filtered.filter((task) => {
-        const contentMatch = task.task_content?.toLowerCase().includes(lowerTerm)
-        const entityMatch = task.entity_name?.toLowerCase().includes(lowerTerm)
-        const createdDateMatch = task.time?.toLowerCase().includes(lowerTerm)
-        const dueDateMatch = task.due_date?.toLowerCase().includes(lowerTerm)
-        const statusMatch = task.task_status?.toLowerCase().includes(lowerTerm)
+        const contentMatch = task.task_content
+          ?.toLowerCase()
+          .includes(lowerTerm);
+        const entityMatch = task.entity_name?.toLowerCase().includes(lowerTerm);
+        const createdDateMatch = task.time?.toLowerCase().includes(lowerTerm);
+        const dueDateMatch = task.due_date?.toLowerCase().includes(lowerTerm);
+        const statusMatch = task.task_status?.toLowerCase().includes(lowerTerm);
 
-        return contentMatch || entityMatch || createdDateMatch || dueDateMatch || statusMatch
-      })
+        return (
+          contentMatch ||
+          entityMatch ||
+          createdDateMatch ||
+          dueDateMatch ||
+          statusMatch
+        );
+      });
     }
 
     // Apply status filters
     if (filters.status.length > 0) {
-      filtered = filtered.filter((task) => filters.status.includes(task.task_status || ""))
+      filtered = filtered.filter((task) =>
+        filters.status.includes(task.task_status || "")
+      );
     }
 
     // Apply priority filters
     if (filters.priority.length > 0) {
-      filtered = filtered.filter((task) => filters.priority.includes(task.priority || ""))
+      filtered = filtered.filter((task) =>
+        filters.priority.includes(task.priority || "")
+      );
     }
 
     // Apply due date filter
     if (filters.dueDate) {
-      filtered = filtered.filter((task) => task.due_date === filters.dueDate)
+      filtered = filtered.filter((task) => {
+        const filterDate = new Date(filters.dueDate || "");
+        const taskDate = new Date(task.due_date || "");
+
+        // Compare only year, month, and day
+        return (
+          filterDate.getFullYear() === taskDate.getFullYear() &&
+          filterDate.getMonth() === taskDate.getMonth() &&
+          filterDate.getDate() === taskDate.getDate()
+        );
+      });
     }
 
     // Apply overdue filter
     if (filters.showOverdueOnly) {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
       filtered = filtered.filter((task) => {
-        if (!task.due_date) return false
-        const dueDate = new Date(task.due_date)
-        return dueDate < today && task.task_status !== "Completed"
-      })
+        if (!task.due_date) return false;
+        const dueDate = new Date(task.due_date);
+        return dueDate < today && task.task_status !== "Completed";
+      });
     }
 
     // Apply sorting - FIX: Properly handle date sorting
     filtered.sort((a, b) => {
       if (sort.field === "time") {
         // Convert string dates to Date objects for proper comparison
-        const dateA = new Date(a.time || "")
-        const dateB = new Date(b.time || "")
+        const dateA = new Date(a.time || "");
+        const dateB = new Date(b.time || "");
 
         if (sort.direction === "asc") {
-          return dateA.getTime() - dateB.getTime()
+          return dateA.getTime() - dateB.getTime();
         } else {
-          return dateB.getTime() - dateA.getTime()
+          return dateB.getTime() - dateA.getTime();
         }
       } else {
         // For non-date fields
-        const fieldA = a[sort.field] || ""
-        const fieldB = b[sort.field] || ""
+        const fieldA = a[sort.field] || "";
+        const fieldB = b[sort.field] || "";
 
         if (sort.direction === "asc") {
-          return fieldA < fieldB ? -1 : fieldA > fieldB ? 1 : 0
+          return fieldA < fieldB ? -1 : fieldA > fieldB ? 1 : 0;
         } else {
-          return fieldA > fieldB ? -1 : fieldA < fieldB ? 1 : 0
+          return fieldA > fieldB ? -1 : fieldA < fieldB ? 1 : 0;
         }
       }
-    })
+    });
 
-    setFilteredTasks(filtered)
-  }
+    setFilteredTasks(filtered);
+  };
 
   const searchTasks = (
     term: string,
     spaceId: string | null = currentSpaceId,
-    teamId: string | null = currentTeamId,
+    teamId: string | null = currentTeamId
   ) => {
-    setSearchTerm(term)
-    setCurrentSpaceId(spaceId)
-    setCurrentTeamId(teamId)
+    setSearchTerm(term);
+    setCurrentSpaceId(spaceId);
+    setCurrentTeamId(teamId);
 
-    filterAndSortTasks(allTasks, spaceId, teamId, term, filterOptions, sortOption)
-  }
+    filterAndSortTasks(
+      allTasks,
+      spaceId,
+      teamId,
+      term,
+      filterOptions,
+      sortOption
+    );
+  };
 
   const resetSearch = () => {
-    setSearchTerm("")
-    filterAndSortTasks(allTasks, currentSpaceId, currentTeamId, "", filterOptions, sortOption)
-  }
+    setSearchTerm("");
+    filterAndSortTasks(
+      allTasks,
+      currentSpaceId,
+      currentTeamId,
+      "",
+      filterOptions,
+      sortOption
+    );
+  };
 
   const applyFilters = () => {
-    filterAndSortTasks(allTasks, currentSpaceId, currentTeamId, searchTerm, filterOptions, sortOption)
-  }
+    filterAndSortTasks(
+      allTasks,
+      currentSpaceId,
+      currentTeamId,
+      searchTerm,
+      filterOptions,
+      sortOption
+    );
+  };
 
   const clearAllFilters = () => {
     setFilterOptions({
@@ -237,7 +315,7 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
       priority: [],
       dueDate: null,
       showOverdueOnly: false,
-    })
+    });
 
     filterAndSortTasks(
       allTasks,
@@ -245,53 +323,71 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
       currentTeamId,
       searchTerm,
       { status: [], priority: [], dueDate: null, showOverdueOnly: false },
-      sortOption,
-    )
-  }
+      sortOption
+    );
+  };
 
   useEffect(() => {
-    fetchAllTasks()
-  }, [])
+    fetchAllTasks();
+  }, []);
 
   // Re-filter tasks when space or team changes
   useEffect(() => {
     if (allTasks.length > 0) {
-      filterAndSortTasks(allTasks, currentSpaceId, currentTeamId, searchTerm, filterOptions, sortOption)
+      filterAndSortTasks(
+        allTasks,
+        currentSpaceId,
+        currentTeamId,
+        searchTerm,
+        filterOptions,
+        sortOption
+      );
     }
-  }, [currentSpaceId, currentTeamId])
+  }, [currentSpaceId, currentTeamId]);
 
   // Re-filter when filter options change
   useEffect(() => {
     if (allTasks.length > 0) {
-      filterAndSortTasks(allTasks, currentSpaceId, currentTeamId, searchTerm, filterOptions, sortOption)
+      filterAndSortTasks(
+        allTasks,
+        currentSpaceId,
+        currentTeamId,
+        searchTerm,
+        filterOptions,
+        sortOption
+      );
     }
-  }, [filterOptions, sortOption])
+  }, [filterOptions, sortOption]);
 
   useEffect(() => {
     const getUser = async () => {
       try {
-        const user = await getLoggedInUserData()
+        const user = await getLoggedInUserData();
 
         if (!user?.id) {
-          console.log("No logged-in user found")
-          return
+          console.log("No logged-in user found");
+          return;
         }
 
-        const { data, error } = await supabase.from("users").select("*").eq("userId", user?.id).single()
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("userId", user?.id)
+          .single();
 
         if (error) {
-          console.error("Error fetching user data from store:", error)
-          return
+          console.error("Error fetching user data from store:", error);
+          return;
         }
 
-        setUserId(data)
+        setUserId(data);
       } catch (error) {
-        console.error("Unexpected error fetching user:", error)
+        console.error("Unexpected error fetching user:", error);
       }
-    }
+    };
 
-    getUser()
-  }, [])
+    getUser();
+  }, []);
 
   return (
     <GlobalContext.Provider
@@ -318,7 +414,7 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
     >
       {children}
     </GlobalContext.Provider>
-  )
-}
+  );
+};
 
-export const useGlobalContext = () => useContext(GlobalContext)
+export const useGlobalContext = () => useContext(GlobalContext);

@@ -58,6 +58,14 @@ const CreateSpaceAndTeam = ({
       });
       return;
     }
+    if (teamTags.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please add at least one team tag to move forward.",
+        variant: "destructive",
+      });
+      return;
+    }
     try {
       setSaveLoader(true);
       const { data: spaceData, error } = await supabase

@@ -205,6 +205,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
       event.target.value.matchAll(/\(([^)]+)\)/g),
       (match) => match[1]
     );
+    console.log("Extracted IDs:", mentionIds);
 
     setIds(mentionIds);
 

@@ -56,7 +56,7 @@ const EditSpaceDialog = ({
 
   useEffect(() => {
     if (space) {
-      setSpaceName(space.space_name || "");
+      setSpaceName(space.space_name || space.display || "");
       setEditTeamName(space.team_name || "");
       setTeamTags(teams || []);
     }

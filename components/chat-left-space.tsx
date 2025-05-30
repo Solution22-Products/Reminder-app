@@ -155,10 +155,10 @@ const ChatLeftSpace = ({
             ((loggedUserData?.access?.task !== true &&
               loggedUserData?.access?.all === true) ||
               loggedUserData?.access?.task === true))
-            ? "h-[calc(100dvh-155px)] pb-20 overflow-y-auto"
+            ? "h-[calc(100dvh-152px)] pb-20 overflow-y-auto"
             : "h-[calc(100dvh-70px)] pb-0 overflow-y-auto"
         } 
-         overflow-y-auto`}
+         overflow-y-auto playlist-scroll`}
       >
         <div className="">
           <div className="">
@@ -171,11 +171,11 @@ const ChatLeftSpace = ({
             ) : (
               <div className="">
                 {displayTasks.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     {displayTasks.map((task) => (
                       <div
                         key={task.id}
-                        className={`p-3 bg-gray-50 rounded-lg shadow-sm border-b
+                        className={`p-3 bg-white rounded-lg side_focus_color
                         ${
                           task.task_status === "todo"
                             ? "border-l-[4px] border-reddish"
@@ -188,8 +188,8 @@ const ChatLeftSpace = ({
                       `}
                       >
                         <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-1 mt-2 text-sm text-zinc-400">
-                            <Calendar className="text-zinc-400" size={18} />
+                          <div className="flex items-center gap-1 mt-2 text-sm text-zinc400">
+                            <Calendar className="text-zinc400" size={18} />
                             <p>Created: {task.time}</p>
                           </div>
                           <div className="flex justify-between items-center">
@@ -276,6 +276,7 @@ const ChatLeftSpace = ({
                             members={members}
                             selectedUserId={selectedUserId}
                             selectedMember={selectedMember}
+                            kanbanView={false}
                           />
                         ) : (
                           <p className="text-sm font-medium text-zinc-950 mt-1">
@@ -290,8 +291,8 @@ const ChatLeftSpace = ({
                         {(!isEditTask.isEditTask ||
                           isEditTask.id !== task.id) && (
                           <div className="flex justify-between items-center gap-1">
-                            <div className="flex justify-between items-center gap-1 mt-2 text-sm text-zinc-400">
-                              <Timer className="text-zinc-400" size={18} />
+                            <div className="flex justify-between items-center gap-1 mt-2 text-sm text-zinc400">
+                              <Timer className="text-zinc400" size={18} />
                               {task.due_date && (
                                 <span className="">
                                   Due:{" "}
@@ -419,6 +420,7 @@ const ChatLeftSpace = ({
             members={members}
             selectedUserId={selectedUserId}
             selectedMember={selectedMember}
+            kanbanView={false}
           />
         </div>
       )}

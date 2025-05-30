@@ -1,5 +1,4 @@
 "use client";
-import SpaceBar from "../components/spacebar";
 import "./style.css";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -7,9 +6,15 @@ import { useGlobalContext } from "@/context/store";
 import NewNavbar from "@/components/newNavbar";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import KanbanSpacebar from "../components/kanban-spacebar";
+import Notification from "../components/notificationComp";
 
 const CanbanDashboard = () => {
-  const { userId: currentUser } = useGlobalContext();
+  const {
+    userId: currentUser,
+    setAllTasks,
+    resetSearch,
+    clearAllFilters,
+  } = useGlobalContext();
   const route = useRouter();
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(true);
@@ -21,7 +26,6 @@ const CanbanDashboard = () => {
   const [userTeams, setUserTeams] = useState<any[]>([]);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const fetchData = async () => {
     setDataLoading(true);
@@ -130,6 +134,40 @@ const CanbanDashboard = () => {
     }
   };
 
+  const fetchAllTasks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("is_deleted", false);
+
+      if (error) {
+        console.error("Error fetching tasks:", error);
+        return;
+      }
+
+      setAllTasks(data || []);
+
+      // Apply initial filtering based on current space and team
+      // filterAndSortTasks(
+      //   data || [],
+      //   currentSpaceId,
+      //   currentTeamId,
+      //   searchTerm,
+      //   filterOptions,
+      //   sortOption
+      // );
+    } catch (error) {
+      console.error("Unexpected error fetching tasks:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllTasks();
+    resetSearch();
+    clearAllFilters();
+  }, []);
+
   useEffect(() => {
     fetchData();
   }, [currentUser]);
@@ -169,6 +207,7 @@ const CanbanDashboard = () => {
       {/* <SpaceBar
        loggedUserData={userId as any}
         /> */}
+      <Notification notificationTrigger="" />
 
       <NewNavbar
         selectedSpaceId={""}
@@ -180,10 +219,12 @@ const CanbanDashboard = () => {
         spaces={spaces}
       />
       <KanbanSpacebar
-        spaces={spaces}
-        teams={teams}
+        spaces={userSpace}
+        teams={userTeams}
+        members={userMembers}
         selectedSpaceId={selectedSpaceId}
         onSpaceSelect={handleSpaceSelect}
+        fetchData={fetchData}
       />
     </div>
   );

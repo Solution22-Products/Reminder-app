@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ClipboardList, Kanban, LayoutDashboard, LogOut } from "lucide-react";
+import {
+  ChevronDown,
+  ClipboardList,
+  Kanban,
+  LayoutDashboard,
+  LogOut,
+} from "lucide-react";
 import Notification from "@/app/(web)/components/notificationComp";
 import Image from "next/image";
 import { useGlobalContext } from "@/context/store";
@@ -17,6 +23,7 @@ import {
 import { logout } from "@/app/(signin-setup)/logout/action";
 import SidebarNotification from "@/app/(web)/components/sidebarNotify";
 import { Button } from "./ui/button";
+import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
 
 interface ProfileData {
   username: string;
@@ -26,7 +33,11 @@ interface ProfileData {
 }
 
 const WebSidebar = () => {
-  const { userId } = useGlobalContext();
+  const {
+    resetSearch,
+    setSearchTerm,
+    userId: loggedUserData,
+  } = useGlobalContext();
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(false);
@@ -34,6 +45,9 @@ const WebSidebar = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const [sideNotifyTrigger, setSideNotifyTrigger] = useState(false);
+  const [selectOpen, setSelectOpen] = useState<boolean>(false);
+  const [settingsLoader, setSettingsLoader] = useState(false);
+  const [profileLoader, setProfileLoader] = useState(false);
 
   const navItems = [
     {
@@ -132,46 +146,145 @@ const WebSidebar = () => {
 
       <div className="w-full">
         {/* <Notification notificationTrigger="" /> */}
-        <SidebarNotification notifyTrigger={sideNotifyTrigger} />
-        <div className="flex items-center justify-between gap-2 px-[12px] mt-2 py-4">
+        {/* <SidebarNotification notifyTrigger={sideNotifyTrigger} /> */}
+        <div className="flex items-center justify-between gap-2 px-[12px] mt-2 py-3.5 border-t border-[#D4D4D8]">
           <div className="flex items-center gap-2">
-            {profile?.profile_image && (
-              <Image
-                src={profile.profile_image}
-                alt="Logo"
-                width={38}
-                height={38}
-                className="w-[38px] h-[38px] rounded-full"
-              />
-            )}
-            <div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" className="p-0 border-none m-0 text-md font-bold hover:bg-transparent h-fit shadow-none">
+            <Select open={selectOpen} onOpenChange={setSelectOpen}>
+              <SelectTrigger className="w-full h-[44px] border-none bg-white focus:outline-none focus:ring-0 text-sm font-bold shadow-none justify-start gap-1 px-0">
+                <div className="w-full flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {profile?.profile_image && (
+                      <Image
+                        src={profile.profile_image}
+                        alt="Logo"
+                        width={38}
+                        height={38}
+                        className="w-[38px] h-[38px] rounded-full"
+                      />
+                    )}
+                    <div>
+                      <p className="text-base font-bold m-0 p-0 pl-1.5">
+                        {profile?.username
+                          ? profile.username.length > 8
+                            ? profile.username.slice(0, 6) + "..."
+                            : profile.username
+                          : "Guest"}
+                      </p>
+                      <p className="text-sm font-medium text-[#D4D4D8] -mt-1 p-0 capitalize">
+                        {profile?.role}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </SelectTrigger>
+              <SelectContent className="w-[200px] py-3">
+                <div className="flex items-center justify-start gap-1.5 px-3">
+                  {profile?.profile_image && (
+                    <Image
+                      src={profile.profile_image}
+                      alt="Logo"
+                      width={38}
+                      height={38}
+                      className="w-[38px] h-[38px] rounded-full"
+                    />
+                  )}
+                  <div>
+                    <p className="text-base font-bold">
                       {profile?.username
                         ? profile.username.length > 8
                           ? profile.username.slice(0, 6) + "..."
                           : profile.username
                         : "Guest"}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{profile?.username}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              {/* <p className="text-md font-bold m-0 p-0">
-                {profile?.username
-                  ? profile.username.length > 8
-                    ? profile.username.slice(0, 6) + "..."
-                    : profile.username
-                  : "Guest"}
-              </p> */}
-              <p className="text-sm font-medium text-zinc-500 -mt-1 p-0 capitalize">
-                {profile?.role}
-              </p>
-            </div>
+                    </p>
+                    <p className="text-sm font-medium capitalize">
+                      {profile?.email
+                        ? profile.email.length > 8
+                          ? profile.email.slice(0, 15) + "..."
+                          : profile.email
+                        : "Guest"}
+                    </p>
+                  </div>
+                </div>
+                <div className="pt-3 mt-3 text-gray-700 border-t px-3 cursor-pointer">
+                  <p
+                    onClick={() => {
+                      setProfileLoader(true);
+                      setTimeout(() => {
+                        router.push("/user-profile");
+                        setProfileLoader(false);
+                      }, 1000);
+                    }}
+                    className={`text-sm font-normal ${
+                      loggedUserData?.role === "owner" ? "pb-3" : "pb-2"
+                    }`}
+                  >
+                    {profileLoader ? (
+                      <svg
+                        className="animate-spin h-5 w-5 m-auto"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="#1A56DB"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-100"
+                          fill="#1A56DB"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      "Your Profile"
+                    )}
+                  </p>
+                  {profile?.role === "owner" && (
+                    <p
+                      className="text-sm font-normal"
+                      onClick={() => {
+                        setSettingsLoader(true);
+                        setTimeout(() => {
+                          router.push("/spaceSetting");
+                          setSettingsLoader(false);
+                          setSelectOpen(false);
+                        }, 1000);
+                      }}
+                      // disabled={settingsLoader}
+                    >
+                      {settingsLoader ? (
+                        <svg
+                          className="animate-spin h-5 w-5 m-auto"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="#1A56DB"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-100"
+                            fill="#1A56DB"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      ) : (
+                        "Settings"
+                      )}
+                    </p>
+                  )}
+                </div>
+              </SelectContent>
+            </Select>
           </div>
           <>
             <form onSubmit={handleLogout} className="flex">

@@ -20,6 +20,7 @@ import "./style.css";
 import Image from "next/image";
 import Link from "next/link";
 import { useGlobalContext } from "@/context/store";
+import Notification from "../components/notificationComp";
 
 interface employeeData {
   id: string;
@@ -179,25 +180,8 @@ const AccessPage = () => {
   return (
     <>
       <Toaster />
-      <WebNavbar
-        loggedUserData={userId as any}
-        navbarItems={false}
-        searchValue=""
-        setSearchValue=""
-        // teamFilterValue=""
-        setTeamFilterValue=""
-        // taskStatusFilterValue=""
-        setTaskStatusFilterValue=""
-        setDateFilterValue=""
-        filterFn=""
-        filterDialogOpen={''}
-        setFilterDialogOpen={''}
-        teamResetFn = {() => {}}
-        notificationTrigger=''
-        setNotificationTrigger=''
-        allTasks={[]}
-      />
-      <div className="px-3">
+      <div className="p-3 w-full">
+        <Notification notificationTrigger="" />
         <div className="px-3 w-full h-[65px] flex bg-white rounded-[12px] border-none items-center max-w-full">
           <div className="flex justify-between w-full">
             <div className="flex space-x-[10px]">
@@ -368,7 +352,7 @@ const AccessPage = () => {
           </div>
         </div>
 
-        <Table className="block w-full h-[calc(100vh-228px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] my-5 font-inter">
+        <Table className="block w-full h-[calc(100vh-180px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] mt-5 font-inter">
           <TableHeader className="sticky top-0 bg-white">
             <TableRow>
               <TableHead className="text-left w-[18%] pl-4 text-sm font-inter font-semibold text-gray-500 py-5">

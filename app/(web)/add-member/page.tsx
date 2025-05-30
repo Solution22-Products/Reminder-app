@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import WebNavbar from "../components/navbar";
 import Link from "next/link";
 import { useGlobalContext } from "@/context/store";
+import Notification from "../components/notificationComp";
 
 // Define the validation schema using Zod
 const formSchema = z
@@ -264,34 +265,18 @@ const AddMember = () => {
 
   return (
     <>
-    <WebNavbar
-       loggedUserData={userId as any}
-       navbarItems={false}
-       searchValue=''
-       setSearchValue=''
-      //  teamFilterValue=''
-       setTeamFilterValue=''
-      //  taskStatusFilterValue=''
-       setTaskStatusFilterValue=''
-       setDateFilterValue=''
-       filterFn=''
-       filterDialogOpen={''}
-        setFilterDialogOpen={''}
-        teamResetFn = {() => {}}
-        notificationTrigger=''
-        setNotificationTrigger=''
-        allTasks={[]}
-        />
+    <Notification notificationTrigger="" />
       <div
         className="w-full relative"
         style={{ minHeight: "calc(100vh - 60px)" }}
       >
+        
         <div className="hidden">
           <span>{modalPassword}</span>
           <span>{loading}</span>
         </div>
-        <div className="w-full p-4 pt-14">
-          <div className="bg-white pt-4 pb-10 mt-5 rounded-md">
+        <div className="w-full p-3 pt-14">
+          <div className="bg-white pt-4 pb-10 mt-7 rounded-[10px]">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -541,7 +526,7 @@ const AddMember = () => {
                     />
                   </div>
                 </div>
-                <div className="bg-white w-[98%] h-[60px] absolute -top-[8px] right-[16px] rounded-md flex justify-between items-center px-3">
+                <div style={{ width : "-webkit-fill-available"}} className="bg-white h-[60px] mr-3 absolute top-[0px] rounded-[10px] flex justify-between items-center px-3">
                   <h2 className="text-[16px] font-inter font-bold text-[#000000]">User profile</h2>
                   <div className="flex items-center gap-5">
                   <Button

@@ -119,7 +119,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
       setUserSpace([...allSpace]);
     } else {
       const matchedTeams = allTeams.filter((team) =>
-        team.members.some(
+        team?.members?.some(
           (member: any) =>
             member.entity_name === (userId?.entity_name)
         )

@@ -36,6 +36,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { useGlobalContext } from "@/context/store";
 import { Input } from "@/components/ui/input";
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
+import Notification from "../components/notificationComp";
 
 interface Member {
   id: string;
@@ -278,25 +279,8 @@ const Members = () => {
 
   return (
     <>
-      <WebNavbar
-        loggedUserData={userId as any}
-        navbarItems={false}
-        searchValue=""
-        setSearchValue=""
-        //  teamFilterValue=''
-        setTeamFilterValue=""
-        //  taskStatusFilterValue=''
-        setTaskStatusFilterValue=""
-        setDateFilterValue=""
-        filterFn=""
-        filterDialogOpen={""}
-        setFilterDialogOpen={""}
-        teamResetFn={() => {}}
-        notificationTrigger=''
-        setNotificationTrigger=''
-        allTasks={[]}
-      />
-      <div className="px-3">
+      <div className="p-3 w-full">
+        <Notification notificationTrigger="" />
         <div className="px-3 w-full h-[65px] flex bg-white rounded-[12px] border-none items-center max-w-full">
           <div className="flex justify-between w-full">
             <div className="flex space-x-[10px]">
@@ -443,7 +427,7 @@ const Members = () => {
           </div>
         </div>
         <div className="pt-[18px] pb-[18px]">
-          <Table className=" block w-full h-[calc(100vh-226px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] font-inter">
+          <Table className=" block w-full h-[calc(100vh-175px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] font-inter">
             <TableHeader className="sticky top-0 bg-white z-0 ">
               <TableRow>
                 <TableHead className="w-[28%] px-4 py-4 text-sm font-inter font-semibold text-gray-500">

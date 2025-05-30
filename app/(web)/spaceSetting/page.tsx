@@ -91,7 +91,7 @@ const SettingsPage = () => {
 
   return (
     <>
-    <WebNavbar
+    {/* <WebNavbar
        loggedUserData={loggedUserData as any}
        navbarItems={false}
        searchValue=''
@@ -108,7 +108,7 @@ const SettingsPage = () => {
         notificationTrigger=''
         setNotificationTrigger=''
         allTasks={[]}
-        />
+        /> */}
       <SpaceSetting/> 
     </>
   );

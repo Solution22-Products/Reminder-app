@@ -4,9 +4,10 @@ import "./style.css";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useGlobalContext } from "@/context/store";
+import Notification from "../components/notificationComp";
 
 const WebDashboard1 = () => {
-  const {userId} = useGlobalContext();
+  const { userId } = useGlobalContext();
   const route = useRouter();
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +24,6 @@ const WebDashboard1 = () => {
       route.push("/dashboard");
       setLoading(false);
     }
-
   }, [route]);
 
   if (loading) {
@@ -39,6 +39,7 @@ const WebDashboard1 = () => {
 
   return (
     <>
+      <Notification notificationTrigger="" />
       <h1>Dashboard page</h1>
     </>
   );

@@ -117,3 +117,9 @@ body {
   background-color: #555;
   display: none;
 }
+
+.side_focus_color{
+    border-right: 1px solid #D4D4D8;
+    border-top: 1px solid #D4D4D8;
+    border-bottom: 1px solid #D4D4D8;
+  }

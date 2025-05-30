@@ -34,6 +34,7 @@ import { supabase } from "@/utils/supabase/supabaseClient";
 import Image from "next/image";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useGlobalContext } from "@/context/store";
+import Notification from "./notificationComp";
 interface Space {
   id: string;
   name: string;
@@ -395,7 +396,8 @@ export default function SpaceSetting({}) {
   return (
     <>
       {/* <WebNavbar /> */}
-      <div className="px-3">
+      <div className="p-3 w-full">
+        <Notification notificationTrigger="" />
         {/* Header with navigation and New Space button */}
         <div className="px-3 w-full h-[65px] flex bg-white rounded-[12px] border-none items-center max-w-full">
           <div className="flex space-x-[10px]">
@@ -532,7 +534,7 @@ export default function SpaceSetting({}) {
 
         {/* Table displaying spaces */}
         <div className="pt-[18px] pb-[18px]">
-          <Table className="block w-full h-fit max-h-[calc(100vh-164px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] font-inter ">
+          <Table className="block w-full h-[calc(100vh-115px)] overflow-y-auto playlist-scroll bg-white rounded-[10px] font-inter ">
             <TableHeader className="sticky top-0 bg-white ">
               <TableRow>
                 <TableHead className="px-4 py-4 w-[28%] text-left text-sm font-inter font-semibold text-gray-500">

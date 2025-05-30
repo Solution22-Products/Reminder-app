@@ -6,12 +6,13 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/utils/supabase/supabaseClient"
 import { useGlobalContext } from "@/context/store"
 import './style.css'
+import Notification from "../components/notificationComp"
 
 const AdminView = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [dataLoading, setDataLoading] = useState(true)
-  const { userId: currentUser } = useGlobalContext()
+  const { userId: currentUser, setKanbanTasks, resetSearch, clearAllFilters } = useGlobalContext()
 
   // State to track selected IDs
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null)
@@ -121,8 +122,11 @@ const AdminView = () => {
   };  
 
   useEffect(() => {
-    fetchData()
-  }, [currentUser])
+    fetchData();
+    setKanbanTasks(true);
+    resetSearch();
+    clearAllFilters();
+  }, [currentUser, setKanbanTasks])
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -170,6 +174,7 @@ const AdminView = () => {
 
   return (
     <div className="w-full min-h-[100dvh] h-full flex">
+      <Notification notificationTrigger="" />
       <div className="w-[75%]">
         <ChatLeftSpace
           selectedSpaceId={selectedSpaceId}
@@ -181,7 +186,7 @@ const AdminView = () => {
           isLoading={dataLoading}
         />
       </div>
-      <div className="w-[25%] h-[100dvh] overflow-y-auto bg-white flex flex-col space-y-5 justify-start border-l border-gray-300">
+      <div className="w-[25%] h-[100dvh] overflow-y-auto playlist-scroll bg-white flex flex-col space-y-5 justify-start border-l border-gray-300">
         <ChatRightSpace
           onSelectSpace={handleSelectSpace}
           onSelectTeam={handleSelectTeam}

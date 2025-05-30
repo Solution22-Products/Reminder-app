@@ -1,7 +1,7 @@
 import { Mention, MentionsInput } from "react-mentions";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { Send } from "lucide-react";
+import { CircleCheckBig, CircleX, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { useGlobalContext } from "@/context/store";
@@ -39,6 +39,7 @@ interface MentionData {
   members: any[];
   selectedUserId: string | null;
   selectedMember: any;
+  kanbanView?: boolean;
 }
 
 const NewReactMentions = ({
@@ -57,6 +58,7 @@ const NewReactMentions = ({
   members,
   selectedUserId,
   selectedMember,
+  kanbanView,
 }: MentionData) => {
   const { userId, fetchAllTasks } = useGlobalContext();
   const [inputValue, setInputValue] = useState("");
@@ -130,11 +132,11 @@ const NewReactMentions = ({
 
 
   const filterTeamAndSpace = () => {
-    const selectedMember = members.find((member) => member.id === selectedUserId);
+    const selectedMember = members?.find((member) => member.id === selectedUserId);
     if (!selectedMember) return;
 
     const matchedTeams = teams.filter((team) =>
-      team.members.some((member: any) => member.id === selectedMember.id)
+      team?.members?.some((member: any) => member.id === selectedMember.id)
     );
 
     const uniqueSpaces = getUniqueItems(
@@ -157,7 +159,7 @@ const NewReactMentions = ({
 
     const filteredTeams = teams.filter((team) =>
       team.space_id === spaceId &&
-      team.members.some((member: any) => member.id === selectedMemberId)
+      team?.members?.some((member: any) => member.id === selectedMemberId)
     );
 
     const uniqueTeams = getUniqueItems(filteredTeams, "id");
@@ -193,6 +195,15 @@ const NewReactMentions = ({
   };
 
   const handleChange = (event: { target: { value: string } }) => {
+    if (!selectedTeam?.members || selectedTeam.members.length === 0) {
+      toast({
+        title: "No Members",
+        description: "No members are there in the team. You can't create a task.",
+        variant: "destructive",
+        duration: 3000,
+      })
+      return
+    }
     setInputValue(event.target.value);
   };
 
@@ -628,9 +639,9 @@ const NewReactMentions = ({
   return (
     <>
       <div
-        className={`flex items-center justify-between ${
+        className={`${classname} flex items-center justify-between gap-3 ${
           !editTask ? "px-3" : "px-0"
-        } py-3 border-black text-center h-[68px]
+        } py-3 border-black text-center
         ${!editTask ? "bg-white" : "bg-transparent"}`}
       >
         {(selectedUserId && isEditTask) ? (
@@ -699,13 +710,13 @@ const NewReactMentions = ({
       {isEditTask && (
         <div className="flex justify-end items-center gap-2">
           <Button variant="outline" onClick={() => {setIsEditTask(false); setInputValue(''); setMemberInputValue('');}}>
-            Cancel
+            {kanbanView ? <CircleX size={22} className="text-zinc-950" /> : "Cancel"}
           </Button>
           <Button
             className="mt-0 bg-[#1A56DB] hover:bg-[#1A56DB]"
             onClick={selectedUserId ? handleUpdateMemberTask : handleUpdateTask}
           >
-            Update
+            {kanbanView ? <CircleCheckBig size={22} className="text-white" /> : "Update"}
           </Button>
         </div>
       )}

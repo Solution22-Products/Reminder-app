@@ -31,6 +31,9 @@ const config: Config = {
   			webbg: '#E5ECF6',
   			greywithblack: '#272727',
   			blackshade: '#09090B',
+			zinc400: '#A1A1AA',
+			gray400: '#9CA3AF',
+			blue50: '#EBF5FF',
   			primaryColor: {
   				'700': '#1A56DB'
   			},

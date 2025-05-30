@@ -11,6 +11,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { boolean } from "zod";
 
 interface UserData {
   id: string;
@@ -74,6 +75,7 @@ interface ContextProps {
   clearAllFilters: () => void;
   sortOption: SortOption;
   setSortOption: Dispatch<SetStateAction<SortOption>>;
+  setKanbanTasks: Dispatch<SetStateAction<boolean>>;
 }
 
 const GlobalContext = createContext<ContextProps>({
@@ -100,6 +102,7 @@ const GlobalContext = createContext<ContextProps>({
   clearAllFilters: () => null,
   sortOption: { field: "time", direction: "desc" },
   setSortOption: () => null,
+  setKanbanTasks: (boolean) => null,
 });
 
 export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -124,6 +127,7 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
     field: "time",
     direction: "desc",
   });
+  const [kanbanTasks, setKanbanTasks] = useState<boolean>(true);
 
   const fetchAllTasks = async () => {
     try {
@@ -164,15 +168,16 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     // First filter by space and team if they are selected
     let filtered = [...tasks]; // Create a copy to avoid mutating the original array
-
-    if (spaceId && teamId) {
-      filtered = filtered.filter(
-        (task) => task.space_id === spaceId && task.team_id === teamId
-      );
-    } else if (spaceId) {
-      filtered = filtered.filter((task) => task.space_id === spaceId);
-    } else if (teamId) {
-      filtered = filtered.filter((task) => task.team_id === teamId);
+    if (kanbanTasks) {
+      if (spaceId && teamId) {
+        filtered = filtered.filter(
+          (task) => task.space_id === spaceId && task.team_id === teamId
+        );
+      } else if (spaceId) {
+        filtered = filtered.filter((task) => task.space_id === spaceId);
+      } else if (teamId) {
+        filtered = filtered.filter((task) => task.team_id === teamId);
+      }
     }
 
     // Then apply search term if it exists
@@ -343,7 +348,7 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
         sortOption
       );
     }
-  }, [currentSpaceId, currentTeamId]);
+  }, [currentSpaceId, currentTeamId, kanbanTasks]);
 
   // Re-filter when filter options change
   useEffect(() => {
@@ -357,7 +362,7 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
         sortOption
       );
     }
-  }, [filterOptions, sortOption]);
+  }, [filterOptions, sortOption, kanbanTasks]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -410,6 +415,7 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
         clearAllFilters,
         sortOption,
         setSortOption,
+        setKanbanTasks,
       }}
     >
       {children}

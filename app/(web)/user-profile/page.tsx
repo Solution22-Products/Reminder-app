@@ -22,6 +22,7 @@ import Image from "next/image";
 import { Eye, EyeOff, Plus } from "lucide-react";
 import { passwordReset } from "./action";
 import { Router } from "next/router";
+import Notification from "../components/notificationComp";
 
 interface UserData {
     id: string;
@@ -258,30 +259,13 @@ const UserProfile = () => {
 
   return (
     <>
-      <WebNavbar
-        loggedUserData={loggedUserData as any}
-        navbarItems={false}
-        searchValue=""
-        setSearchValue=""
-        // teamFilterValue=""
-        setTeamFilterValue=""
-        // taskStatusFilterValue=""
-        setTaskStatusFilterValue=""
-        setDateFilterValue=""
-        filterFn=""
-        filterDialogOpen={''}
-        setFilterDialogOpen={''}
-        teamResetFn = {() => {}}
-        notificationTrigger=''
-        setNotificationTrigger=''
-        allTasks={[]}
-      />
       <div className="hidden">
         <span>{modalPassword}</span>
       </div>
-      <div className="px-3">
+      <div className="p-3 w-full">
+        <Notification notificationTrigger="" />
         <div className="w-full pb-4 pt-14">
-          <div className="bg-white pt-4 pb-10 mt-5 rounded-[10px]">
+          <div className="bg-white pt-4 pb-10 mt-4 rounded-[10px]">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -472,7 +456,7 @@ const UserProfile = () => {
                     />
                   </div>
                 </div>
-                <div className="bg-white w-[98%] h-[60px] absolute top-[50px] rounded-[10px] flex justify-between items-center px-3">
+                <div style={{ width : "-webkit-fill-available"}} className="bg-white h-[60px] mr-3 absolute top-[0px] rounded-[10px] flex justify-between items-center px-3">
                   <h2 className="text-[16px] font-inter font-bold text-[#000000]">User profile</h2>
                   <div className="flex items-center gap-5">
                   <Button

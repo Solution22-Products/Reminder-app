@@ -397,7 +397,7 @@ export default function SpaceSetting({}) {
     <>
       {/* <WebNavbar /> */}
       <div className="p-3 w-full">
-        <Notification notificationTrigger="" />
+        <Notification />
         {/* Header with navigation and New Space button */}
         <div className="px-3 w-full h-[65px] flex bg-white rounded-[12px] border-none items-center max-w-full">
           <div className="flex space-x-[10px]">

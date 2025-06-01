@@ -39,7 +39,7 @@ const WebDashboard1 = () => {
 
   return (
     <>
-      <Notification notificationTrigger="" />
+      <Notification />
       <h1>Dashboard page</h1>
     </>
   );

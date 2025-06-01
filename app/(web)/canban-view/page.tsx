@@ -207,7 +207,7 @@ const CanbanDashboard = () => {
       {/* <SpaceBar
        loggedUserData={userId as any}
         /> */}
-      <Notification notificationTrigger="" />
+      <Notification />
 
       <NewNavbar
         selectedSpaceId={""}

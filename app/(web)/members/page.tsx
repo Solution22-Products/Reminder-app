@@ -280,7 +280,7 @@ const Members = () => {
   return (
     <>
       <div className="p-3 w-full">
-        <Notification notificationTrigger="" />
+        <Notification />
         <div className="px-3 w-full h-[65px] flex bg-white rounded-[12px] border-none items-center max-w-full">
           <div className="flex justify-between w-full">
             <div className="flex space-x-[10px]">

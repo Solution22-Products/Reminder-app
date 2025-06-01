@@ -277,6 +277,7 @@ const ChatLeftSpace = ({
                             selectedUserId={selectedUserId}
                             selectedMember={selectedMember}
                             kanbanView={false}
+                            setIsDialogOpen={''}
                           />
                         ) : (
                           <p className="text-sm font-medium text-zinc-950 mt-1">
@@ -421,6 +422,7 @@ const ChatLeftSpace = ({
             selectedUserId={selectedUserId}
             selectedMember={selectedMember}
             kanbanView={false}
+            setIsDialogOpen={''}
           />
         </div>
       )}

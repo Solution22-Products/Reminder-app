@@ -174,7 +174,7 @@ const AdminView = () => {
 
   return (
     <div className="w-full min-h-[100dvh] h-full flex">
-      <Notification notificationTrigger="" />
+      <Notification />
       <div className="w-[75%]">
         <ChatLeftSpace
           selectedSpaceId={selectedSpaceId}

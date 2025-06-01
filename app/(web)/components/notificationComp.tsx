@@ -23,8 +23,8 @@ interface NotificationProps {
   notificationTrigger: any;
 }
 
-const Notification: React.FC<NotificationProps> = ({ notificationTrigger }) => {
-  const { userId } = useGlobalContext();
+const Notification = () => {
+  const { userId, notificationTrigger } = useGlobalContext();
   const [unNotifiedTask, setUnNotifiedTask] = useState<any[]>([]);
   const [adminTaskNotify, setAdminTaskNotify] = useState<any[]>([]);
   const [isRemoving, setIsRemoving] = useState<Record<number, boolean>>({});

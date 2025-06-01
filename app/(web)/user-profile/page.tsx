@@ -263,7 +263,7 @@ const UserProfile = () => {
         <span>{modalPassword}</span>
       </div>
       <div className="p-3 w-full">
-        <Notification notificationTrigger="" />
+        <Notification />
         <div className="w-full pb-4 pt-14">
           <div className="bg-white pt-4 pb-10 mt-4 rounded-[10px]">
             <Form {...form}>

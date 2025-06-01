@@ -76,6 +76,8 @@ interface ContextProps {
   sortOption: SortOption;
   setSortOption: Dispatch<SetStateAction<SortOption>>;
   setKanbanTasks: Dispatch<SetStateAction<boolean>>;
+  notificationTrigger: boolean;
+  setNotificationTrigger: Dispatch<SetStateAction<boolean>>;
 }
 
 const GlobalContext = createContext<ContextProps>({
@@ -103,6 +105,8 @@ const GlobalContext = createContext<ContextProps>({
   sortOption: { field: "time", direction: "desc" },
   setSortOption: () => null,
   setKanbanTasks: (boolean) => null,
+  notificationTrigger: false,
+  setNotificationTrigger: () => null,
 });
 
 export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -128,6 +132,7 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
     direction: "desc",
   });
   const [kanbanTasks, setKanbanTasks] = useState<boolean>(true);
+  const [notificationTrigger, setNotificationTrigger] = useState(false);
 
   const fetchAllTasks = async () => {
     try {
@@ -416,6 +421,8 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
         sortOption,
         setSortOption,
         setKanbanTasks,
+        notificationTrigger,
+        setNotificationTrigger,
       }}
     >
       {children}

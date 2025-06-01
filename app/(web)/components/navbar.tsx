@@ -211,7 +211,7 @@ const WebNavbar: React.FC<loggedUserDataProps> = ({
                   )}
                 </div>
               </div>
-              <Notification notificationTrigger={notificationTrigger} />
+              {/* <Notification notificationTrigger={notificationTrigger} /> */}
             </>
           )}
 

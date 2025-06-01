@@ -40,6 +40,7 @@ interface MentionData {
   selectedUserId: string | null;
   selectedMember: any;
   kanbanView?: boolean;
+  setIsDialogOpen?: any;
 }
 
 const NewReactMentions = ({
@@ -59,8 +60,9 @@ const NewReactMentions = ({
   selectedUserId,
   selectedMember,
   kanbanView,
+  setIsDialogOpen,
 }: MentionData) => {
-  const { userId, fetchAllTasks } = useGlobalContext();
+  const { userId, fetchAllTasks, setNotificationTrigger, notificationTrigger } = useGlobalContext();
   const [inputValue, setInputValue] = useState("");
   const [memberInputValue, setMemberInputValue] = useState("");
   const [mentionLevel, setMentionLevel] = useState<number>(1);
@@ -320,6 +322,8 @@ const NewReactMentions = ({
           duration: 3000,
         });
         setMemberInputValue("");
+        setNotificationTrigger(!notificationTrigger);
+        setIsDialogOpen(false);
       } catch (err) {
         console.error("Error creating task:", err);
       }
@@ -426,6 +430,8 @@ const NewReactMentions = ({
           duration: 3000,
         });
         setInputValue("");
+        setNotificationTrigger(!notificationTrigger);
+        setIsDialogOpen(false);
       } catch (err) {
         console.error("Error creating task:", err);
       }

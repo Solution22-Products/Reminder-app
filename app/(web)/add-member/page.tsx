@@ -98,7 +98,7 @@ const AddMember = () => {
     },
   });
 
-  const {userId} = useGlobalContext();
+  const { userId } = useGlobalContext();
   const route = useRouter();
   const [saveLoader, setSaveLoader] = useState(false);
   const [confirmShowPassword, setConfirmShowPassword] = useState(false);
@@ -129,13 +129,12 @@ const AddMember = () => {
         setSaveLoader(true);
         let imageUrl = data.profile_image;
         if (file) {
-          const { error: uploadError } =
-            await supabase.storage
-              .from("profiles")
-              .upload(`profiles/${file.name}`, file, {
-                cacheControl: "3600",
-                upsert: true,
-              });
+          const { error: uploadError } = await supabase.storage
+            .from("profiles")
+            .upload(`profiles/${file.name}`, file, {
+              cacheControl: "3600",
+              upsert: true,
+            });
 
           if (uploadError)
             throw new Error(`Image upload failed: ${uploadError.message}`);
@@ -151,22 +150,26 @@ const AddMember = () => {
           console.error("Sign up error:", signUpResponse);
         }
 
-        const { error: memberError } = await supabase
-          .from("users")
-          .insert({
-            id : data.id,
-            username: data.name,
-            designation: data.Designation,
-            role: data.role,
-            department: data.department,
-            email: data.email,
-            // mobile: data.mobile,
-            profile_image: imageUrl,
-            // userId: signUpResponse?.data?.user?.id,
-            entity_name: entityName,
-            // password: data.password,
-            // is_deleted: false,
-          });
+        const { error: memberError } = await supabase.from("users").insert({
+          id: data.id,
+          username: data.name,
+          designation: data.Designation,
+          role: data.role,
+          department: data.department,
+          email: data.email,
+          mobile: data.mobile,
+          profile_image: imageUrl,
+          userId: signUpResponse?.data?.user?.id,
+          entity_name: entityName,
+          password: data.password,
+          is_deleted: false,
+          access : {
+              "all" : false,
+              "task" : false,
+              "team" : false,
+              "space" : false
+            }
+        });
 
         if (memberError) {
           console.error("Member creation error:", memberError);
@@ -181,6 +184,26 @@ const AddMember = () => {
         form.reset();
         setFile(null);
         setImageUrl("");
+        const sendEmail = async (to: any, name: any, password: any) => {
+          const response = await fetch("/api/send-cred-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              to,
+              name,
+              password,
+              link: "http://localhost:3000/dashboard",
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to send email");
+          }
+        };
+
+        sendEmail(data.email, data.name, data.password);
         toast({
           title: "Member Added Successfully!",
           description: "Member has been added successfully.",
@@ -244,7 +267,7 @@ const AddMember = () => {
     }
   }, [route]);
 
-  if (userId?.role === 'User'){
+  if (userId?.role === "User") {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <div className="flex flex-col items-center gap-3">
@@ -257,7 +280,17 @@ const AddMember = () => {
           />
           <h1 className="text-9xl font-bold">403</h1>
           <p className="text-2xl font-bold">Access Denied!</p>
-          <h4 className="text-sm text-gray-500 text-center font-inter">You don’t have access to this area of application. Speak <br /> to your administrator to unblock this feature. <br /> You can go back to <Link href="/dashboard" className="text-primaryColor-700 underline font-bold">Dashboard</Link></h4>
+          <h4 className="text-sm text-gray-500 text-center font-inter">
+            You don’t have access to this area of application. Speak <br /> to
+            your administrator to unblock this feature. <br /> You can go back
+            to{" "}
+            <Link
+              href="/dashboard"
+              className="text-primaryColor-700 underline font-bold"
+            >
+              Dashboard
+            </Link>
+          </h4>
         </div>
       </div>
     );
@@ -265,12 +298,11 @@ const AddMember = () => {
 
   return (
     <>
-    <Notification notificationTrigger="" />
+      <Notification />
       <div
         className="w-full relative"
         style={{ minHeight: "calc(100vh - 60px)" }}
       >
-        
         <div className="hidden">
           <span>{modalPassword}</span>
           <span>{loading}</span>
@@ -459,11 +491,11 @@ const AddMember = () => {
                           <div className="flex justify-between items-center">
                             <FormLabel className="mb-3">Password</FormLabel>
                             <p
-                            className="w-fit bg-primaryColor-700 text-white px-1 rounded text-xs cursor-pointer"
-                            onClick={generatePassword}
-                          >
-                            Generate
-                          </p>
+                              className="w-fit bg-primaryColor-700 text-white px-1 rounded text-xs cursor-pointer"
+                              onClick={generatePassword}
+                            >
+                              Generate
+                            </p>
                           </div>
                           <FormControl>
                             <Input
@@ -526,10 +558,15 @@ const AddMember = () => {
                     />
                   </div>
                 </div>
-                <div style={{ width : "-webkit-fill-available"}} className="bg-white h-[60px] mr-3 absolute top-[0px] rounded-[10px] flex justify-between items-center px-3">
-                  <h2 className="text-[16px] font-inter font-bold text-[#000000]">User profile</h2>
+                <div
+                  style={{ width: "-webkit-fill-available" }}
+                  className="bg-white h-[60px] mr-3 absolute top-[0px] rounded-[10px] flex justify-between items-center px-3"
+                >
+                  <h2 className="text-[16px] font-inter font-bold text-[#000000]">
+                    User profile
+                  </h2>
                   <div className="flex items-center gap-5">
-                  <Button
+                    <Button
                       type="button"
                       variant="outline"
                       className="h-[40px] w-20"

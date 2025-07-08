@@ -3,13 +3,11 @@
 import { useState, useEffect, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  ChevronDown,
   ClipboardList,
   Kanban,
   LayoutDashboard,
   LogOut,
 } from "lucide-react";
-import Notification from "@/app/(web)/components/notificationComp";
 import Image from "next/image";
 import { useGlobalContext } from "@/context/store";
 import { getLoggedInUserData } from "@/app/(signin-setup)/sign-in/action";
@@ -21,9 +19,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { logout } from "@/app/(signin-setup)/logout/action";
-import SidebarNotification from "@/app/(web)/components/sidebarNotify";
-import { Button } from "./ui/button";
-import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
+import { Select, SelectContent, SelectTrigger } from "./ui/select";
 
 interface ProfileData {
   username: string;
@@ -145,14 +141,12 @@ const WebSidebar = () => {
       </div>
 
       <div className="w-full">
-        {/* <Notification notificationTrigger="" /> */}
-        {/* <SidebarNotification notifyTrigger={sideNotifyTrigger} /> */}
         <div className="flex items-center justify-between gap-2 px-[12px] mt-2 py-3.5 border-t border-[#D4D4D8]">
           <div className="flex items-center gap-2">
             <Select open={selectOpen} onOpenChange={setSelectOpen}>
               <SelectTrigger className="w-full h-[44px] border-none bg-white focus:outline-none focus:ring-0 text-sm font-bold shadow-none justify-start gap-1 px-0">
                 <div className="w-full flex items-center justify-between">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {profile?.profile_image && (
                       <Image
                         src={profile.profile_image}
@@ -163,14 +157,14 @@ const WebSidebar = () => {
                       />
                     )}
                     <div>
-                      <p className="text-base font-bold m-0 p-0 pl-1.5">
+                      <p className="text-base font-bold m-0 p-0">
                         {profile?.username
                           ? profile.username.length > 8
                             ? profile.username.slice(0, 6) + "..."
                             : profile.username
                           : "Guest"}
                       </p>
-                      <p className="text-sm font-medium text-[#D4D4D8] -mt-1 p-0 capitalize">
+                      <p className="text-left text-sm font-medium text-[#D4D4D8] -mt-1 p-0 capitalize">
                         {profile?.role}
                       </p>
                     </div>

@@ -76,7 +76,7 @@ const ReactMentions : React.FC<ReactProps> = ({ setTaskTrigger, setNotifyMobTrig
       if (!userId) return;
 
       const matchedTeams = teams?.filter((team) =>
-        team.members.some((member : any) => member.entity_name === userId.entity_name)
+        team?.members?.some((member : any) => member.entity_name === userId.entity_name)
       ) || [];
 
       const matchedSpaceIds = new Set(matchedTeams.map((team) => team.space_id));

@@ -45,7 +45,6 @@ import AddTaskModal from "./addTaskModal";
 import Notification from "./notificationComp";
 
 interface NavbarProps {
-  
   spaces: any[];
   selectedSpaceId?: string | null;
   onSpaceSelect?: (spaceId: string) => void;
@@ -94,9 +93,9 @@ const KanbanSpacebar = ({
   const [currentDeleteTeam, setCurrentDeleteTeam] = useState<any>(null);
   const [deleteTeamDialogOpen, setDeleteTeamDialogOpen] = useState(false);
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const getTeamsBySpaceId = (spaceId: string) => {
     return teams.filter((team) => team.space_id === spaceId);
@@ -193,176 +192,199 @@ const KanbanSpacebar = ({
 
   const checkScrollButtons = () => {
     if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
-      setCanScrollLeft(scrollLeft > 0)
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
     }
-  }
+  };
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      const scrollAmount = scrollContainerRef.current.clientWidth / 2
+      const scrollAmount = scrollContainerRef.current.clientWidth / 2;
       scrollContainerRef.current.scrollBy({
         left: -scrollAmount,
         behavior: "smooth",
-      })
+      });
     }
-  }
+  };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      const scrollAmount = scrollContainerRef.current.clientWidth / 2
+      const scrollAmount = scrollContainerRef.current.clientWidth / 2;
       scrollContainerRef.current.scrollBy({
         left: scrollAmount,
         behavior: "smooth",
-      })
+      });
     }
-  }
+  };
 
   useEffect(() => {
-    const container = scrollContainerRef.current
+    const container = scrollContainerRef.current;
     if (container) {
       // Initial check
-      checkScrollButtons()
+      checkScrollButtons();
 
       // Add event listener for scroll
-      container.addEventListener("scroll", checkScrollButtons)
+      container.addEventListener("scroll", checkScrollButtons);
 
       // Add event listener for resize
-      window.addEventListener("resize", checkScrollButtons)
+      window.addEventListener("resize", checkScrollButtons);
 
       return () => {
-        container.removeEventListener("scroll", checkScrollButtons)
-        window.removeEventListener("resize", checkScrollButtons)
-      }
+        container.removeEventListener("scroll", checkScrollButtons);
+        window.removeEventListener("resize", checkScrollButtons);
+      };
     }
-  }, [])
+  }, []);
 
   // Check scroll buttons when spaces change
   useEffect(() => {
-    const timer = setTimeout(checkScrollButtons, 100)
-    return () => clearTimeout(timer)
-  }, [spaces])
+    const timer = setTimeout(checkScrollButtons, 100);
+    return () => clearTimeout(timer);
+  }, [spaces]);
 
   const hasPermission =
     loggedUserData?.role === "owner" ||
     (loggedUserData?.role === "User" &&
-      ((loggedUserData?.access?.space !== true && loggedUserData?.access?.all === true) ||
-        loggedUserData?.access?.space === true))
+      ((loggedUserData?.access?.space !== true &&
+        loggedUserData?.access?.all === true) ||
+        loggedUserData?.access?.space === true));
 
   return (
     <>
       <div className="flex items-center justify-between p-3 gap-3 w-full">
-      {/* Space Navigation Area - 80% */}
-      {
-        activeSpaceId && (
+        {/* Space Navigation Area - 80% */}
+        {activeSpaceId && (
           <div className="w-[80%] flex items-center gap-2">
-        {/* Previous Button */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={scrollLeft}
-          disabled={!canScrollLeft}
-          className={`h-11 w-8 flex-shrink-0 ${!canScrollLeft ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          <ChevronLeft size={16} />
-          <span className="sr-only">Previous spaces</span>
-        </Button>
+            {/* Previous Button */}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={scrollLeft}
+              disabled={!canScrollLeft}
+              className={`h-11 w-8 flex-shrink-0 ${
+                !canScrollLeft ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <ChevronLeft size={16} />
+              <span className="sr-only">Previous spaces</span>
+            </Button>
 
-        {/* Scrollable Spaces Container */}
-        <div className="flex-1 relative overflow-hidden">
-          <div
-            ref={scrollContainerRef}
-            className="flex items-center overflow-x-auto bg-[#E2E8F0] p-1 rounded-sm no-scrollbar"
-            style={{ scrollbarWidth: "none" }}
-          >
-            {spaces.length > 0 &&
-              spaces.map((space) => (
-                <div
-                  key={space.id}
-                  onClick={() => handleSpaceClick(space.id)}
-                  className={`flex items-center capitalize gap-1 px-3 py-1 cursor-pointer text-sm whitespace-nowrap rounded-sm flex-shrink-0 ${
-                    activeSpaceId === space.id ? "bg-white text-zinc-950 font-medium" : "text-[#606267]"
-                  }`}
-                >
-                  {space.display ? (
-                    <>
-                      {space.display.length > 18 ? <p>{space.display.slice(0, 18) + "..."}</p> : <p>{space.display}</p>}
-                    </>
-                  ) : (
-                    <>
-                      {space.space_name.length > 15 ? (
-                        <p>{space.space_name.slice(0, 15) + "..."}</p>
+            {/* Scrollable Spaces Container */}
+            <div className="flex-1 relative overflow-hidden">
+              <div
+                ref={scrollContainerRef}
+                className="flex items-center overflow-x-auto bg-[#E2E8F0] p-1 rounded-sm no-scrollbar"
+                style={{ scrollbarWidth: "none" }}
+              >
+                {spaces.length > 0 &&
+                  spaces.map((space) => (
+                    <div
+                      key={space.id}
+                      onClick={() => handleSpaceClick(space.id)}
+                      className={`flex items-center capitalize gap-1 px-3 py-1 cursor-pointer text-sm whitespace-nowrap rounded-sm flex-shrink-0 ${
+                        activeSpaceId === space.id
+                          ? "bg-white text-zinc-950 font-medium"
+                          : "text-[#606267]"
+                      }`}
+                    >
+                      {space.display ? (
+                        <>
+                          {space.display.length > 18 ? (
+                            <p>{space.display.slice(0, 18) + "..."}</p>
+                          ) : (
+                            <p>{space.display}</p>
+                          )}
+                        </>
                       ) : (
-                        <p>{space.space_name}</p>
+                        <>
+                          {space.space_name.length > 15 ? (
+                            <p>{space.space_name.slice(0, 15) + "..."}</p>
+                          ) : (
+                            <p>{space.space_name}</p>
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
-                  {hasPermission && (
-                    <div className="flex items-center gap-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={`h-6 w-6 ${activeSpaceId === space.id ? "block" : "hidden"}`}
-                          >
-                            <MoreVertical size={14} />
-                            <span className="sr-only">More options</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => handleEditSpace(space, e)}>
-                            <Pencil size={16} className="mr-2" />
-                            Edit Space
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => handleDeleteSpace(space, e)}>
-                            <Trash2 size={16} className="mr-2" />
-                            Delete Space
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {hasPermission && (
+                        <div className="flex items-center gap-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              asChild
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-6 w-6 ${
+                                  activeSpaceId === space.id
+                                    ? "block"
+                                    : "hidden"
+                                }`}
+                              >
+                                <MoreVertical size={14} />
+                                <span className="sr-only">More options</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={(e) => handleEditSpace(space, e)}
+                              >
+                                <Pencil size={16} className="mr-2" />
+                                Edit Space
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => handleDeleteSpace(space, e)}
+                              >
+                                <Trash2 size={16} className="mr-2" />
+                                Delete Space
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  ))}
+              </div>
+            </div>
+
+            {/* Next Button */}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={scrollRight}
+              disabled={!canScrollRight}
+              className={`h-11 w-8 flex-shrink-0 ${
+                !canScrollRight ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <ChevronRight size={16} />
+              <span className="sr-only">Next spaces</span>
+            </Button>
           </div>
-        </div>
+        )}
 
-        {/* Next Button */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={scrollRight}
-          disabled={!canScrollRight}
-          className={`h-11 w-8 flex-shrink-0 ${!canScrollRight ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          <ChevronRight size={16} />
-          <span className="sr-only">Next spaces</span>
-        </Button>
+        {/* Create Space Button Area - 20% */}
+        {hasPermission && (
+          <div className="w-[20%] flex justify-end">
+            <CreateSpaceAndTeam
+              spaceTrigger={spaceTrigger}
+              setSpaceTrigger={setSpaceTrigger}
+            />
+          </div>
+        )}
+
+        <style jsx global>{`
+          .no-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+
+          .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
       </div>
-        )
-      }
-      
-
-      {/* Create Space Button Area - 20% */}
-      {hasPermission && (
-        <div className="w-[20%] flex justify-end">
-          <CreateSpaceAndTeam spaceTrigger={spaceTrigger} setSpaceTrigger={setSpaceTrigger} />
-        </div>
-      )}
-
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
-    </div>
 
       {/* Filter, Search, and Sort Controls */}
 
@@ -417,43 +439,55 @@ const KanbanSpacebar = ({
                             >
                               {isTeamSelected ? "Deselect" : "Select"}
                             </Button> */}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                >
-                                  <MoreVertical size={16} />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={(e) => handleEditTeam(team, e)}
-                                >
-                                  <Pencil size={16} className="mr-2" />
-                                  Edit Team
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={(e) => handleDeleteTeam(team, e)}
-                                >
-                                  <Trash2 size={16} className="mr-2" />
-                                  Delete Team
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            {(loggedUserData?.role === "owner" ||
+                              (loggedUserData?.role === "User" &&
+                                ((loggedUserData?.access?.team !== true &&
+                                  loggedUserData?.access?.all === true) ||
+                                  loggedUserData?.access?.team === true))) && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                  >
+                                    <MoreVertical size={16} />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={(e) => handleEditTeam(team, e)}
+                                  >
+                                    <Pencil size={16} className="mr-2" />
+                                    Edit Team
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => handleDeleteTeam(team, e)}
+                                  >
+                                    <Trash2 size={16} className="mr-2" />
+                                    Delete Team
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent className="flex-1 overflow-y-auto bg-white p-3 rounded-b-xl">
-
-                        <AddTaskModal
-                         selectedTeam={team}
-                         selectedSpaceId={activeSpaceId} 
-                         selectedTeamId={team.id} 
-                         spaces={spaces}
-                         teams={teams}
-                         members={members} />
+                        {(loggedUserData?.role === "owner" ||
+                          (loggedUserData?.role === "User" &&
+                            ((loggedUserData?.access?.task !== true &&
+                              loggedUserData?.access?.all === true) ||
+                              loggedUserData?.access?.task === true))) && (
+                          <AddTaskModal
+                            selectedTeam={team}
+                            selectedSpaceId={activeSpaceId}
+                            selectedTeamId={team.id}
+                            spaces={spaces}
+                            teams={teams}
+                            members={members}
+                          />
+                        )}
 
                         {teamTasks.length === 0 ? (
                           <div className="text-center py-4">
@@ -466,7 +500,16 @@ const KanbanSpacebar = ({
                         ) : (
                           <div
                             className="space-y-3 overflow-y-auto playlist-scroll"
-                            style={{ height: "calc(100dvh - 289px)" }}
+                            style={{
+                              height:
+                                loggedUserData?.role === "owner" ||
+                                (loggedUserData?.role === "User" &&
+                                  ((loggedUserData?.access?.task !== true &&
+                                    loggedUserData?.access?.all === true) ||
+                                    loggedUserData?.access?.task === true))
+                                  ? "calc(100dvh - 289px)"
+                                  : "calc(100dvh - 232px)",
+                            }}
                           >
                             {teamTasks.map((task) => (
                               <div
@@ -580,6 +623,7 @@ const KanbanSpacebar = ({
                                     selectedUserId={""}
                                     selectedMember={""}
                                     kanbanView={true}
+                                    setIsDialogOpen={""}
                                   />
                                 ) : (
                                   <p className="text-sm font-medium text-zinc-950 mt-1 py-2">

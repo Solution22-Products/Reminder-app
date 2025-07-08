@@ -136,7 +136,7 @@ const ChatLeftSpace = ({
   }, []);
 
   return (
-    <div className="">
+    <>
       <NewNavbar
         selectedSpaceId={selectedSpaceId}
         selectedTeamId={selectedTeamId}
@@ -149,19 +149,20 @@ const ChatLeftSpace = ({
 
       {/* Scrollable Content */}
       <div
-        className={`p-3.5 w-full ${
+        className={`p-3.5 w-full 
+          ${
           loggedUserData?.role === "owner" ||
           (loggedUserData?.role === "User" &&
             ((loggedUserData?.access?.task !== true &&
               loggedUserData?.access?.all === true) ||
               loggedUserData?.access?.task === true))
             ? "h-[calc(100dvh-152px)] pb-20 overflow-y-auto"
-            : "h-[calc(100dvh-70px)] pb-0 overflow-y-auto"
+            : "h-[calc(100dvh-70px)] pb-3 overflow-y-auto"
         } 
-         overflow-y-auto playlist-scroll`}
+         playlist-scroll`}
       >
-        <div className="">
-          <div className="">
+        <>
+          <>
             {isLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-20 w-full" />
@@ -169,7 +170,7 @@ const ChatLeftSpace = ({
                 <Skeleton className="h-20 w-full" />
               </div>
             ) : (
-              <div className="">
+              <>
                 {displayTasks.length > 0 ? (
                   <div className="space-y-2.5">
                     {displayTasks.map((task) => (
@@ -277,7 +278,7 @@ const ChatLeftSpace = ({
                             selectedUserId={selectedUserId}
                             selectedMember={selectedMember}
                             kanbanView={false}
-                            setIsDialogOpen={''}
+                            setIsDialogOpen={false}
                           />
                         ) : (
                           <p className="text-sm font-medium text-zinc-950 mt-1">
@@ -395,10 +396,10 @@ const ChatLeftSpace = ({
                     </div>
                   </div>
                 )}
-              </div>
+              </>
             )}
-          </div>
-        </div>
+          </>
+        </>
       </div>
       {(loggedUserData?.role === "owner" ||
         (loggedUserData?.role === "User" &&
@@ -422,11 +423,11 @@ const ChatLeftSpace = ({
             selectedUserId={selectedUserId}
             selectedMember={selectedMember}
             kanbanView={false}
-            setIsDialogOpen={''}
+            setIsDialogOpen={false}
           />
         </div>
       )}
-    </div>
+    </>
   );
 };
 

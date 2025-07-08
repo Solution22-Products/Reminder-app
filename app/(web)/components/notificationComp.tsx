@@ -134,7 +134,7 @@ const Notification = () => {
           variant="outline"
           className="w-[145px] rounded-[10px] text-zinc-950 font-medium h-[42px] absolute bottom-[85px] left-4 border border-[#D4D4D8]"
         >
-          <p className="flex items-center gap-1"><BellDot className="w-8 h-8 text-zinc-950" /> Notification</p>
+          <p className="flex items-center gap-1"><BellDot className="w-8 h-8 text-zinc-950" /> Notifications</p>
           {/* <span className="absolute -top-1 -right-0.5 bg-red-500 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[10px] text-white">
             {userId?.role === "owner"
               ? adminTaskNotify.length

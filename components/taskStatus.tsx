@@ -48,7 +48,7 @@ export default function TaskStatus() {
 
   useEffect(() => {
     taskData();
-  }, [totalTasks, completedTasks, overdueTasks, taskDetails]);
+  }, []);
 
   return (
     <div className="w-full flex space-x-2 px-[18px] py-[18px]">

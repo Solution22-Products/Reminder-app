@@ -40,7 +40,7 @@ interface MentionData {
   selectedUserId: string | null;
   selectedMember: any;
   kanbanView?: boolean;
-  setIsDialogOpen?: any;
+  setIsDialogOpen: any;
 }
 
 const NewReactMentions = ({
@@ -62,13 +62,16 @@ const NewReactMentions = ({
   kanbanView,
   setIsDialogOpen,
 }: MentionData) => {
-  const { userId, fetchAllTasks, setNotificationTrigger, notificationTrigger } = useGlobalContext();
+  const { userId, fetchAllTasks, setNotificationTrigger, notificationTrigger } =
+    useGlobalContext();
   const [inputValue, setInputValue] = useState("");
   const [memberInputValue, setMemberInputValue] = useState("");
   const [mentionLevel, setMentionLevel] = useState<number>(1);
   const [spaceData, setSpaceData] = useState<MemberData[]>([]);
   const [teamData, setTeamData] = useState<MemberData[]>([]);
-  const [selectedMentionSpaceId, setSelectedMentionSpaceId] = useState<string | null>(null);
+  const [selectedMentionSpaceId, setSelectedMentionSpaceId] = useState<
+    string | null
+  >(null);
 
   const formatDate = (date: Date): string => {
     // Validate if the date is valid
@@ -87,54 +90,21 @@ const NewReactMentions = ({
   };
 
   const getUniqueItems = (array: any[], key: string) => {
-      const seen = new Set();
-      return array.filter((item) => {
-        const value = item[key];
-        if (!seen.has(value)) {
-          seen.add(value);
-          return true;
-        }
-        return false;
-      });
-    };
-
-  // const filterTeamAndSpace = () => {
-  //   const selectedMember = members.find(
-  //     (member) => member.id === selectedUserId
-  //   );
-  //   if (!selectedMember) return;
-
-  //   const matchedTeams = teams.filter((team) =>
-  //     team.members.some((member: any) => member.id === selectedMember.id)
-  //   );
-
-  //   const uniqueSpaces = getUniqueItems(
-  //     matchedTeams
-  //       .map((team) => spaces.find((space) => space.id === team.space_id))
-  //       .filter(Boolean), // filter nulls
-  //     "id"
-  //   );
-
-  //   const uniqueTeams = getUniqueItems(matchedTeams, "id");
-
-  //   // Transform for react-mentions (must be in { id, display } format)
-  //   const transformedSpaces = uniqueSpaces.map((space) => ({
-  //     id: space.id,
-  //     display: space.space_name,
-  //   }));
-
-  //   const transformedTeams = uniqueTeams.map((team) => ({
-  //     id: team.id,
-  //     display: team.team_name,
-  //   }));
-
-  //   setSpaceData(transformedSpaces);
-  //   setTeamData(transformedTeams);
-  // };
-
+    const seen = new Set();
+    return array.filter((item) => {
+      const value = item[key];
+      if (!seen.has(value)) {
+        seen.add(value);
+        return true;
+      }
+      return false;
+    });
+  };
 
   const filterTeamAndSpace = () => {
-    const selectedMember = members?.find((member) => member.id === selectedUserId);
+    const selectedMember = members?.find(
+      (member) => member.id === selectedUserId
+    );
     if (!selectedMember) return;
 
     const matchedTeams = teams.filter((team) =>
@@ -159,9 +129,10 @@ const NewReactMentions = ({
   const filterTeamsForSpace = (spaceId: string) => {
     const selectedMemberId = selectedUserId;
 
-    const filteredTeams = teams.filter((team) =>
-      team.space_id === spaceId &&
-      team?.members?.some((member: any) => member.id === selectedMemberId)
+    const filteredTeams = teams.filter(
+      (team) =>
+        team.space_id === spaceId &&
+        team?.members?.some((member: any) => member.id === selectedMemberId)
     );
 
     const uniqueTeams = getUniqueItems(filteredTeams, "id");
@@ -174,7 +145,7 @@ const NewReactMentions = ({
     setTeamData(transformedTeams);
   };
 
- useEffect(() => {
+  useEffect(() => {
     filterTeamAndSpace();
     setMentionLevel(1);
     setSelectedMentionSpaceId(null);
@@ -200,11 +171,12 @@ const NewReactMentions = ({
     if (!selectedTeam?.members || selectedTeam.members.length === 0) {
       toast({
         title: "No Members",
-        description: "No members are there in the team. You can't create a task.",
+        description:
+          "No members are there in the team. You can't create a task.",
         variant: "destructive",
         duration: 3000,
-      })
-      return
+      });
+      return;
     }
     setInputValue(event.target.value);
   };
@@ -224,7 +196,8 @@ const NewReactMentions = ({
 
     // 2. Extract full #hashtag + date/time (until next @ or ^ or end)
     const hashPattern = /#\w+(?:[^\^@]*)/g;
-    const hashRaw = memberInputValue.match(hashPattern)?.map((s) => s.trim()) || [];
+    const hashRaw =
+      memberInputValue.match(hashPattern)?.map((s) => s.trim()) || [];
     const hashContent = hashRaw[0]?.replace(/^#/, "").trim() || "";
 
     // 3. Extract ^ tags
@@ -244,14 +217,14 @@ const NewReactMentions = ({
       memberInputValue.matchAll(/\(([^)]+)\)/g),
       (match) => match[1]
     );
-    
-    console.log("Extracted IDs:", mentionIds[0], mentionIds[1]);
 
-    console.log(memberInputValue);
-    console.log("Mentions:", formattedMentions);
-    console.log("Hash Content (string):", hashContent);
-    console.log("Priority (string):", priority);
-    console.log("Plain Content:", plainText);
+    // console.log("Extracted IDs:", mentionIds[0], mentionIds[1]);
+
+    // console.log(memberInputValue);
+    // console.log("Mentions:", formattedMentions);
+    // console.log("Hash Content (string):", hashContent);
+    // console.log("Priority (string):", priority);
+    // console.log("Plain Content:", plainText);
 
     if (!memberInputValue) {
       toast({
@@ -292,8 +265,7 @@ const NewReactMentions = ({
       });
       console.log("Please enter a valid task content.");
       return;
-    }
-    else {
+    } else {
       try {
         const { data: taskData, error: taskError } = await supabase
           .from("tasks")
@@ -315,6 +287,30 @@ const NewReactMentions = ({
 
         if (taskError) throw taskError;
         fetchAllTasks();
+        const memberTaskMail = async (to: any, name: any, created_by: any) => {
+          const response = await fetch("/api/memberTask-create-mail", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              to,
+              name,
+              created_by,
+              link: "http://localhost:3000/admin-view",
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to send email");
+          }
+        };
+
+        memberTaskMail(
+          selectedMember.email,
+          selectedMember.username,
+          userId?.username
+        );
         toast({
           title: "Success",
           description: "Task created successfully.",
@@ -331,112 +327,117 @@ const NewReactMentions = ({
   };
 
   const handleCreateTask = async () => {
-    // 1. Extract mentions like @[pugazh]
-    const mentions = inputValue.match(/@\[[^\]]+\]/g) || [];
-    const formattedMentions = mentions.map(
-      (m: string) => `@${m.replace(/[@\[\]]/g, "")}`
-    );
+  const mentions = inputValue.match(/@\[[^\]]+\]/g) || [];
+  const formattedMentions = mentions.map((m: string) => `@${m.replace(/[@\[\]]/g, "")}`);
 
-    // 2. Extract full #hashtag + date/time (until next @ or ^ or end)
-    const hashPattern = /#\w+(?:[^\^@]*)/g;
-    const hashRaw = inputValue.match(hashPattern)?.map((s) => s.trim()) || [];
-    const hashContent = hashRaw[0]?.replace(/^#/, "").trim() || "";
+  const hashPattern = /#\w+(?:[^\^@]*)/g;
+  const hashRaw = inputValue.match(hashPattern)?.map((s) => s.trim()) || [];
+  const hashContent = hashRaw[0]?.replace(/^#/, "").trim() || "";
+  const caretMatch = inputValue.match(/\^\w+/);
+  const priority = caretMatch?.[0].replace("^", "") || "";
 
-    // 3. Extract ^ tags
-    const caretMatch = inputValue.match(/\^\w+/);
-    const priority = caretMatch?.[0].replace("^", "") || "";
+  const plainText = inputValue
+    .replace(/@\[[^\]]*\]|\([^\)]*\)/g, "")
+    .replace(hashPattern, "")
+    .replace(/\^\w+/g, "")
+    .trim();
 
-    // 4. Plain content without @, #, ^
-    const plainText = inputValue
-      .replace(/@\[[^\]]*\]|\([^\)]*\)/g, "")
-      .replace(hashPattern, "")
-      .replace(/\^\w+/g, "")
-      .trim();
+  const hashDate = new Date(hashContent);
 
-    const hashDate = new Date(hashContent);
+  const regex = /\(([a-f0-9\-]{36})\)/gi;
+  const ids: string[] = [];
+  let match;
+  while ((match = regex.exec(inputValue)) !== null) {
+    ids.push(match[1]);
+  }
 
-    if (!inputValue) {
-      toast({
-        title: "Error",
-        description: "Please enter the task content.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
+  const selectedMembers = ids
+    .map((id) => members.find((member) => member.id === id))
+    .filter(Boolean);
 
-    if (!hashContent || !priority || !formattedMentions) {
-      toast({
-        title: "Error",
-        description: "Please enter valid task content.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
+  const mentionedMembersEmail = selectedMembers.map((m) => m.email);
+  const mentionedMembersName = selectedMembers.map((m) => m.username);
 
-    if (isNaN(hashDate.getTime())) {
-      toast({
-        title: "Error",
-        description: "Invalid date or time format",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
+  console.log(mentionedMembersEmail);
+  console.log(mentionedMembersName);
 
-    // Final Output
-    // console.log("Mentions:", formattedMentions); // ['@pugazh']
-    // console.log("Hash Content (string):", hashContent); // 'april 25, 2025, 10:30 PM'
-    // console.log("Priority (string):", priority); // 'high'
-    // console.log("Plain Content:", plainText);
+  // if (!inputValue || !hashContent || !priority || formattedMentions.length === 0 || plainText === "") {
+  //   toast({
+  //     title: "Error",
+  //     description: "Please enter valid task content.",
+  //     variant: "destructive",
+  //     duration: 3000,
+  //   });
+  //   return;
+  // }
 
-    if (formattedMentions.length === 0 || plainText === "") {
-      toast({
-        title: "Error",
-        description: "Please enter a valid task content.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      console.log("Please enter a valid task content.");
-      return;
-    } 
-    else {
-      try {
-        const { data: taskData, error: taskError } = await supabase
-          .from("tasks")
-          .insert({
-            task_content: plainText,
-            mentions: formattedMentions,
-            time: formatDate(new Date()),
-            team_id: selectedTeamId,
-            space_id: selectedSpaceId,
-            due_date: hashDate,
-            priority: priority,
-            task_created: true,
-            task_status: "todo",
-            is_deleted: false,
-            notify_read: false,
-            undo_delete: true,
-            created_by: userId?.username,
-          });
+  // if (isNaN(hashDate.getTime())) {
+  //   toast({
+  //     title: "Error",
+  //     description: "Invalid date or time format",
+  //     variant: "destructive",
+  //     duration: 3000,
+  //   });
+  //   return;
+  // }
 
-        if (taskError) throw taskError;
-        fetchAllTasks();
-        toast({
-          title: "Success",
-          description: "Task created successfully.",
-          variant: "default",
-          duration: 3000,
-        });
-        setInputValue("");
-        setNotificationTrigger(!notificationTrigger);
-        setIsDialogOpen(false);
-      } catch (err) {
-        console.error("Error creating task:", err);
-      }
-    }
-  };
+
+
+  // try {
+  //   const { data: taskData, error: taskError } = await supabase.from("tasks").insert({
+  //     task_content: plainText,
+  //     mentions: formattedMentions,
+  //     time: formatDate(new Date()),
+  //     team_id: selectedTeamId,
+  //     space_id: selectedSpaceId,
+  //     due_date: hashDate,
+  //     priority: priority,
+  //     task_created: true,
+  //     task_status: "todo",
+  //     is_deleted: false,
+  //     notify_read: false,
+  //     undo_delete: true,
+  //     created_by: userId?.username,
+  //   });
+
+  //   if (taskError) throw taskError;
+
+  //   // fetchAllTasks();
+  //   setInputValue("");
+  //   setNotificationTrigger(!notificationTrigger);
+  //   setIsDialogOpen(false);
+  //   toast({
+  //     title: "Success",
+  //     description: "Task created and emails sent.",
+  //     variant: "default",
+  //     duration: 3000,
+  //   });
+
+  //   // Send email to each mentioned member individually
+  //   const sendTaskEmail = async (to: string, name: string) => {
+  //     const response = await fetch("/api/taskCreate-mail", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         to,
+  //         name,
+  //         created_by: userId?.username,
+  //         link: "http://localhost:3000/admin-view",
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to send email to ${to}`);
+  //     }
+  //   };
+
+  //   for (let i = 0; i < mentionedMembersEmail.length; i++) {
+  //     await sendTaskEmail(mentionedMembersEmail[i], mentionedMembersName[i]);
+  //   }
+  // } catch (err) {
+  //   console.error("Error creating task:", err);
+  // }
+};
 
   const handleUpdateTask = async () => {
     // 1. Extract new mentions like @[pugazh]
@@ -543,11 +544,11 @@ const NewReactMentions = ({
   };
 
   const handleUpdateMemberTask = async () => {
-    console.log("Member Input Value:", memberInputValue);
     const taskContent = memberInputValue.replace(/@\w+/g, "").trim();
 
     const hashPattern = /#\w+(?:[^\^@]*)/g;
-    const hashRaw = memberInputValue.match(hashPattern)?.map((s) => s.trim()) || [];
+    const hashRaw =
+      memberInputValue.match(hashPattern)?.map((s) => s.trim()) || [];
     const hashContent = hashRaw[0]?.replace(/^#/, "").trim() || "";
 
     const caretMatch = memberInputValue.match(/\^\w+/);
@@ -561,12 +562,11 @@ const NewReactMentions = ({
 
     const hashDateTaskUpdate = new Date(hashContent);
 
-
-    console.log(hashDateTaskUpdate);
-    console.log(priority);
-    console.log(plainText);
-    console.log(taskContent);
-    console.log(currentTask.id);
+    // console.log(hashDateTaskUpdate);
+    // console.log(priority);
+    // console.log(plainText);
+    // console.log(taskContent);
+    // console.log(currentTask.id);
 
     try {
       const { error } = await supabase
@@ -624,23 +624,34 @@ const NewReactMentions = ({
     }
   }, [isEditTask, currentTask]);
 
-  // useEffect(() => {
-  //   const subscription = supabase
-  //     .channel("tasks-updates")
-  //     .on(
-  //       "postgres_changes",
-  //       { event: "UPDATE", schema: "public", table: "tasks" },
-  //       (payload) => {
-  //         console.log("Task updated!", payload);
-  //         fetchAllTasks(); // Function to refresh the task list in state
-  //       }
-  //     )
-  //     .subscribe();
+  useEffect(() => {
+    const subscription = supabase
+      .channel("tasks-updates")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "tasks" },
+        (payload) => {
+          console.log("Task created!", payload);
+          fetchAllTasks(); // Refresh task list
 
-  //   return () => {
-  //     subscription.unsubscribe();
-  //   };
-  // }, []);
+          // Show browser notification
+          if ("Notification" in window) {
+            Notification.requestPermission().then((result) => {
+              if (result === "granted") {
+                new Notification("New Task Created", {
+                  body: "A new task has been added successfully.",
+                });
+              }
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <>
@@ -650,7 +661,7 @@ const NewReactMentions = ({
         } py-3 border-black text-center
         ${!editTask ? "bg-white" : "bg-transparent"}`}
       >
-        {(selectedUserId && isEditTask) ? (
+        {selectedUserId && isEditTask ? (
           <Input
             type="text"
             value={memberInputValue}
@@ -685,7 +696,6 @@ const NewReactMentions = ({
               appendSpaceOnAdd
             />
           </MentionsInput>
-          
         ) : (
           <MentionsInput
             value={inputValue}
@@ -715,14 +725,29 @@ const NewReactMentions = ({
 
       {isEditTask && (
         <div className="flex justify-end items-center gap-2">
-          <Button variant="outline" onClick={() => {setIsEditTask(false); setInputValue(''); setMemberInputValue('');}}>
-            {kanbanView ? <CircleX size={22} className="text-zinc-950" /> : "Cancel"}
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsEditTask(false);
+              setInputValue("");
+              setMemberInputValue("");
+            }}
+          >
+            {kanbanView ? (
+              <CircleX size={22} className="text-zinc-950" />
+            ) : (
+              "Cancel"
+            )}
           </Button>
           <Button
             className="mt-0 bg-[#1A56DB] hover:bg-[#1A56DB]"
             onClick={selectedUserId ? handleUpdateMemberTask : handleUpdateTask}
           >
-            {kanbanView ? <CircleCheckBig size={22} className="text-white" /> : "Update"}
+            {kanbanView ? (
+              <CircleCheckBig size={22} className="text-white" />
+            ) : (
+              "Update"
+            )}
           </Button>
         </div>
       )}

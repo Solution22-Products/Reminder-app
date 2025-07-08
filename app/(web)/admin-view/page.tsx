@@ -175,7 +175,7 @@ const AdminView = () => {
   return (
     <div className="w-full min-h-[100dvh] h-full flex">
       <Notification />
-      <div className="w-[75%]">
+      <div className="w-[75%] h-[100dvh] overflow-y-auto playlist-scroll bg-white flex flex-col space-y-5 justify-start">
         <ChatLeftSpace
           selectedSpaceId={selectedSpaceId}
           selectedTeamId={selectedTeamId}
